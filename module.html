@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Module Detail - Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<!-- ================= MAIN ================= -->
+<main>
+  <section class="lesson-detail">
+    <!-- FULL-PAGE CARD WRAPPER -->
+    <div class="lesson-card-wrapper">
+      <!-- MODULE INFO -->
+      <div class="module-header">
+        <h2 id="module-title"></h2>
+      </div>
+      <p class="lesson-category" id="module-category"></p>
+      <span class="tag" id="module-tag"></span>
+
+      <!-- MODULE SEARCH & VOICE -->
+      <div class="module-search-wrapper">
+        <button id="module-read-aloud-toggle" class="module-search-btn" title="Read aloud"><i class="fa fa-volume-up" aria-hidden="true"></i></button>
+        <button id="module-search-toggle" class="module-search-btn" title="Search in this module"><i class="fa fa-search" aria-hidden="true"></i></button>
+        <div id="module-search-container" style="display:none;">
+          <input id="module-search-input" class="module-search-input" placeholder="Search module content..." />
+          <div id="module-search-result" class="module-search-result" aria-live="polite"></div>
+        </div>
+      </div>
+
+      <!-- MEDIA -->
+      <div class="lesson-media" id="module-media"></div>
+
+      <!-- MODULE CONTENT -->
+      <div class="lesson-content" id="module-content"></div>
+
+      <!-- ================= BOTTOM AREA ================= -->
+      <div class="lesson-bottom">
+
+        <!-- QUIZ SECTION -->
+        <section class="lesson-quiz" id="module-quiz">
+          <h3>Quiz Questions</h3>
+
+          <div class="lesson-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p id="progressText">0% completed</p>
+          </div>
+
+          <div class="quiz-locked" id="quizLock" style="word-wrap: break-word; overflow-wrap: break-word;">
+            🔒 Complete all sections to unlock the quiz
+          </div>
+
+          <button id="startQuiz" locked style="width: 100%;">Start Quiz</button>
+          <div id="quiz-content"></div>
+        </section>
+
+      </div>
+
+      <!-- COMMENTS SECTION (dynamically populated) -->
+      <div id="module-comments" style="margin-top: 40px;"></div>
+
+      <!-- RESOURCES SECTION WITH TOGGLE -->
+      <div style="margin-top: 40px;">
+        <button id="resources-toggle" style="background: var(--green-main); color: white; padding: 10px 16px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600;">
+          ▼ Show Resources
+        </button>
+        <section class="lesson-resources" id="module-resources" style="display: none; margin-top: 20px;">
+          <h3>Resources</h3>
+          <ul></ul>
+        </section>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ================= FOOTER ================= -->
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-socials">
+      <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+      <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+      <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+    </div>
+    <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+  </div>
+</footer>
+
+ 
+
+<!-- SCROLL BUTTONS -->
+<button id="scrollTopBtn" class="scroll-btn">↑</button>
+<button id="scrollBottomBtn" class="scroll-btn">↓</button>
+
+<!-- THEME TOGGLE -->
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+  <span class="text">Dark</span>
+</button>
+
+<!-- Storage sync utility -->
+<script src="js/core/storageSync.js"></script>
+
+<!-- Notification Service (must load BEFORE main.js) -->
+<script src="js/core/notificationService.js"></script>
+
+<!-- Notification Triggers -->
+<script src="js/core/notificationTriggers.js"></script>
+
+<!-- GLOBAL JS -->
+<script src="js/main.js"></script>
+
+<!-- PAGE CONTROLLER -->
+
+<script type="module" src="js/pages/modulePage.js"></script>
+
+</body>
+</html>

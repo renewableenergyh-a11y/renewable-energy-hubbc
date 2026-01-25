@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Discussion Room - Aubie RET Hub</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .room-container {
+      display: grid;
+      grid-template-columns: 1fr 300px;
+      gap: 20px;
+      height: 100vh;
+      background: #f5f5f5;
+      overflow: hidden;
+    }
+
+    .room-main {
+      display: flex;
+      flex-direction: column;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .room-header {
+      padding: 20px;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .room-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .room-info {
+      display: flex;
+      gap: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .room-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      background: #f0f0f0;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #4caf50;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .room-content {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      color: #999;
+    }
+
+    .room-message {
+      text-align: center;
+      font-size: 18px;
+      margin-bottom: 20px;
+    }
+
+    .room-note {
+      font-size: 14px;
+      color: #aaa;
+      max-width: 400px;
+    }
+
+    .room-footer {
+      padding: 20px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+
+    .btn-leave {
+      padding: 12px 24px;
+      background: #f44336;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-leave:hover {
+      background: #d32f2f;
+    }
+
+    .btn-close-session {
+      padding: 12px 24px;
+      background: #ff9800;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-close-session:hover {
+      background: #e68900;
+    }
+
+    .sidebar {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .sidebar-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .participant-count {
+      background: #0b6fb7;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .participants-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .participant-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .participant-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #0b6fb7;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .participant-info {
+      flex: 1;
+    }
+
+    .participant-name {
+      font-weight: 500;
+      color: #333;
+      font-size: 13px;
+    }
+
+    .participant-role {
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .participant-status {
+      font-size: 10px;
+      color: #4caf50;
+      font-weight: 600;
+    }
+
+    .empty-participants {
+      text-align: center;
+      padding: 40px 20px;
+      color: #999;
+      font-size: 14px;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      padding: 8px 16px;
+      background: #e0e0e0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      color: #333;
+    }
+
+    .back-button:hover {
+      background: #d0d0d0;
+    }
+
+    .session-closed-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .session-closed-modal {
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      text-align: center;
+      max-width: 400px;
+    }
+
+    .session-closed-modal h2 {
+      color: #f44336;
+      margin-bottom: 12px;
+    }
+
+    .session-closed-modal p {
+      color: #666;
+      margin-bottom: 24px;
+    }
+
+    .session-closed-modal button {
+      padding: 10px 24px;
+      background: #0b6fb7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .session-closed-modal button:hover {
+      background: #094d7a;
+    }
+
+    @media (max-width: 768px) {
+      .room-container {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: fixed;
+        right: 0;
+        top: 0;
+        width: 100%;
+        max-width: 250px;
+        height: 100vh;
+        z-index: 100;
+      }
+    }
+  </style>
+</head>
+<body>
+  <button class="back-button" id="backBtn">← Back</button>
+
+  <div class="room-container">
+    <div class="room-main">
+      <div class="room-header">
+        <div>
+          <div class="room-title" id="roomTitle">Loading...</div>
+          <div class="room-info">
+            <div class="room-status">
+              <span class="status-dot"></span>
+              <span>Active</span>
+            </div>
+            <div id="timeInfo">Ends in --:--</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="room-content">
+        <div class="room-message">
+          📡 Real-time Discussion Room
+        </div>
+        <div class="room-note">
+          <p>This is the discussion room.</p>
+          <p>WebRTC media exchange will be added in the next step.</p>
+          <p>Participants are synced in real-time via Socket.IO on the right.</p>
+        </div>
+      </div>
+
+      <div class="room-footer">
+        <button class="btn-leave" id="leaveBtn">Leave Room</button>
+        <button class="btn-close-session" id="closeBtn" style="display: none;">Close Session</button>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-title">
+        Participants
+        <span class="participant-count" id="participantCount">0</span>
+      </div>
+      <div class="participants-list" id="participantsList"></div>
+    </div>
+  </div>
+
+  <div class="session-closed-overlay" id="sessionClosedOverlay">
+    <div class="session-closed-modal">
+      <h2>Session Closed</h2>
+      <p id="closedReason">The session has been closed.</p>
+      <button onclick="window.location.href='/discussions.html'">Return to Discussions</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getCurrentUser, logoutUser } from '/js/core/auth.js';
+    
+    // Create compatible authService interface
+    const authService = {
+      getCurrentUser: async () => {
+        const user = getCurrentUser();
+        if (!user) return null;
+        return {
+          ...user,
+          token: localStorage.getItem('authToken')
+        };
+      },
+      logout: async () => {
+        logoutUser();
+        window.location.href = '/login.html';
+      }
+    };
+    import { discussionSocket } from '/js/services/discussionSocket.js';
+
+    const roomTitle = document.getElementById('roomTitle');
+    const participantCount = document.getElementById('participantCount');
+    const participantsList = document.getElementById('participantsList');
+    const leaveBtn = document.getElementById('leaveBtn');
+    const closeBtn = document.getElementById('closeBtn');
+    const backBtn = document.getElementById('backBtn');
+    const sessionClosedOverlay = document.getElementById('sessionClosedOverlay');
+    const closedReason = document.getElementById('closedReason');
+    const timeInfo = document.getElementById('timeInfo');
+
+    let sessionData = null;
+    let isInstructor = false;
+
+    async function init() {
+      try {
+        const user = await authService.getCurrentUser();
+        if (!user) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        isInstructor = user.role === 'instructor' || user.role === 'admin';
+
+        // Get session ID from URL
+        const params = new URLSearchParams(window.location.search);
+        const sessionId = params.get('sessionId');
+
+        console.log('🔍 [discussion-room] Parsed sessionId from URL:', sessionId);
+
+        if (!sessionId) {
+          console.error('❌ [discussion-room] No sessionId in URL');
+          alert('Invalid session link');
+          window.location.href = '/discussions.html';
+          return;
+        }
+
+        // Ensure socket is connected
+        if (!discussionSocket.socket || !discussionSocket.connected) {
+          console.log('🔌 [discussion-room] Connecting socket...');
+          await discussionSocket.connect(user.token);
+        }
+
+        // Fetch session details with authentication
+        console.log('📡 [discussion-room] Fetching session:', sessionId);
+        const response = await fetch(`/api/discussions/sessions/${sessionId}`, {
+          headers: {
+            'Authorization': `Bearer ${user.token}`,
+            'x-user-id': user.id,
+            'x-user-role': user.role
+          }
+        });
+
+        console.log('📡 [discussion-room] Session fetch response status:', response.status);
+        const data = await response.json();
+        
+        if (!response.ok) {
+          console.error('❌ [discussion-room] Session fetch failed:', data);
+          alert(`Session error: ${data.error}`);
+          window.location.href = '/discussions.html';
+          return;
+        }
+
+        sessionData = data.session;
+        console.log('✅ [discussion-room] Session loaded:', {
+          sessionId: sessionData?.sessionId,
+          subject: sessionData?.subject,
+          status: sessionData?.status
+        });
+
+        if (!sessionData) {
+          console.error('❌ [discussion-room] Session data is null');
+          alert('Session not found');
+          window.location.href = '/discussions.html';
+          return;
+        }
+
+        roomTitle.textContent = sessionData.subject;
+
+        // Show close button for instructors
+        if (isInstructor && sessionData.creatorId === user.id) {
+          closeBtn.style.display = 'block';
+          closeBtn.addEventListener('click', handleCloseSession);
+        }
+
+        // NOW register participant AFTER session is successfully resolved
+        console.log('📝 [discussion-room] Registering participant...');
+        try {
+          const joinResponse = await fetch(`/api/discussions/participants/${sessionId}/join`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${user.token}`,
+              'x-user-id': user.id,
+              'x-user-role': user.role,
+              'Content-Type': 'application/json'
+            }
+          });
+
+          const joinData = await joinResponse.json();
+          console.log('📝 [discussion-room] Participant registration result:', joinResponse.status, joinData);
+
+          if (!joinResponse.ok) {
+            console.warn('⚠️ [discussion-room] Participant registration failed:', joinData);
+            // Don't block room access if participant registration fails
+            // User can still view the session
+          } else {
+            console.log('✅ [discussion-room] Participant registered successfully');
+          }
+        } catch (error) {
+          console.error('❌ [discussion-room] Error registering participant:', error);
+          // Continue anyway - session is loaded even if participant registration failed
+        }
+
+        // Setup event listeners
+        setupListeners();
+
+        // Start time update
+        startTimeUpdate();
+      } catch (error) {
+        console.error('Failed to initialize room:', error);
+        alert('Failed to load room');
+        window.location.href = '/discussions.html';
+      }
+    }
+
+    function setupListeners() {
+      // Socket events
+      discussionSocket.on('participant-list-updated', (data) => {
+        renderParticipants(data.participants, data.stats);
+      });
+
+      discussionSocket.on('participant-joined', (data) => {
+        console.log(`${data.name} joined`);
+      });
+
+      discussionSocket.on('participant-left', (data) => {
+        console.log(`User left (${data.participantCount} remaining)`);
+      });
+
+      discussionSocket.on('session-closed', (data) => {
+        closedReason.textContent = data.reason || 'The session has been closed.';
+        sessionClosedOverlay.style.display = 'flex';
+        setTimeout(() => {
+          window.location.href = '/discussions.html';
+        }, 3000);
+      });
+
+      discussionSocket.on('force-disconnect', (data) => {
+        alert(data.reason);
+        window.location.href = '/discussions.html';
+      });
+
+      // Button events
+      leaveBtn.addEventListener('click', handleLeave);
+      backBtn.addEventListener('click', handleLeave);
+    }
+
+    async function handleLeave() {
+      try {
+        await discussionSocket.leaveSession();
+        window.location.href = '/discussions.html';
+      } catch (error) {
+        console.error('Error leaving session:', error);
+        window.location.href = '/discussions.html';
+      }
+    }
+
+    async function handleCloseSession() {
+      if (!confirm('Are you sure you want to close this session for all participants?')) {
+        return;
+      }
+
+      try {
+        const user = await authService.getCurrentUser();
+        await discussionSocket.closeSession(sessionData.sessionId, user.token);
+        alert('Session closed successfully');
+        window.location.href = '/discussions.html';
+      } catch (error) {
+        alert(`Failed to close session: ${error.message}`);
+      }
+    }
+
+    function renderParticipants(participants, stats) {
+      participantCount.textContent = stats.activeCount;
+
+      if (!participants || participants.length === 0) {
+        participantsList.innerHTML = '<div class="empty-participants">No participants</div>';
+        return;
+      }
+
+      participantsList.innerHTML = participants
+        .map(p => `
+          <div class="participant-item">
+            <div class="participant-avatar">${p.userId.charAt(0).toUpperCase()}</div>
+            <div class="participant-info">
+              <div class="participant-name">${escapeHtml(p.userId)}</div>
+              <div class="participant-role">${p.role}</div>
+            </div>
+            <div class="participant-status">${p.active ? 'Active' : 'Away'}</div>
+          </div>
+        `)
+        .join('');
+    }
+
+    function startTimeUpdate() {
+      setInterval(() => {
+        if (!sessionData) return;
+
+        const now = new Date();
+        const endTime = new Date(sessionData.endTime);
+        const diff = endTime - now;
+
+        if (diff <= 0) {
+          timeInfo.textContent = 'Session ended';
+          return;
+        }
+
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+
+        if (hours > 0) {
+          timeInfo.textContent = `Ends in ${hours}h ${minutes}m`;
+        } else if (minutes > 0) {
+          timeInfo.textContent = `Ends in ${minutes}m ${seconds}s`;
+        } else {
+          timeInfo.textContent = `Ends in ${seconds}s`;
+        }
+      }, 1000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Initialize when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

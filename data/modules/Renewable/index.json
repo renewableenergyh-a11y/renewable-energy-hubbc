@@ -1,0 +1,13 @@
+[
+  {
+    "id": "module-10",
+    "title": "Beibyyy",
+    "isPremium": false,
+    "tag": "fundamentals",
+    "content": "module-10.md",
+    "file": "module-10.md",
+    "quiz": "module-10-quiz",
+    "projects": "module-10-quiz",
+    "createdAt": "2026-01-08T17:06:58.220Z"
+  }
+]

@@ -1,0 +1,794 @@
+[
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T01:03:12.198Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T01:03:24.609Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T01:06:19.002Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T10:15:31.762Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T11:40:35.338Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T11:57:17.035Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T12:12:24.989Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "invalid_password"
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T12:12:31.738Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T12:17:59.853Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T12:25:32.252Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "invalid_password"
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T12:25:42.939Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T12:30:17.099Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T12:53:01.031Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T12:53:03.801Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T12:54:50.739Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T13:14:23.479Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": true,
+    "timestamp": "2026-01-15T13:29:26.061Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": false,
+    "timestamp": "2026-01-15T18:29:59.513Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:06.096Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:15.737Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:16.279Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:16.518Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:16.718Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:16.918Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:53.873Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:54.639Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:56.063Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:56.703Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:57.192Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:57.442Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:57.625Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:57.810Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:57.999Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:58.199Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:58.426Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:58.626Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:58.843Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:30:59.078Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T18:47:56.120Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T19:01:24.499Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-15T19:01:25.207Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T19:03:03.607Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": true,
+    "timestamp": "2026-01-15T19:46:14.518Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": true,
+    "timestamp": "2026-01-15T19:48:06.317Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": true,
+    "timestamp": "2026-01-15T19:55:27.885Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": true,
+    "timestamp": "2026-01-15T19:56:26.516Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "mkhulanaaubrey@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T20:00:20.738Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "mkhulanaaubrey@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T20:17:32.180Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": true,
+    "timestamp": "2026-01-15T20:23:10.729Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "mkhulanaaubrey@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T20:33:14.011Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "mkhulanaaubrey@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T20:40:29.888Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "mkhulanaaubrey@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T21:15:50.933Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": true,
+    "timestamp": "2026-01-15T21:23:08.691Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obmkhulana@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T21:26:30.739Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T21:34:16.618Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obmkhulana@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-15T21:40:27.381Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T15:35:27.717Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T15:50:53.123Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-16T15:51:43.565Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "invalid_password"
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T15:51:51.521Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-16T15:52:34.082Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T15:54:20.994Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:02:17.798Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:07:43.458Z",
+    "ip": "::ffff:127.0.0.1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-16T16:11:38.037Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "invalid_password"
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:11:48.007Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:19:13.180Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:21:21.810Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:23:58.658Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:34:20.760Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:36:40.065Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:39:07.728Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:41:14.112Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:44:25.855Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:46:24.630Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:49:29.827Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T16:53:07.072Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T17:01:17.433Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T17:03:34.535Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T17:11:54.790Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T20:15:02.630Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T21:54:03.527Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T21:59:06.545Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T22:01:00.980Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T22:08:20.334Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T22:13:46.128Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T22:15:18.000Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T22:15:40.605Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "aubieob9@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-16T22:35:23.248Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-21T19:17:52.131Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-21T19:18:07.573Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-21T19:18:08.576Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-21T19:18:19.778Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-21T19:18:20.576Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": false,
+    "timestamp": "2026-01-21T19:18:35.014Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": false,
+    "timestamp": "2026-01-21T19:19:20.793Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": false,
+    "timestamp": "2026-01-21T19:19:21.670Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": "email_not_found"
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-21T19:22:41.620Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  },
+  {
+    "email": "obbanda067@gmail.com",
+    "success": true,
+    "timestamp": "2026-01-22T05:49:26.313Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
+  }
+]

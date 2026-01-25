@@ -1,0 +1,83 @@
+[
+  {
+    "id": "geothermal-fundamentals",
+    "title": "Geothermal Energy Fundamentals",
+    "isPremium": false,
+    "tag": "Beginner",
+    "content": "module-1-geothermal-fundamentals.md",
+    "quiz": "module-1-geothermal-fundamentals-quiz.json",
+    "projects": "module-1-geothermal-fundamentals-projects.json"
+  },
+  {
+    "id": "geothermal-resources-reservoirs",
+    "title": "Geothermal Resources & Reservoirs",
+    "isPremium": false,
+    "tag": "Beginner",
+    "content": "module-2-geothermal-resources-reservoirs.md",
+    "quiz": "module-2-geothermal-resources-reservoirs-quiz.json",
+    "projects": "module-2-geothermal-resources-reservoirs-projects.json"
+  },
+  {
+    "id": "geothermal-power-plant-types",
+    "title": "Geothermal Power Plant Types",
+    "isPremium": false,
+    "tag": "Intermediate",
+    "content": "module-3-geothermal-power-plant-types.md",
+    "quiz": "module-3-geothermal-power-plant-types-quiz.json",
+    "projects": "module-3-geothermal-power-plant-types-projects.json"
+  },
+  {
+    "id": "geothermal-resource-assessment",
+    "title": "Geothermal Resource Assessment & Exploration",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-4-geothermal-resource-assessment.md",
+    "quiz": "module-4-geothermal-resource-assessment-quiz.json",
+    "projects": "module-4-geothermal-resource-assessment-projects.json"
+  },
+  {
+    "id": "geothermal-system-design",
+    "title": "Geothermal System Design & Sizing",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-5-geothermal-system-design.md",
+    "quiz": "module-5-geothermal-system-design-quiz.json",
+    "projects": "module-5-geothermal-system-design-projects.json"
+  },
+  {
+    "id": "geothermal-installation-safety",
+    "title": "Drilling, Installation & Safety",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-6-geothermal-installation-safety.md",
+    "quiz": "module-6-geothermal-installation-safety-quiz.json",
+    "projects": "module-6-geothermal-installation-safety-projects.json"
+  },
+  {
+    "id": "geothermal-operation-maintenance",
+    "title": "Operation, Maintenance & Performance Monitoring",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-7-geothermal-operation-maintenance.md",
+    "quiz": "module-7-geothermal-operation-maintenance-quiz.json",
+    "projects": "module-7-geothermal-operation-maintenance-projects.json"
+  },
+  {
+    "id": "geothermal-economics",
+    "title": "Geothermal Energy Economics & Project Evaluation",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-8-geothermal-economics.md",
+    "quiz": "module-8-geothermal-economics-quiz.json",
+    "projects": "module-8-geothermal-economics-projects.json"
+  },
+  {
+    "id": "geothermal-case-studies",
+    "title": "Geothermal Energy Case Studies & Local Applications",
+    "isPremium": true,
+    "tag": "Professional",
+    "content": "module-9-geothermal-case-studies.md",
+    "quiz": "module-9-geothermal-case-studies-quiz.json",
+    "projects": "module-9-geothermal-case-studies-projects.json"
+  }
+]

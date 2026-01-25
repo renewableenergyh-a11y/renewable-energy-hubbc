@@ -1,0 +1,126 @@
+[
+  {
+    "id": "module-1-solar-fundamentals",
+    "title": "Go shawty it's your birthday",
+    "isPremium": false,
+    "tag": "Beginner",
+    "content": "module-1-solar-fundamentals.md",
+    "quiz": "module-1-solar-fundamentals-quiz.json",
+    "projects": "module-1-solar-fundamentals-projects.json",
+    "file": "module-1-solar-fundamentals.md",
+    "objectives": "module-1-solar-fundamentals-objectives.json",
+    "createdAt": "2026-01-13T19:02:18.444Z"
+  },
+  {
+    "id": "module-2-pv-system-components",
+    "title": "Over",
+    "isPremium": false,
+    "tag": "",
+    "content": "module-2-pv-system-components.md",
+    "quiz": "module-2-pv-system-components-quiz.json",
+    "projects": "module-2-pv-system-components-projects.json",
+    "file": "module-2-pv-system-components.md",
+    "createdAt": "2026-01-15T19:05:00.564Z",
+    "video": "/videos/osg_E_003_r720P-1768503884556.mp4"
+  },
+  {
+    "id": "module-3-pv-system-configurations",
+    "title": "Module 3: Photovoltaic System Configurations",
+    "isPremium": false,
+    "tag": "Intermediate",
+    "content": "module-3-pv-system-configurations.md",
+    "quiz": "module-3-pv-system-configurations-quiz.json",
+    "projects": "module-3-pv-system-configurations-projects.json",
+    "file": "module-3-pv-system-configurations.md",
+    "createdAt": "2026-01-15T15:52:29.476Z"
+  },
+  {
+    "id": "module-4-site-assessment-feasibility",
+    "title": "Module 4: Site Assessment & Feasibility",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-4-site-assessment-feasibility.md",
+    "quiz": "module-4-site-assessment-feasibility-quiz.json",
+    "projects": "module-4-site-assessment-feasibility-projects.json",
+    "file": "module-4-site-assessment-feasibility.md",
+    "createdAt": "2026-01-08T15:07:33.970Z"
+  },
+  {
+    "id": "system-design-sizing",
+    "title": "Solar PV System Design & Sizing",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-5-system-design-sizing.md",
+    "quiz": "module-5-system-design-sizing-quiz.json",
+    "projects": "module-5-system-design-sizing-projects.json",
+    "file": "module-5-system-design-sizing.md",
+    "createdAt": "2026-01-15T12:14:35.576Z"
+  },
+  {
+    "id": "module-6-installation-safety",
+    "title": "Module 6: Installation & Safety",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-6-installation-safety.md",
+    "quiz": "module-6-installation-safety-quiz.json",
+    "projects": "module-6-installation-safety-projects.json",
+    "file": "module-6-installation-safety.md",
+    "createdAt": "2026-01-09T19:44:38.828Z"
+  },
+  {
+    "id": "operation-maintenance",
+    "title": "Operation, Maintenance & Fault Diagnosis",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-7-operation-maintenance.md",
+    "quiz": "module-7-operation-maintenance-quiz.json",
+    "projects": "module-7-operation-maintenance-projects.json"
+  },
+  {
+    "id": "module-8-solar-economics",
+    "title": "Module 8: Solar Energy Economics & Project Evaluation",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-8-solar-economics.md",
+    "quiz": "module-8-solar-economics-quiz.json",
+    "projects": "module-8-solar-economics-projects.json",
+    "file": "module-8-solar-economics.md",
+    "createdAt": "2026-01-08T22:44:39.521Z"
+  },
+  {
+    "id": "solar-case-studies",
+    "title": "Solar PV Case Studies & Local Applications",
+    "isPremium": true,
+    "tag": "Professional",
+    "content": "module-9-solar-case-studies.md",
+    "quiz": "module-9-solar-case-studies-quiz.json",
+    "projects": "module-9-solar-case-studies-projects.json"
+  },
+  {
+    "id": "module-10-intro",
+    "title": "Heyyyy",
+    "isPremium": true,
+    "tag": "fundamentals",
+    "content": "module-10-intro.md",
+    "file": "module-10-intro.md",
+    "quiz": "module-10-quiz",
+    "projects": "module-10-projects",
+    "createdAt": "2026-01-08T15:31:23.301Z"
+  },
+  {
+    "id": "test-module-from-api",
+    "title": "Test Module from API",
+    "isPremium": false,
+    "tag": "Test",
+    "content": "module-test-api.md",
+    "file": "module-test-api.md",
+    "createdAt": "2026-01-08T16:00:00.000Z"
+  },
+  {
+    "id": "test-module",
+    "title": "Test Module",
+    "content": "test-module.md",
+    "file": "test-module.md",
+    "createdAt": "2026-01-13T18:14:33.534Z"
+  }
+]

@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FAQs — Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <style>
+    .faq-container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .faq-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .faq-header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    .faq-header p {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .faq-search {
+      margin-bottom: 40px;
+    }
+
+    .faq-search input {
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 16px;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+    }
+
+    .faq-search input:focus {
+      outline: none;
+      border-color: var(--green-main);
+      box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.1);
+    }
+
+    .faq-categories {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 50px;
+    }
+
+    .faq-category-btn {
+      padding: 14px 18px;
+      background: #f3f4f6;
+      border: 2px solid transparent;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: all 0.3s;
+    }
+
+    .faq-category-btn:hover {
+      background: var(--green-light);
+      border-color: var(--green-main);
+    }
+
+    .faq-category-btn.active {
+      background: var(--green-main);
+      color: white;
+      border-color: var(--green-main);
+    }
+
+    .faq-item {
+      margin-bottom: 16px;
+      background: white;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      transition: box-shadow 0.3s;
+    }
+
+    .faq-item:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .faq-question {
+      padding: 18px 24px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: 600;
+      color: var(--text-main);
+      transition: background 0.3s;
+      user-select: none;
+    }
+
+    .faq-question:hover {
+      background: var(--green-light);
+    }
+
+    .faq-question i {
+      color: var(--green-main);
+      font-size: 18px;
+      transition: transform 0.3s;
+    }
+
+    .faq-item.active .faq-question i {
+      transform: rotate(180deg);
+    }
+
+    .faq-answer {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease, padding 0.3s ease;
+      background: #f9fafb;
+      border-top: 1px solid #e5e7eb;
+    }
+
+    .faq-item.active .faq-answer {
+      max-height: 500px;
+      padding: 18px 24px;
+    }
+
+    .faq-answer p {
+      line-height: 1.6;
+      color: var(--text-main);
+      margin: 0 0 12px 0;
+    }
+
+    .faq-answer p:last-child {
+      margin-bottom: 0;
+    }
+
+    .faq-answer a {
+      color: var(--green-main);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .faq-answer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Dark mode */
+    body.dark .faq-search input {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: var(--text-main);
+    }
+
+    body.dark .faq-search input::placeholder {
+      color: rgba(255, 255, 255, 0.4);
+    }
+
+    body.dark .faq-search input:focus {
+      border-color: var(--green-main);
+      box-shadow: 0 0 0 3px rgba(0, 185, 138, 0.2);
+    }
+
+    body.dark .faq-category-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+
+    body.dark .faq-category-btn:hover {
+      background: rgba(0, 185, 138, 0.15);
+    }
+
+    body.dark .faq-item {
+      background: rgba(255, 255, 255, 0.05);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark .faq-answer {
+      background: rgba(255, 255, 255, 0.03);
+      border-top-color: rgba(255, 255, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="login.html" id="nav-login-link" style="display: none;">Login</a>
+      <a href="register.html" id="nav-register-link" style="display: none;">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="faq-container">
+    <div class="faq-header">
+      <h1>Frequently Asked Questions</h1>
+      <p>Find answers to common questions about our courses, accounts, and renewable energy topics.</p>
+    </div>
+
+    <div class="faq-search">
+      <input type="text" id="faq-search" placeholder="Search FAQs..." />
+    </div>
+
+    <div class="faq-categories">
+      <button class="faq-category-btn active" data-category="all">All Categories</button>
+      <button class="faq-category-btn" data-category="courses">Courses</button>
+      <button class="faq-category-btn" data-category="account">Account</button>
+      <button class="faq-category-btn" data-category="premium">Premium</button>
+      <button class="faq-category-btn" data-category="technical">Technical</button>
+    </div>
+
+    <div id="faq-list"></div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>&copy; <span class="site-year"></span> Renewable Energy Hub. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- Notification Service (must load BEFORE main.js) -->
+<script src="js/core/notificationService.js"></script>
+
+<!-- Notification Triggers -->
+<script src="js/core/notificationTriggers.js"></script>
+
+<script src="js/main.js"></script>
+<script>
+  const faqData = [
+    {
+      category: 'courses',
+      question: 'How do I start a course?',
+      answer: 'To start a course, navigate to the Courses page, select your desired renewable energy topic (Solar, Wind, Hydro, Biomass, or Geothermal), and click "Start Course". You\'ll have access to video lessons, interactive modules, and quizzes.'
+    },
+    {
+      category: 'courses',
+      question: 'Can I access courses offline?',
+      answer: 'Currently, all courses require an internet connection to access. However, you can take notes and save your progress, which will be available whenever you log back in.'
+    },
+    {
+      category: 'courses',
+      question: 'What happens after I complete a course?',
+      answer: 'After completing a course, you\'ll receive a certificate of completion. You can download it from your Account page and share it on your resume or social media. You\'ll also earn achievement badges!'
+    },
+    {
+      category: 'account',
+      question: 'How do I reset my password?',
+      answer: 'Click on "Login" and then select "Forgot Password?". Enter your email address, and we\'ll send you a code to reset your password. Check your spam folder if you don\'t see the email.'
+    },
+    {
+      category: 'account',
+      question: 'Can I change my email address?',
+      answer: 'Yes! Go to your Account settings and click on "Edit Profile". You can update your email address there. A verification email will be sent to confirm the change.'
+    },
+    {
+      category: 'account',
+      question: 'How do I delete my account?',
+      answer: 'You can request to delete your account from your Account settings under "Irreversible Actions". Please note that this action is permanent and cannot be undone.'
+    },
+    {
+      category: 'premium',
+      question: 'What does Premium include?',
+      answer: 'Premium membership gives you access to all courses, video lessons, the Aubie RET AI Assistant for instant help, ad-free learning experience, offline course materials, advanced quizzes, projects & assignments, certificates, and priority support.'
+    },
+    {
+      category: 'premium',
+      question: 'How much does Premium cost?',
+      answer: 'Premium is $8.00 / MWK16,000 per month. You can cancel your subscription anytime from your billing page without penalties.'
+    },
+    {
+      category: 'premium',
+      question: 'Is there a free trial for Premium?',
+      answer: 'Yes! New users get a 2-day free trial of Premium. Your credit card information is required to start the trial, but you won\'t be charged until the trial ends.'
+    },
+    {
+      category: 'technical',
+      question: 'Why are videos not loading?',
+      answer: 'This could be due to a slow internet connection. Try clearing your browser cache, disabling browser extensions, or switching to a different browser. You can also try refreshing the page.'
+    },
+    {
+      category: 'technical',
+      question: 'Which browsers are supported?',
+      answer: 'We support Chrome, Firefox, Safari, and Edge (latest versions). For the best experience, please keep your browser updated.'
+    },
+    {
+      category: 'technical',
+      question: 'How do I report a bug?',
+      answer: 'If you encounter a bug or technical issue, please visit our Get Help page and use the live chat to contact our support team with details about the issue.'
+    }
+  ];
+
+  const faqList = document.getElementById('faq-list');
+  const searchInput = document.getElementById('faq-search');
+  const categoryBtns = document.querySelectorAll('.faq-category-btn');
+  let currentCategory = 'all';
+
+  function renderFAQs(category = 'all', searchTerm = '') {
+    let filtered = faqData;
+
+    if (category !== 'all') {
+      filtered = filtered.filter(faq => faq.category === category);
+    }
+
+    if (searchTerm) {
+      filtered = filtered.filter(faq => 
+        faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    faqList.innerHTML = filtered.map((faq, index) => `
+      <div class="faq-item" data-index="${index}">
+        <div class="faq-question">
+          <span>${faq.question}</span>
+          <i class="fas fa-chevron-down"></i>
+        </div>
+        <div class="faq-answer">
+          <p>${faq.answer}</p>
+        </div>
+      </div>
+    `).join('');
+
+    document.querySelectorAll('.faq-question').forEach(q => {
+      q.addEventListener('click', (e) => {
+        e.currentTarget.closest('.faq-item').classList.toggle('active');
+      });
+    });
+  }
+
+  categoryBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      categoryBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCategory = btn.dataset.category;
+      renderFAQs(currentCategory, searchInput.value);
+    });
+  });
+
+  searchInput.addEventListener('input', (e) => {
+    renderFAQs(currentCategory, e.target.value);
+  });
+
+  renderFAQs();
+</script>
+
+</body>
+</html>

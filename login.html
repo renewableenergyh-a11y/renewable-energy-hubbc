@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="form-section">
+    <div class="container">
+      <h2>Login</h2>
+
+      <form id="login-form" data-redirect="">
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Enter your email address" required>
+
+        <label for="password">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="Enter your password" required>
+        </div>
+
+        <div class="show-password-wrapper">
+          <input type="checkbox" id="show-password-login">
+          <label for="show-password-login">Show password</label>
+        </div>
+
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="remember-me">
+          <label for="remember-me">Remember me</label>
+        </div>
+
+        <button type="submit" class="btn-primary">Login</button>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+          <a href="reset-password.html" id="forgot-password-link" class="form-helper-link">Forgot password?</a>
+          <div class="form-notice" id="login-notice"></div>
+        </div>
+      </form>
+
+      <p style="margin-top: 10px;">
+        Don't have an account?
+        <a href="register.html">Register here</a>
+      </p>
+      
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-socials">
+      <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+      <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+      <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+    </div>
+    <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- THEME TOGGLE -->
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+  <span class="text">Dark</span>
+</button>
+
+<!-- GLOBAL UI -->
+<script src="js/main.js"></script>
+
+<!-- Notification Service (must load BEFORE main.js) -->
+<script src="js/core/notificationService.js"></script>
+
+<!-- Notification Triggers -->
+<script src="js/core/notificationTriggers.js"></script>
+
+<!-- PAGE CONTROLLER -->
+<script type="module" src="js/pages/loginPage.js"></script>
+
+</body>
+</html>

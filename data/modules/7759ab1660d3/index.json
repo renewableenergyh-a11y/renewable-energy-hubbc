@@ -1,0 +1,37 @@
+[
+  {
+    "id": "module-quiz-admin",
+    "title": "Admin Quiz Module",
+    "isPremium": false,
+    "tag": "Test",
+    "content": "module-quiz-admin.md",
+    "file": "module-quiz-admin.md",
+    "quiz": [
+      {
+        "question": "What is 2+2?",
+        "options": [
+          "3",
+          "4",
+          "5"
+        ],
+        "answer": 1
+      },
+      {
+        "question": "Select water state",
+        "options": [
+          "Solid",
+          "Liquid",
+          "Gas"
+        ],
+        "answer": 1
+      }
+    ],
+    "projects": [
+      {
+        "title": "Project A",
+        "description": "Do something"
+      }
+    ],
+    "createdAt": "2026-01-08T18:28:11.468Z"
+  }
+]

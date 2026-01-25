@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Bookmarks - Renewable Energy Hub</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="container header-container">
+      <h1 class="logo">Renewable Energy Hub</h1>
+
+      <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+        <span class="nav-icon">☰</span>
+      </button>
+
+      <nav id="nav-menu" class="nav-menu">
+        <a href="index.html">Home</a>
+        <a href="courses.html">Courses</a>
+        <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+        <a href="admin-login.html">Admin</a>
+        <a href="login.html" id="nav-login-link" style="display: none;">Login</a>
+        <a href="register.html" id="nav-register-link" style="display: none;">Register</a>
+        <!-- Notification Bell -->
+        <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+          <i class="fas fa-bell"></i>
+          <span id="notification-badge"></span>
+        </button>
+        <!-- Dropdown menu container (will be populated dynamically) -->
+        <div id="nav-dropdown-container"></div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="lesson-detail">
+      <div class="container">
+        <h2 style="margin-top: 0; margin-bottom: 10px;">
+          <i class="fas fa-bookmark"></i> My Bookmarks
+        </h2>
+        <p style="color: #666; margin-bottom: 30px;">Your saved modules and lessons</p>
+        
+        <div id="bookmarks-container">
+          <p style="text-align: center; padding: 40px;">Loading...</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-socials">
+        <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+        <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+        <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+        <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+      </div>
+      <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+    </div>
+  </footer>
+
+  <!-- SCROLL BUTTONS -->
+  <button id="scrollTopBtn" class="scroll-btn">↑</button>
+  <button id="scrollBottomBtn" class="scroll-btn">↓</button>
+
+  <!-- GLOBAL JS -->
+  <script src="js/main.js"></script>
+
+  <!-- Notification Service (must load BEFORE main.js) -->
+  <script src="js/core/notificationService.js"></script>
+
+  <!-- Notification Triggers -->
+  <script src="js/core/notificationTriggers.js"></script>
+
+  <script type="module">
+    import { renderBookmarksPage } from './js/pages/bookmarksPage.js';
+    document.addEventListener('DOMContentLoaded', renderBookmarksPage);
+  </script>
+
+  <button id="theme-toggle" class="theme-toggle">
+    <span class="icon">🌙</span>
+  </button>
+</body>
+</html>

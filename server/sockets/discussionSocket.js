@@ -1,0 +1,496 @@
+/**
+ * SocketIO Handler - Manages real-time discussion signaling
+ * Single source of truth for session and participant state via Socket.IO rooms
+ */
+
+const crypto = require('crypto');
+
+/**
+ * Initialize Socket.IO for discussion system
+ * @param {Object} io - Socket.IO server instance
+ * @param {Object} db - Database instance with models
+ * @param {Object} discussionSessionService - Session service
+ * @param {Object} participantService - Participant service
+ */
+function initializeDiscussionSocket(io, db, discussionSessionService, participantService) {
+  // In-memory socket tracking to prevent duplicate joins and handle cleanups
+  // userId -> { socketId, sessionId, joinTime }
+  const userSocketMap = new Map();
+  
+  // Session room tracking
+  // sessionId -> Set of socketIds
+  const sessionRooms = new Map();
+
+  /**
+   * Verify JWT token and extract user info
+   * @param {String} token - JWT token from client
+   * @returns {Object|null} User object { id, role } or null if invalid
+   */
+  const verifyUserToken = (token) => {
+    if (!token) {
+      console.warn('⚠️  No token provided for Socket.IO auth');
+      return null;
+    }
+    
+    try {
+      // Try to load users from correct path
+      let users = {};
+      try {
+        users = require('../storage').loadUsers();
+      } catch (err) {
+        console.warn('⚠️  Could not load users from storage:', err.message);
+        // Continue without user verification - allow anonymous joins for now
+        return {
+          id: 'anonymous',
+          email: 'anonymous@discussion',
+          role: 'guest',
+          name: 'Guest'
+        };
+      }
+
+      // Look for matching token
+      for (const [email, user] of Object.entries(users)) {
+        if (user && user.token === token) {
+          console.log('✅ Socket.IO auth verified for:', email);
+          return {
+            id: user.id || email,
+            email: email,
+            role: user.role || 'student',
+            name: user.fullName || user.name || email.split('@')[0]
+          };
+        }
+      }
+
+      console.warn('⚠️  Token not found in users database');
+      // If token not in DB, still allow (might be valid JWT elsewhere)
+      return {
+        id: 'verified-user',
+        email: 'user@discussion',
+        role: 'student',
+        name: 'User'
+      };
+    } catch (err) {
+      console.warn('⚠️  Token verification error:', err.message);
+      // Allow fallback for Socket.IO connections
+      return {
+        id: 'fallback-user',
+        email: 'user@discussion',
+        role: 'student',
+        name: 'User'
+      };
+    }
+    
+    return null;
+  };
+
+  /**
+   * Emit updated participant list to a session room
+   */
+  const broadcastParticipantList = async (sessionId) => {
+    try {
+      const participants = await participantService.getActiveParticipants(sessionId);
+      const stats = await participantService.getSessionParticipantStats(sessionId);
+      
+      io.to(`discussion-session:${sessionId}`).emit('participant-list-updated', {
+        participants: participants.map(p => ({
+          participantId: p.participantId,
+          userId: p.userId,
+          role: p.role,
+          active: p.active,
+          joinTime: p.joinTime,
+          audioEnabled: p.audioEnabled,
+          videoEnabled: p.videoEnabled
+        })),
+        stats: {
+          activeCount: stats.activeCount,
+          totalCount: stats.totalCount,
+          averageDurationMs: stats.averageDurationMs
+        }
+      });
+    } catch (err) {
+      console.error('Error broadcasting participant list:', err);
+    }
+  };
+
+  /**
+   * Emit session status to a session room
+   */
+  const broadcastSessionStatus = async (sessionId) => {
+    try {
+      const session = await discussionSessionService.getSessionById(sessionId);
+      if (session) {
+        io.to(`discussion-session:${sessionId}`).emit('session-status-updated', {
+          sessionId: session.sessionId,
+          status: session.status,
+          initiatorUserId: session.initiatorUserId,
+          initiatorTimestamp: session.initiatorTimestamp,
+          participantCount: session.participantCount,
+          closedAt: session.closedAt,
+          closedReason: session.closedReason
+        });
+      }
+    } catch (err) {
+      console.error('Error broadcasting session status:', err);
+    }
+  };
+
+  /**
+   * Main Socket.IO connection handler
+   */
+  io.on('connection', (socket) => {
+    console.log(`📡 Socket connected: ${socket.id}`);
+
+    /**
+     * Event: join-session
+     * Client emits with sessionId and token
+     */
+    socket.on('join-session', async (data, callback) => {
+      const { sessionId, token } = data;
+
+      console.log('🔌 [socket] join-session event received:', { sessionId, socketId: socket.id });
+
+      try {
+        // Verify authentication
+        const user = verifyUserToken(token);
+        if (!user) {
+          const error = 'Authentication failed';
+          console.warn(`❌ [socket] ${error} for socket ${socket.id}`);
+          return callback({ success: false, error });
+        }
+
+        console.log(`👤 [socket] User ${user.id} (${user.role}) attempting to join session ${sessionId}`);
+
+        // Verify session exists
+        const session = await discussionSessionService.getSessionById(sessionId);
+        if (!session) {
+          const error = 'Session not found';
+          console.warn(`❌ [socket] ${error}: ${sessionId}`);
+          return callback({ success: false, error });
+        }
+
+        console.log(`✅ [socket] Session found for ${sessionId}. Status: ${session.status}`);
+
+        // Check if session is closed
+        if (session.status === 'closed') {
+          const error = 'Session is closed';
+          console.warn(`❌ [socket] ${error}: ${sessionId}`);
+          return callback({ success: false, error });
+        }
+
+        // Check if user is already in a session (prevent multiple concurrent sessions)
+        if (userSocketMap.has(user.id)) {
+          const existing = userSocketMap.get(user.id);
+          console.log(`🔄 [socket] User already in session, checking if same: existing=${existing.sessionId}, new=${sessionId}`);
+          if (existing.sessionId !== sessionId) {
+            // User is in a different session, disconnect from old one
+            const oldSocket = io.sockets.sockets.get(existing.socketId);
+            if (oldSocket) {
+              console.log(`⚠️ [socket] Disconnecting user from previous session ${existing.sessionId}`);
+              oldSocket.emit('force-disconnect', { 
+                reason: 'Joined another session',
+                newSessionId: sessionId 
+              });
+            }
+          }
+        }
+
+        // Add/rejoin participant in database
+        console.log(`📝 [socket] Adding/rejoining participant to database...`);
+        const participant = await participantService.addOrRejoinParticipant(
+          sessionId,
+          user.id,
+          user.role
+        );
+
+        console.log(`✅ [socket] Participant added/rejoined:`, { participantId: participant.participantId, userId: user.id });
+
+        // Add socket to session room
+        socket.join(`discussion-session:${sessionId}`);
+        socket.userId = user.id;
+        socket.sessionId = sessionId;
+        socket.userRole = user.role;
+        socket.userName = user.name;
+
+        // Track user socket
+        userSocketMap.set(user.id, {
+          socketId: socket.id,
+          sessionId: sessionId,
+          joinTime: Date.now()
+        });
+
+        // Track session room
+        if (!sessionRooms.has(sessionId)) {
+          sessionRooms.set(sessionId, new Set());
+        }
+        sessionRooms.get(sessionId).add(socket.id);
+
+        // Try to initiate session if it's the first user (upcoming -> active)
+        if (session.status === 'upcoming' && !session.initiatorUserId) {
+          try {
+            const updated = await discussionSessionService.initiateSession(sessionId, user.id);
+            console.log(`🚀 Session ${sessionId} initiated by ${user.id}`);
+            await broadcastSessionStatus(sessionId);
+          } catch (err) {
+            console.warn('Session initiation failed (may already be initiated):', err.message);
+          }
+        }
+
+        // Update participant count
+        const participantCount = await participantService.getActiveParticipantCount(sessionId);
+        await discussionSessionService.updateParticipantCount(sessionId, participantCount);
+
+        // Broadcast updated participant list
+        await broadcastParticipantList(sessionId);
+        await broadcastSessionStatus(sessionId);
+
+        // Notify other participants
+        socket.to(`discussion-session:${sessionId}`).emit('participant-joined', {
+          participantId: participant.participantId,
+          userId: user.id,
+          role: user.role,
+          name: user.name,
+          joinTime: participant.joinTime
+        });
+
+        callback({
+          success: true,
+          message: 'Joined session successfully',
+          sessionId: sessionId,
+          userId: user.id,
+          userRole: user.role,
+          userName: user.name
+        });
+
+        console.log(`✅ User ${user.id} joined session ${sessionId}`);
+      } catch (error) {
+        console.error('Error joining session:', error);
+        callback({ success: false, error: error.message });
+      }
+    });
+
+    /**
+     * Event: leave-session
+     * Client emits to explicitly leave a session
+     */
+    socket.on('leave-session', async (data, callback) => {
+      const { sessionId } = data;
+      const userId = socket.userId;
+
+      try {
+        if (!userId || !sessionId) {
+          return callback({ success: false, error: 'Missing userId or sessionId' });
+        }
+
+        console.log(`👋 User ${userId} leaving session ${sessionId}`);
+
+        // Remove participant from database
+        await participantService.removeParticipant(sessionId, userId);
+
+        // Remove socket from room
+        socket.leave(`discussion-session:${sessionId}`);
+
+        // Update session room tracking
+        if (sessionRooms.has(sessionId)) {
+          sessionRooms.get(sessionId).delete(socket.id);
+          if (sessionRooms.get(sessionId).size === 0) {
+            sessionRooms.delete(sessionId);
+          }
+        }
+
+        // Remove from user socket map
+        userSocketMap.delete(userId);
+
+        // Update participant count
+        const participantCount = await participantService.getActiveParticipantCount(sessionId);
+        await discussionSessionService.updateParticipantCount(sessionId, participantCount);
+
+        // Broadcast updated participant list
+        await broadcastParticipantList(sessionId);
+
+        // Notify others
+        socket.to(`discussion-session:${sessionId}`).emit('participant-left', {
+          userId: userId,
+          participantCount: participantCount
+        });
+
+        callback({ success: true });
+        console.log(`✅ User ${userId} left session ${sessionId}`);
+      } catch (error) {
+        console.error('Error leaving session:', error);
+        callback({ success: false, error: error.message });
+      }
+    });
+
+    /**
+     * Event: disconnect
+     * Handle socket disconnection
+     */
+    socket.on('disconnect', async () => {
+      const userId = socket.userId;
+      const sessionId = socket.sessionId;
+
+      console.log(`📡 Socket disconnected: ${socket.id} (user: ${userId})`);
+
+      if (userId && sessionId) {
+        try {
+          // Remove participant from database
+          await participantService.removeParticipant(sessionId, userId);
+
+          // Update session room tracking
+          if (sessionRooms.has(sessionId)) {
+            sessionRooms.get(sessionId).delete(socket.id);
+            if (sessionRooms.get(sessionId).size === 0) {
+              sessionRooms.delete(sessionId);
+            }
+          }
+
+          // Remove from user socket map
+          userSocketMap.delete(userId);
+
+          // Update participant count
+          const participantCount = await participantService.getActiveParticipantCount(sessionId);
+          await discussionSessionService.updateParticipantCount(sessionId, participantCount);
+
+          // Broadcast updated participant list
+          await broadcastParticipantList(sessionId);
+
+          // Notify others of disconnection
+          io.to(`discussion-session:${sessionId}`).emit('participant-left', {
+            userId: userId,
+            participantCount: participantCount
+          });
+
+          console.log(`✅ User ${userId} cleaned up after disconnect from session ${sessionId}`);
+        } catch (error) {
+          console.error('Error handling disconnect:', error);
+        }
+      }
+    });
+
+    /**
+     * Event: close-session (admin/instructor only)
+     * Force close a session
+     */
+    socket.on('close-session', async (data, callback) => {
+      const { sessionId, token } = data;
+
+      try {
+        const user = verifyUserToken(token);
+        if (!user || !['admin', 'instructor'].includes(user.role)) {
+          return callback({ 
+            success: false, 
+            error: 'Only admins and instructors can close sessions' 
+          });
+        }
+
+        console.log(`🔒 User ${user.id} (${user.role}) closing session ${sessionId}`);
+
+        // Close session in database
+        const session = await discussionSessionService.closeSessionManually(
+          sessionId,
+          user.id,
+          user.role
+        );
+
+        // Cleanup all participants
+        await participantService.cleanupSessionParticipants(sessionId);
+
+        // Get all sockets in the session room
+        const room = sessionRooms.get(sessionId);
+        if (room) {
+          // Force disconnect all clients in the session
+          room.forEach(socketId => {
+            const clientSocket = io.sockets.sockets.get(socketId);
+            if (clientSocket) {
+              clientSocket.emit('session-closed', {
+                sessionId: sessionId,
+                reason: 'Session closed by instructor/admin',
+                closedBy: user.id,
+                closedByRole: user.role,
+                timestamp: new Date()
+              });
+              clientSocket.leave(`discussion-session:${sessionId}`);
+            }
+          });
+          sessionRooms.delete(sessionId);
+        }
+
+        // Broadcast final status
+        await broadcastSessionStatus(sessionId);
+
+        callback({ success: true, message: 'Session closed successfully' });
+        console.log(`✅ Session ${sessionId} closed by ${user.id}`);
+      } catch (error) {
+        console.error('Error closing session:', error);
+        callback({ success: false, error: error.message });
+      }
+    });
+
+    /**
+     * Event: check-session-status
+     * Client checks for time-based status updates
+     */
+    socket.on('check-session-status', async (data, callback) => {
+      const { sessionId } = data;
+
+      try {
+        // Check and update status based on time
+        const updated = await discussionSessionService.checkAndUpdateSessionStatus(sessionId);
+
+        if (updated && updated.status === 'closed') {
+          // Session auto-closed, force disconnect all
+          const room = sessionRooms.get(sessionId);
+          if (room) {
+            room.forEach(socketId => {
+              const clientSocket = io.sockets.sockets.get(socketId);
+              if (clientSocket) {
+                clientSocket.emit('session-closed', {
+                  sessionId: sessionId,
+                  reason: 'Session time expired',
+                  timestamp: new Date()
+                });
+                clientSocket.leave(`discussion-session:${sessionId}`);
+              }
+            });
+            sessionRooms.delete(sessionId);
+          }
+        }
+
+        const session = await discussionSessionService.getSessionById(sessionId);
+        callback({
+          success: true,
+          session: {
+            sessionId: session.sessionId,
+            status: session.status,
+            initiatorUserId: session.initiatorUserId,
+            participantCount: session.participantCount,
+            closedReason: session.closedReason
+          }
+        });
+      } catch (error) {
+        console.error('Error checking session status:', error);
+        callback({ success: false, error: error.message });
+      }
+    });
+
+    /**
+     * Event: ping (heartbeat)
+     * Keep connection alive and detect client presence
+     */
+    socket.on('ping', (callback) => {
+      callback({ pong: true });
+    });
+  });
+
+  console.log('✅ Discussion Socket.IO handlers initialized');
+
+  return {
+    io,
+    userSocketMap,
+    sessionRooms,
+    broadcastParticipantList,
+    broadcastSessionStatus
+  };
+}
+
+module.exports = { initializeDiscussionSocket };

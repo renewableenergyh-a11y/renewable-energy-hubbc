@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Login — Aubie RET Hub</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="admin-page">
+  <header class="site-header">
+    <div class="container header-container">
+      <h1 class="logo">Aubie RET Hub — Admin Login</h1>
+    </div>
+  </header>
+
+  <main>
+    <section id="admin-login-page" class="container" style="max-width:560px;padding:28px 16px;margin:0 auto;">
+      <h2>Admin Sign In</h2>
+      <p class="small">Use your admin credentials to access the admin console.</p>
+
+      <section class="card admin-card" style="margin-top:14px;width:100%;">
+        <form id="admin-login-form" style="display:flex;flex-direction:column;gap:12px;">
+          <!-- Role selector at top of form -->
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+            <label for="admin-role" style="font-size:13px;font-weight:600;">Role:</label>
+            <select id="admin-role" style="flex:1;padding:8px;border-radius:6px;font-size:13px;border:1px solid #ccc;">
+              <option value="superadmin">Super Admin</option>
+              <option value="admin">Admin</option>
+              <option value="instructor">Instructor</option>
+            </select>
+          </div>
+          
+          <!-- Dynamic fields container -->
+          <div id="admin-login-fields" style="display:flex;flex-direction:column;gap:8px;"></div>
+          
+          <!-- Buttons -->
+          <div style="display:flex;gap:10px;align-items:center;margin-top:4px;">
+            <button type="submit" class="btn-primary">Sign in</button>
+            <a href="index.html" style="margin-left:auto;text-decoration:none;">Back to home</a>
+          </div>
+          
+          <div id="admin-login-notice" class="form-notice" style="display:none;margin-top:8px"></div>
+        </form>
+      </section>
+
+      <!-- Fixed role selector removed from bottom right -->
+    </section>
+  </main>
+
+  <!-- Notification Service (must load BEFORE main.js) -->
+  <script src="js/core/notificationService.js"></script>
+
+  <!-- Notification Triggers -->
+  <script src="js/core/notificationTriggers.js"></script>
+
+  <script src="js/main.js"></script>
+
+  <script type="module" src="js/pages/adminLogin.js"></script>
+  <!-- THEME TOGGLE -->
+  <button id="theme-toggle" class="theme-toggle">
+    <span class="icon">🌙</span>
+    <span class="text">Dark</span>
+  </button>
+
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-socials">
+        <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+        <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+        <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+        <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+        <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+        <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+        <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+      </div>
+      <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

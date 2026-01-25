@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get help — Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="container" style="padding:28px 16px;max-width:1100px;margin:0 auto;">
+    <h2>Get help</h2>
+    <p class="small">Need assistance with our courses, account, payments, or technical issues? We're here to help — choose one of the contact options below or start a live chat with our support team.</p>
+
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px;align-items:start;">
+      <div>
+        <section class="card" style="padding:18px;">
+          <h3>Live Chat</h3>
+          <p class="small">Start a conversation with our support team. Share screenshots or files to help us understand your issue faster.</p>
+
+            <div id="chat-wrap" style="margin-top:12px;">
+            <div id="messages" class="help-messages" style="min-height:260px;max-height:480px;overflow:auto;padding:12px;"></div>
+
+            <form id="help-form" style="margin-top:12px;display:flex;flex-direction:column;gap:10px;">
+              <input id="help-email" type="email" placeholder="Your email address (optional)" style="padding:10px;border-radius:8px;border:1px solid #e6eef4;font-size:14px;" />
+              <div style="display:flex;gap:12px;align-items:flex-end;">
+                <textarea id="help-text" placeholder="Describe your problem..." rows="2" style="flex:1;padding:10px;border-radius:8px;"></textarea>
+                <div class="right-controls" style="min-width:120px;">
+                  <input id="help-file" type="file" accept="image/*,video/*,application/pdf" hidden />
+                  <button id="help-file-btn" type="button" class="attach-btn" title="Attach file"><i class="fas fa-paperclip"></i></button>
+                  <span id="help-file-name" class="file-name" aria-hidden="true"></span>
+                  <button id="help-send" type="submit" class="btn-primary">Send</button>
+                </div>
+              </div>
+            </form>
+            <div class="form-notice" id="help-notice" style="margin-top:10px;"></div>
+          </div>
+        </section>
+      </div>
+
+      <aside>
+        <section class="card help-contact" style="padding:16px;">
+          <h3>Contact Us</h3>
+          <p class="small" style="margin-bottom:12px;color:#374151;">Prefer email or phone? Reach out to us using the details below.</p>
+
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="contact-row">
+              <div class="contact-icon"><i class="fas fa-envelope"></i></div>
+              <div>
+                <div class="contact-label">Email</div>
+                <a href="mailto:renewableenergyh@gmail.com">renewableenergyh@gmail.com</a>
+              </div>
+            </div>
+
+            <div class="contact-row">
+              <div class="contact-icon"><i class="fas fa-phone"></i></div>
+              <div>
+                <div class="contact-label">Phone</div>
+                <a href="tel:+265984941575">+265 984 941 575</a>
+              </div>
+            </div>
+
+              <div class="contact-row">
+                <div class="contact-icon"><i class="fab fa-whatsapp"></i></div>
+                <div>
+                  <div class="contact-label">WhatsApp</div>
+                  <a href="https://wa.me/265984941575" target="_blank">+265 984 941 575</a>
+                </div>
+              </div>
+
+            <div class="contact-row">
+              <div class="contact-icon"><i class="fas fa-clock"></i></div>
+              <div>
+                <div class="contact-label">Support Hours</div>
+                Mon — Fri, 08:00 — 17:00 (Local Time)
+              </div>
+            </div>
+
+            <div style="margin-top:8px;font-size:13px;color:#6b7280">For account or billing queries, include your account email when contacting us.</div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-socials">
+      <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+      <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+      <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+    </div>
+    <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- Global UI logic (menu, theme toggle) -->
+<script src="js/main.js"></script>
+
+<!-- Notification Service (must load BEFORE main.js) -->
+<script src="js/core/notificationService.js"></script>
+
+<!-- Notification Triggers -->
+<script src="js/core/notificationTriggers.js"></script>
+
+<!-- Page-specific logic -->
+<script type="module" src="js/pages/helpPage.js"></script>
+
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+</button>
+
+</body>
+</html>

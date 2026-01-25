@@ -1,0 +1,83 @@
+[
+  {
+    "id": "biomass-fundamentals",
+    "title": "Biomass Energy Fundamentals",
+    "isPremium": false,
+    "tag": "Beginner",
+    "content": "module-1-biomass-fundamentals.md",
+    "quiz": "module-1-biomass-fundamentals-quiz.json",
+    "projects": "module-1-biomass-fundamentals-projects.json"
+  },
+  {
+    "id": "biomass-resources-feedstocks",
+    "title": "Biomass Resources & Feedstocks",
+    "isPremium": false,
+    "tag": "Beginner",
+    "content": "module-2-biomass-resources-feedstocks.md",
+    "quiz": "module-2-biomass-resources-feedstocks-quiz.json",
+    "projects": "module-2-biomass-resources-feedstocks-projects.json"
+  },
+  {
+    "id": "biomass-conversion-technologies",
+    "title": "Biomass Conversion Technologies",
+    "isPremium": false,
+    "tag": "Intermediate",
+    "content": "module-3-biomass-conversion-technologies.md",
+    "quiz": "module-3-biomass-conversion-technologies-quiz.json",
+    "projects": "module-3-biomass-conversion-technologies-projects.json"
+  },
+  {
+    "id": "biomass-resource-assessment",
+    "title": "Biomass Resource Assessment & Sustainability",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-4-biomass-resource-assessment.md",
+    "quiz": "module-4-biomass-resource-assessment-quiz.json",
+    "projects": "module-4-biomass-resource-assessment-projects.json"
+  },
+  {
+    "id": "biomass-system-design",
+    "title": "Biomass System Design & Sizing",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-5-biomass-system-design.md",
+    "quiz": "module-5-biomass-system-design-quiz.json",
+    "projects": "module-5-biomass-system-design-projects.json"
+  },
+  {
+    "id": "biomass-installation-safety",
+    "title": "Installation, Operation & Safety",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-6-biomass-installation-safety.md",
+    "quiz": "module-6-biomass-installation-safety-quiz.json",
+    "projects": "module-6-biomass-installation-safety-projects.json"
+  },
+  {
+    "id": "biomass-operation-maintenance",
+    "title": "Operation, Maintenance & Performance Monitoring",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-7-biomass-operation-maintenance.md",
+    "quiz": "module-7-biomass-operation-maintenance-quiz.json",
+    "projects": "module-7-biomass-operation-maintenance-projects.json"
+  },
+  {
+    "id": "biomass-economics",
+    "title": "Biomass Energy Economics & Project Evaluation",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-8-biomass-economics.md",
+    "quiz": "module-8-biomass-economics-quiz.json",
+    "projects": "module-8-biomass-economics-projects.json"
+  },
+  {
+    "id": "biomass-case-studies",
+    "title": "Biomass Energy Case Studies & Local Applications",
+    "isPremium": true,
+    "tag": "Professional",
+    "content": "module-9-biomass-case-studies.md",
+    "quiz": "module-9-biomass-case-studies-quiz.json",
+    "projects": "module-9-biomass-case-studies-projects.json"
+  }
+]

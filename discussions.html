@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Discussions - Aubie RET Hub</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    .discussions-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      padding: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .section-header h2 {
+      font-size: 24px;
+      color: #333;
+      margin: 0;
+    }
+
+    .filter-controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      padding: 8px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover {
+      border-color: #0b6fb7;
+      color: #0b6fb7;
+    }
+
+    .filter-btn.active {
+      background: #0b6fb7;
+      color: white;
+      border-color: #0b6fb7;
+    }
+
+    .sessions-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .session-card {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 12px;
+      padding: 20px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .session-card:hover {
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      transform: translateY(-2px);
+    }
+
+    .session-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .session-type {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .session-type.peer {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .session-type.instructor {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .session-status {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .session-status.upcoming {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .session-status.active {
+      background: #f3e5f5;
+      color: #6a1b9a;
+      animation: pulse 2s infinite;
+    }
+
+    .session-status.closed {
+      background: #fce4ec;
+      color: #c2185b;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    .session-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #333;
+      margin: 12px 0;
+      word-break: break-word;
+    }
+
+    .session-description {
+      font-size: 14px;
+      color: #666;
+      margin: 12px 0;
+      line-height: 1.4;
+    }
+
+    .session-meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 16px 0;
+      padding: 12px 0;
+      border-top: 1px solid #eee;
+      border-bottom: 1px solid #eee;
+    }
+
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #666;
+    }
+
+    .meta-icon {
+      font-size: 16px;
+    }
+
+    .participants-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: #0b6fb7;
+      font-weight: 500;
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+    }
+
+    .btn-primary {
+      flex: 1;
+      padding: 10px 16px;
+      background: #0b6fb7;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+      background: #094d7a;
+    }
+
+    .btn-primary:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .btn-secondary {
+      flex: 1;
+      padding: 10px 16px;
+      background: white;
+      color: #0b6fb7;
+      border: 1px solid #0b6fb7;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #f0f7fb;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: #999;
+    }
+
+    .empty-state svg {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #0b6fb7;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .course-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .course-tab {
+      padding: 10px 16px;
+      border: 1px solid #ddd;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      white-space: nowrap;
+      transition: all 0.3s ease;
+    }
+
+    .course-tab:hover {
+      border-color: #0b6fb7;
+      color: #0b6fb7;
+    }
+
+    .course-tab.active {
+      background: #0b6fb7;
+      color: white;
+      border-color: #0b6fb7;
+    }
+
+    .time-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      background: #f0f0f0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #666;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <header class="site-header" style="display: none;">
+    <div class="header-container">
+      <h1 class="logo">
+        <i class="fas fa-comments"></i>
+        Aubie RET Hub — Live Discussions
+      </h1>
+      <nav class="nav-menu">
+        <a href="index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="courses.html"><i class="fas fa-book"></i> Courses</a>
+        <button id="fullscreen-toggle" class="fullscreen-btn" title="Toggle fullscreen"><i class="fas fa-expand"></i></button>
+        <a id="logout-link" href="#" style="display:none;"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <div id="profile-menu-wrapper" style="position:relative;">
+          <button id="profile-circle" class="profile-circle" title="Profile"></button>
+          <div id="profile-dropdown" class="profile-dropdown" style="display:none">
+            <div class="profile-dropdown-header">
+              <strong id="profile-name"></strong>
+              <div id="profile-role" class="profile-role-badge"></div>
+            </div>
+            <div class="profile-org">Aubie RET Hub</div>
+            <button id="profile-theme-toggle" class="profile-theme-toggle">
+              <i class="fas fa-moon"></i>
+              <span>Dark Mode</span>
+            </button>
+            <button id="profile-logout-btn" class="profile-logout-btn">Logout</button>
+          </div>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <header id="site-header" class="site-header" style="display: none;">
+    <!-- Header will be inserted by script -->
+  </header>
+
+  <div id="app" class="app" style="display: none;">
+    <!-- Navigation will be inserted here by main.js -->
+  </div>
+
+  <div class="discussions-container" id="discussionsContainer" style="display: none;">
+    <div class="section-header">
+      <h2>Live Discussions</h2>
+      <div class="filter-controls">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="upcoming">Upcoming</button>
+        <button class="filter-btn" data-filter="active">Active Now</button>
+      </div>
+    </div>
+
+    <div class="course-tabs" id="courseTabs"></div>
+
+    <div id="sessionsContent">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading discussions...</p>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { getCurrentUser, logoutUser } from '/js/core/auth.js';
+    import { discussionSocket } from '/js/services/discussionSocket.js';
+
+    // Create compatible authService interface
+    const authService = {
+      getCurrentUser: async () => {
+        const user = getCurrentUser();
+        if (!user) return null;
+        return {
+          ...user,
+          token: localStorage.getItem('authToken')
+        };
+      },
+      logout: async () => {
+        logoutUser();
+        window.location.href = '/login.html';
+      }
+    };
+
+    const discussionsContainer = document.getElementById('discussionsContainer');
+    const sessionsContent = document.getElementById('sessionsContent');
+    const courseTabs = document.getElementById('courseTabs');
+
+    let currentFilter = 'all';
+    let currentCourse = null;
+    let allSessions = [];
+    let courses = [];
+
+    // Initialize page
+    async function init() {
+      try {
+        const user = await authService.getCurrentUser();
+        if (!user) {
+          window.location.href = '/login.html';
+          return;
+        }
+
+        console.log('👤 User data:', user);
+
+        // Update profile info - use name, username, or email as fallback
+        const displayName = user.name || user.username || user.email || 'User';
+        const firstChar = (displayName || 'U').charAt(0).toUpperCase();
+        const role = user.role || 'student';
+
+        document.getElementById('profile-circle').textContent = firstChar;
+        document.getElementById('profile-name').textContent = displayName;
+        document.getElementById('profile-role').textContent = role;
+        document.getElementById('profile-role').className = 'profile-role-badge ' + (role || '').toLowerCase();
+
+        // Setup logout
+        const logoutBtn = document.getElementById('profile-logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            await authService.logout();
+          });
+        }
+
+        // Load courses
+        console.log('🔄 Loading courses...');
+        const coursesResponse = await fetch('/api/courses');
+        if (!coursesResponse.ok) {
+          throw new Error('Failed to load courses');
+        }
+        
+        const coursesData = await coursesResponse.json();
+        courses = Array.isArray(coursesData) ? coursesData : (coursesData.courses || []);
+
+        console.log('✅ Loaded', courses.length, 'courses');
+        if (courses.length === 0) {
+          sessionsContent.innerHTML = `<div class="empty-state"><p>No courses available</p><p style="font-size: 12px; margin-top: 8px; color: #999;">Create a course in the admin dashboard to get started.</p></div>`;
+          discussionsContainer.style.display = 'block';
+          return;
+        }
+
+        if (courses.length > 0) {
+          currentCourse = courses[0].id;
+          console.log('📌 Set current course to:', currentCourse);
+          renderCourseTabs();
+        }
+
+        // Connect Socket.IO
+        await discussionSocket.connect(user.token);
+        
+        // Load sessions
+        await loadSessions();
+
+        // Setup event listeners
+        setupListeners();
+
+        discussionsContainer.style.display = 'block';
+      } catch (error) {
+        console.error('Failed to initialize discussions:', error);
+        sessionsContent.innerHTML = `<div class="empty-state"><p>Error loading discussions. Please refresh the page.</p><p style="font-size: 12px; margin-top: 8px; color: #999;">${error.message}</p></div>`;
+      }
+    }
+
+    function renderCourseTabs() {
+      courseTabs.innerHTML = courses
+        .map(course => `
+          <button class="course-tab ${course.id === currentCourse ? 'active' : ''}" 
+                  data-course="${course.id}">
+            ${course.title}
+          </button>
+        `)
+        .join('');
+
+      courseTabs.querySelectorAll('.course-tab').forEach(tab => {
+        tab.addEventListener('click', async () => {
+          currentCourse = tab.dataset.course;
+          courseTabs.querySelectorAll('.course-tab').forEach(t => t.classList.remove('active'));
+          tab.classList.add('active');
+          await loadSessions();
+        });
+      });
+    }
+
+    async function loadSessions() {
+      try {
+        if (!currentCourse) {
+          sessionsContent.innerHTML = `<div class="empty-state"><p>No course selected</p></div>`;
+          return;
+        }
+
+        console.log('🔄 Loading sessions for course:', currentCourse);
+
+        const response = await fetch(`/api/discussions/sessions/course/${currentCourse}`, {
+          headers: {
+            'Authorization': 'Bearer ' + (await authService.getCurrentUser()).token
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to load sessions: ' + response.status);
+        }
+
+        const data = await response.json();
+        allSessions = Array.isArray(data) ? data : (data.sessions || []);
+        
+        console.log('✅ Loaded', allSessions.length, 'sessions for course', currentCourse);
+        renderSessions();
+      } catch (error) {
+        console.error('Error loading sessions:', error);
+        sessionsContent.innerHTML = `<div class="empty-state"><p>Error loading sessions</p><p style="font-size: 12px; margin-top: 8px; color: #999;">${error.message}</p></div>`;
+      }
+    }
+
+    function renderSessions() {
+      const filtered = filterSessions();
+
+      if (filtered.length === 0) {
+        sessionsContent.innerHTML = `
+          <div class="empty-state">
+            <p>No discussions available</p>
+            <p style="font-size: 14px; margin-top: 8px;">Check back later for new sessions!</p>
+          </div>
+        `;
+        return;
+      }
+
+      sessionsContent.innerHTML = `
+        <div class="sessions-grid">
+          ${filtered.map(session => renderSessionCard(session)).join('')}
+        </div>
+      `;
+
+      // Attach event listeners
+      sessionsContent.querySelectorAll('[data-session-id]').forEach(card => {
+        card.querySelector('.btn-primary')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleJoinSession(card.dataset.sessionId);
+        });
+
+        card.querySelector('.btn-secondary')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          handleViewDetails(card.dataset.sessionId);
+        });
+      });
+    }
+
+    function filterSessions() {
+      return allSessions.filter(session => {
+        if (currentFilter === 'upcoming') return session.status === 'upcoming';
+        if (currentFilter === 'active') return session.status === 'active';
+        return true;
+      });
+    }
+
+    function renderSessionCard(session) {
+      const timeStr = new Date(session.startTime).toLocaleString();
+      const endTimeStr = new Date(session.endTime).toLocaleTimeString();
+      const isActive = session.status === 'active';
+      const isClosed = session.status === 'closed';
+
+      return `
+        <div class="session-card" data-session-id="${session.sessionId}">
+          <div class="session-header">
+            <span class="session-type ${session.sessionType}">${session.sessionType}</span>
+            <span class="session-status ${session.status}">${session.status}</span>
+          </div>
+
+          <div class="session-title">${escapeHtml(session.subject)}</div>
+
+          ${session.description ? `<div class="session-description">${escapeHtml(session.description)}</div>` : ''}
+
+          <div class="session-meta">
+            <div class="meta-item">
+              <span class="meta-icon">📅</span>
+              <span>${timeStr}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">👥</span>
+              <span class="participants-info">${session.participantCount || 0} participants</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">⏱️</span>
+              <span>Ends: ${endTimeStr}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-icon">👨‍🏫</span>
+              <span>${session.sessionType === 'instructor' ? 'Instructor Led' : 'Peer Discussion'}</span>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button class="btn-primary" ${isClosed ? 'disabled' : ''}>
+              ${isActive ? '📞 Join Now' : 'Request to Join'}
+            </button>
+            <button class="btn-secondary">View Details</button>
+          </div>
+        </div>
+      `;
+    }
+
+    async function handleJoinSession(sessionId) {
+      try {
+        const user = await authService.getCurrentUser();
+        await discussionSocket.joinSession(sessionId, user.token);
+        window.location.href = `/discussion-room.html?sessionId=${sessionId}`;
+      } catch (error) {
+        alert(`Failed to join: ${error.message}`);
+      }
+    }
+
+    function handleViewDetails(sessionId) {
+      const session = allSessions.find(s => s.sessionId === sessionId);
+      if (session) {
+        alert(`Discussion: ${session.subject}\n\nStatus: ${session.status}\nParticipants: ${session.participantCount}`);
+      }
+    }
+
+    function setupListeners() {
+      // Filter buttons
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          currentFilter = btn.dataset.filter;
+          renderSessions();
+        });
+      });
+
+      // Socket events
+      discussionSocket.on('participant-list-updated', (data) => {
+        renderSessions();
+      });
+
+      discussionSocket.on('session-status-updated', (data) => {
+        renderSessions();
+      });
+
+      discussionSocket.on('session-closed', () => {
+        alert('The session has been closed.');
+        loadSessions();
+      });
+
+      // Auto-refresh every 30 seconds
+      setInterval(loadSessions, 30000);
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Initialize when page loads
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', init);
+    } else {
+      init();
+    }
+  </script>
+</body>
+</html>

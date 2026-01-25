@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Modal Test</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      padding: 40px;
+      background: #f5f5f5;
+    }
+    .btn {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+    }
+    .btn:hover {
+      background: #0052a3;
+    }
+    h1 { color: #333; }
+    
+    /* Modal Styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      animation: fadeIn 0.2s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      padding: 32px;
+      max-width: 420px;
+      text-align: center;
+      animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .modal-icon {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 28px;
+      font-weight: bold;
+    }
+    
+    .modal-icon.success {
+      background: #ecfdf5;
+      color: #059669;
+    }
+    
+    .modal-icon.warning {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    
+    .modal-icon.error {
+      background: #fee2e2;
+      color: #dc2626;
+    }
+    
+    .modal-icon.info {
+      background: #dbeafe;
+      color: #0284c7;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1f2937;
+      margin: 0 0 8px 0;
+    }
+    
+    .modal-message {
+      font-size: 14px;
+      color: #6b7280;
+      margin: 0 0 24px 0;
+      line-height: 1.5;
+    }
+    
+    .modal-buttons {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    
+    .modal-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .modal-btn-primary {
+      background: #0066cc;
+      color: white;
+    }
+    
+    .modal-btn-primary:hover {
+      background: #0052a3;
+    }
+    
+    .modal-btn-secondary {
+      background: #e5e7eb;
+      color: #374151;
+    }
+    
+    .modal-btn-secondary:hover {
+      background: #d1d5db;
+    }
+  </style>
+</head>
+<body>
+  <h1>Modal Dialog Test</h1>
+  <p>Click the buttons below to test the styled modal dialogs:</p>
+  
+  <button class="btn" onclick="testAlert()">Test Alert (Info)</button>
+  <button class="btn" onclick="testSuccess()">Test Success</button>
+  <button class="btn" onclick="testWarning()">Test Warning</button>
+  <button class="btn" onclick="testError()">Test Error</button>
+  <button class="btn" onclick="testConfirm()">Test Confirm</button>
+
+  <script>
+    function escapeHtml(text) {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+      return String(text).replace(/[&<>"']/g, m => map[m]);
+    }
+
+    function showModal(options) {
+      const { type = 'info', title, message, onConfirm, onCancel } = options;
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      
+      const icons = {
+        success: '✓',
+        warning: '⚠',
+        error: '✕',
+        info: 'ℹ'
+      };
+      
+      const iconColor = {
+        success: 'success',
+        warning: 'warning',
+        error: 'error',
+        info: 'info'
+      };
+
+      const content = document.createElement('div');
+      content.className = 'modal-content';
+      content.innerHTML = `
+        <div class="modal-icon ${iconColor[type]}">${icons[type]}</div>
+        <h2 class="modal-title">${escapeHtml(title)}</h2>
+        <p class="modal-message">${escapeHtml(message)}</p>
+        <div class="modal-buttons">
+          ${onCancel ? '<button class="modal-btn modal-btn-secondary" id="modal-cancel">Cancel</button>' : ''}
+          ${onConfirm ? `<button class="modal-btn modal-btn-primary" id="modal-confirm">${onCancel ? 'Confirm' : 'OK'}</button>` : ''}
+        </div>
+      `;
+      
+      overlay.appendChild(content);
+      document.body.appendChild(overlay);
+      
+      const handleConfirm = () => {
+        overlay.remove();
+        if (onConfirm) onConfirm();
+      };
+      
+      const handleCancel = () => {
+        overlay.remove();
+        if (onCancel) onCancel();
+      };
+      
+      const confirmBtn = content.querySelector('#modal-confirm');
+      const cancelBtn = content.querySelector('#modal-cancel');
+      
+      if (confirmBtn) confirmBtn.addEventListener('click', handleConfirm);
+      if (cancelBtn) cancelBtn.addEventListener('click', handleCancel);
+      
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) handleCancel();
+      });
+      
+      if (confirmBtn) confirmBtn.focus();
+    }
+
+    function showAlert(title, message, type = 'info') {
+      return new Promise((resolve) => {
+        showModal({
+          type,
+          title,
+          message,
+          onConfirm: resolve
+        });
+      });
+    }
+
+    function showConfirm(title, message, type = 'warning') {
+      return new Promise((resolve) => {
+        showModal({
+          type,
+          title,
+          message,
+          onConfirm: () => resolve(true),
+          onCancel: () => resolve(false)
+        });
+      });
+    }
+
+    async function testAlert() {
+      await showAlert('Information', 'This is an info alert message.');
+    }
+
+    async function testSuccess() {
+      await showAlert('Success', 'Your action has been completed successfully!', 'success');
+    }
+
+    async function testWarning() {
+      await showAlert('Warning', 'This is a warning message. Please review carefully.', 'warning');
+    }
+
+    async function testError() {
+      await showAlert('Error', 'An error occurred while processing your request.', 'error');
+    }
+
+    async function testConfirm() {
+      const result = await showConfirm('Confirm Action', 'Are you sure you want to proceed with this action?', 'warning');
+      if (result) {
+        await showAlert('Confirmed', 'You confirmed the action!', 'success');
+      } else {
+        await showAlert('Cancelled', 'You cancelled the action.', 'info');
+      }
+    }
+  </script>
+</body>
+</html>

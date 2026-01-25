@@ -1,0 +1,83 @@
+[
+  {
+    "id": "hydro-fundamentals",
+    "title": "Hydropower Fundamentals",
+    "isPremium": false,
+    "tag": "Beginner",
+    "content": "module-1-hydro-fundamentals.md",
+    "quiz": "module-1-hydro-fundamentals-quiz.json",
+    "projects": "module-1-hydro-fundamentals-projects.json"
+  },
+  {
+    "id": "hydro-system-components",
+    "title": "Hydropower System Components",
+    "isPremium": false,
+    "tag": "Beginner",
+    "content": "module-2-hydro-system-components.md",
+    "quiz": "module-2-hydro-system-components-quiz.json",
+    "projects": "module-2-hydro-system-components-projects.json"
+  },
+  {
+    "id": "hydropower-plant-types",
+    "title": "Hydropower Plant Types",
+    "isPremium": false,
+    "tag": "Intermediate",
+    "content": "module-3-hydropower-plant-types.md",
+    "quiz": "module-3-hydropower-plant-types-quiz.json",
+    "projects": "module-3-hydropower-plant-types-projects.json"
+  },
+  {
+    "id": "hydro-resource-assessment",
+    "title": "Hydrological Assessment & Site Selection",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-4-hydro-resource-assessment.md",
+    "quiz": "module-4-hydro-resource-assessment-quiz.json",
+    "projects": "module-4-hydro-resource-assessment-projects.json"
+  },
+  {
+    "id": "hydro-system-design",
+    "title": "Hydropower System Design & Sizing",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-5-hydro-system-design.md",
+    "quiz": "module-5-hydro-system-design-quiz.json",
+    "projects": "module-5-hydro-system-design-projects.json"
+  },
+  {
+    "id": "hydro-installation-safety",
+    "title": "Installation, Civil Works & Safety",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-6-hydro-installation-safety.md",
+    "quiz": "module-6-hydro-installation-safety-quiz.json",
+    "projects": "module-6-hydro-installation-safety-projects.json"
+  },
+  {
+    "id": "hydro-operation-maintenance",
+    "title": "Operation, Maintenance & Performance Monitoring",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-7-hydro-operation-maintenance.md",
+    "quiz": "module-7-hydro-operation-maintenance-quiz.json",
+    "projects": "module-7-hydro-operation-maintenance-projects.json"
+  },
+  {
+    "id": "hydro-economics",
+    "title": "Hydropower Economics & Project Evaluation",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-8-hydro-economics.md",
+    "quiz": "module-8-hydro-economics-quiz.json",
+    "projects": "module-8-hydro-economics-projects.json"
+  },
+  {
+    "id": "hydro-case-studies",
+    "title": "Hydropower Case Studies & Local Applications",
+    "isPremium": true,
+    "tag": "Professional",
+    "content": "module-9-hydro-case-studies.md",
+    "quiz": "module-9-hydro-case-studies-quiz.json",
+    "projects": "module-9-hydro-case-studies-projects.json"
+  }
+]

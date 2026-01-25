@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: aubie-ret-hub
+    runtime: node
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    disk:
+      name: storage
+      mountPath: /opt/render/project/src/server/storage
+      sizeGB: 15
+
+databases:
+  - name: aubie-db
+    databaseName: aubieret
+    plan: starter

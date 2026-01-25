@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register - Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="form-section">
+    <div class="container">
+      <h2>Register</h2>
+
+      <form id="register-form" data-redirect="">
+        <label for="name">Full Name</label>
+        <input type="text" id="name" placeholder="Enter your full name" required>
+
+        <label for="email">Email</label>
+        <input type="email" id="email" placeholder="Enter your email address" required>
+
+        <label for="password">Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="password" placeholder="Create a password (min 8 characters)" required>
+        </div>
+        <!-- Password Strength Indicator -->
+        <div id="password-strength-indicator" class="password-strength" style="display: none;">
+          <div class="strength-bar">
+            <div id="strength-progress" class="strength-progress"></div>
+          </div>
+          <ul id="password-requirements" class="password-requirements">
+            <li id="req-length"><i class="fa-solid fa-circle"></i> At least 8 characters</li>
+            <li id="req-uppercase"><i class="fa-solid fa-circle"></i> Uppercase letter (A-Z)</li>
+            <li id="req-lowercase"><i class="fa-solid fa-circle"></i> Lowercase letter (a-z)</li>
+            <li id="req-number"><i class="fa-solid fa-circle"></i> Number (0-9)</li>
+            <li id="req-special"><i class="fa-solid fa-circle"></i> Special character (!@#$%^&*)</li>
+          </ul>
+        </div>
+
+        <label for="password-confirm">Confirm Password</label>
+        <div class="password-wrapper">
+          <input type="password" id="password-confirm" placeholder="Re-enter your password" required>
+        </div>
+
+        <div class="show-password-wrapper">
+          <input type="checkbox" id="show-password-register">
+          <label for="show-password-register">Show password</label>
+        </div>
+
+        <div class="checkbox-wrapper">
+          <input type="checkbox" id="agree-terms" required>
+          <label for="agree-terms">I agree to the <a href="terms-of-service.html" target="_blank">Terms of Service</a></label>
+        </div>
+
+        <button type="submit" class="btn-primary">Register</button>
+        <div class="form-notice"></div>
+      </form>
+
+      <p style="margin-top: 10px;">
+        Already have an account?
+        <a href="login.html" class="form-helper-link">Login here</a>
+      </p>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-socials">
+      <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+      <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+      <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+    </div>
+    <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- THEME TOGGLE -->
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+  <span class="text">Dark</span>
+</button>
+
+<!-- GLOBAL UI -->
+<script src="js/main.js"></script>
+
+<!-- Notification Service (must load BEFORE main.js) -->
+<script src="js/core/notificationService.js"></script>
+
+<!-- Notification Triggers -->
+<script src="js/core/notificationTriggers.js"></script>
+
+<!-- PAGE CONTROLLER -->
+<!-- Using global controller in js/main.js for register handling -->
+
+</body>
+</html>

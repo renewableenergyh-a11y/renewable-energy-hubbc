@@ -1,0 +1,83 @@
+[
+  {
+    "id": "wind-fundamentals",
+    "title": "Wind Energy Fundamentals",
+    "isPremium": false,
+    "tag": "Beginner",
+    "content": "module-1-wind-fundamentals.md",
+    "quiz": "module-1-wind-fundamentals-quiz.json",
+    "projects": "module-1-wind-fundamentals-projects.json"
+  },
+  {
+    "id": "wind-turbine-components",
+    "title": "Wind Turbine Components",
+    "isPremium": false,
+    "tag": "Beginner",
+    "content": "module-2-wind-turbine-components.md",
+    "quiz": "module-2-wind-turbine-components-quiz.json",
+    "projects": "module-2-wind-turbine-components-projects.json"
+  },
+  {
+    "id": "wind-energy-conversion-systems",
+    "title": "Wind Energy Conversion Systems",
+    "isPremium": false,
+    "tag": "Intermediate",
+    "content": "module-3-wind-energy-conversion-systems.md",
+    "quiz": "module-3-wind-energy-conversion-systems-quiz.json",
+    "projects": "module-3-wind-energy-conversion-systems-projects.json"
+  },
+  {
+    "id": "wind-resource-assessment",
+    "title": "Wind Resource Assessment & Site Selection",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-4-wind-resource-assessment.md",
+    "quiz": "module-4-wind-resource-assessment-quiz.json",
+    "projects": "module-4-wind-resource-assessment-projects.json"
+  },
+  {
+    "id": "wind-system-design",
+    "title": "Wind Turbine Siting & System Design",
+    "isPremium": true,
+    "tag": "Intermediate",
+    "content": "module-5-wind-system-design.md",
+    "quiz": "module-5-wind-system-design-quiz.json",
+    "projects": "module-5-wind-system-design-projects.json"
+  },
+  {
+    "id": "wind-installation-safety",
+    "title": "Installation, Grid Integration & Safety",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-6-wind-installation-safety.md",
+    "quiz": "module-6-wind-installation-safety-quiz.json",
+    "projects": "module-6-wind-installation-safety-projects.json"
+  },
+  {
+    "id": "wind-operation-maintenance",
+    "title": "Operation, Maintenance & Performance Monitoring",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-7-wind-operation-maintenance.md",
+    "quiz": "module-7-wind-operation-maintenance-quiz.json",
+    "projects": "module-7-wind-operation-maintenance-projects.json"
+  },
+  {
+    "id": "wind-economics",
+    "title": "Wind Energy Economics & Project Evaluation",
+    "isPremium": true,
+    "tag": "Advanced",
+    "content": "module-8-wind-economics.md",
+    "quiz": "module-8-wind-economics-quiz.json",
+    "projects": "module-8-wind-economics-projects.json"
+  },
+  {
+    "id": "wind-case-studies",
+    "title": "Wind Energy Case Studies & Local Applications",
+    "isPremium": true,
+    "tag": "Professional",
+    "content": "module-9-wind-case-studies.md",
+    "quiz": "module-9-wind-case-studies-quiz.json",
+    "projects": "module-9-wind-case-studies-projects.json"
+  }
+]

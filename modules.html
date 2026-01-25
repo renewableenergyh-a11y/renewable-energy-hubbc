@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Modules - Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="lessons-section">
+    <div class="container">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+        <h2 style="margin: 0;">All Modules</h2>
+        <!-- modules search removed -->
+      </div>
+
+      <!-- Modules injected dynamically -->
+      <div id="modules-grid" class="lessons-grid"></div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-socials">
+      <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank" aria-label="Facebook">
+        <i class="fab fa-facebook-f"></i>
+      </a>
+      <a href="https://x.com/AMkhulana86440" target="_blank" aria-label="Twitter">
+        <i class="fab fa-x-twitter"></i>
+      </a>
+      <a href="https://www.instagram.com/aubieob?igsh=a3Zob2F6ODQ0OWRx" target="_blank" aria-label="Instagram">
+        <i class="fab fa-instagram"></i>
+      </a>
+      <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank" aria-label="LinkedIn">
+        <i class="fab fa-linkedin-in"></i>
+      </a>
+      <a href="http://www.youtube.com/@AubieOb" target="_blank" aria-label="YouTube">
+        <i class="fab fa-youtube"></i>
+      </a>
+      <a href="https://wa.me/265984941575" target="_blank" aria-label="WhatsApp">
+        <i class="fab fa-whatsapp"></i>
+      </a>
+      <a href="mailto:aubreymkhulanabanda@gmail.com" aria-label="Email">
+        <i class="fas fa-envelope"></i>
+      </a>
+      <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+    </div>
+    <div class="footer-text">
+      <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Global UI logic -->
+<script src="js/main.js"></script>
+
+<!-- Notification Service (must load BEFORE main.js) -->
+<script src="js/core/notificationService.js"></script>
+
+<!-- Notification Triggers -->
+<script src="js/core/notificationTriggers.js"></script>
+
+<!-- Storage sync utility -->
+<script src="js/core/storageSync.js"></script>
+
+<!-- Page-specific logic -->
+<script type="module" src="js/pages/modulesPage.js"></script>
+
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+</button>
+
+<!-- ADMIN UNLOCK (floating link) -->
+<div id="admin-unlock-container" style="position:fixed;right:18px;bottom:90px;z-index:9999;">
+  <a href="#" id="admin-unlock-btn" style="display:inline-block;padding:6px 8px;font-size:13px;line-height:1;background:#111827;color:#fff;border-radius:6px;box-shadow:0 6px 14px rgba(16,24,40,0.18);text-decoration:none;font-weight:600">Admin</a>
+</div>
+
+</body>
+</html>

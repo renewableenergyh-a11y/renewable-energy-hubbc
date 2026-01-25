@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https: data: 'unsafe-inline'; connect-src 'self' https: http://localhost:* ws://localhost:*; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;">
+  <title>Billing & Subscription - Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="billing-section">
+    <div class="container">
+
+      <h2 class="premium-title">Premium Access</h2>
+      <p class="premium-subtitle">
+        Unlock premium modules, video lessons, quizzes, projects, and certifications across all renewable energy courses.
+      </p>
+
+      <div class="billing-cards">
+
+        <!-- FREE PLAN -->
+        <div class="billing-card">
+          <div class="plan-header">
+            <h3>Free</h3>
+            <span class="plan-badge free">Current</span>
+          </div>
+          <p class="price">MWK 0</p>
+          <ul class="features-list">
+            <li><i class="fas fa-check"></i> Introductory modules</li>
+            <li><i class="fas fa-check"></i> Limited quizzes</li>
+            <li class="unavailable"><i class="fas fa-times"></i> Video lessons</li>
+            <li class="unavailable"><i class="fas fa-times"></i> Premium projects</li>
+            <li class="unavailable"><i class="fas fa-times"></i> Certificates</li>
+          </ul>
+          <button class="btn-secondary" disabled>Current Plan</button>
+        </div>
+
+        <!-- PREMIUM PLAN -->
+        <div class="billing-card featured">
+          <div class="plan-header">
+            <h3>Premium</h3>
+            <span class="plan-badge premium">Most Popular</span>
+          </div>
+          <p class="price">MWK 16,000 <span>/ month</span></p>
+          <p style="color: #059669; font-weight: 600; margin: 8px 0; font-size: 14px;">🎁 2-Day Free Trial</p>
+          <ul class="features-list">
+            <li><i class="fas fa-check"></i> All modules (Free + Premium)</li>
+            <li><i class="fas fa-check"></i> All video lessons</li>
+            <li><i class="fas fa-check"></i> All quizzes & progress tracking</li>
+            <li><i class="fas fa-check"></i> Projects & assignments</li>
+            <li><i class="fas fa-check"></i> Certificates & verification</li>
+            <li><i class="fas fa-check"></i> Aubie RET Assistant</li>
+          </ul>
+          <button id="subscribeBtn" class="btn-primary" style="margin-bottom: 8px;">
+            <i class="fas fa-star"></i> Start Free Trial
+          </button>
+          <button id="upgradeNowBtn" class="btn-secondary" style="width: 100%;">
+            <i class="fas fa-credit-card"></i> Buy Now (Skip Trial)
+          </button>
+        </div>
+
+      </div>
+
+        <!-- PLAN DETAILS BUTTON -->
+        <div style="text-align: center; margin: 40px 0;">
+          <button id="planDetailsBtn" class="btn-primary" style="padding: 12px 30px; font-size: 16px;">
+            <i class="fas fa-info-circle"></i> View Plan Details
+          </button>
+        </div>
+
+        <!-- PLAN DETAILS MODAL -->
+        <div id="planDetailsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;">
+          <div style="background: white; border-radius: 12px; padding: 40px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
+              <h3 style="margin: 0; font-size: 24px;">Plan Comparison</h3>
+              <button id="closeDetailsModal" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #999;">&times;</button>
+            </div>
+          
+            <div id="planDetailsContent"></div>
+          </div>
+        </div>
+
+      <!-- PAYMENT STATUS -->
+      <div id="payment-status" style="margin-top: 30px;"></div>
+
+      <!-- PAYMENT METHODS SECTION -->
+      <div id="payment-methods-section" style="display: none; margin-top: 50px;">
+        <h3 style="text-align: center; margin-bottom: 30px; color: #059669;">Complete Your Payment</h3>
+        
+        <div style="max-width: 600px; margin: 0 auto;">
+          <div style="padding: 20px; background: #f0fdf4; border: 2px solid #059669; border-radius: 12px; text-align: center;">
+            <h2 style="color: #059669; font-size: 28px; margin: 0 0 10px 0;">$8/month</h2>
+            <p style="color: #666; margin: 0 0 20px 0;">Unlock Premium Features</p>
+            
+            <!-- Paychangu Payment Button -->
+            <button id="paychangu-payment-btn" class="btn-primary" style="width: 100%; padding: 14px; font-size: 16px; margin-bottom: 15px;">
+              <i class="fas fa-lock"></i> Pay Securely with Paychangu
+            </button>
+            
+            <button id="cancel-payment-btn" class="btn-secondary" style="width: 100%;">
+              Cancel
+            </button>
+            
+            <div id="payment-error-message" style="color: #dc2626; margin-top: 12px; display: none;"></div>
+          </div>
+          
+          <div style="margin-top: 20px; padding: 15px; background: #f5f5f5; border-radius: 8px; font-size: 12px; color: #666;">
+            <p style="margin: 0 0 8px 0;"><strong>✓ Secure Payment:</strong> All transactions are processed securely through Paychangu.</p>
+            <p style="margin: 0;"><strong>✓ Instant Activation:</strong> Your premium access will be activated immediately after successful payment.</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-socials">
+      <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+      <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+      <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+    </div>
+    <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- Notification Service (must load BEFORE main.js) -->
+<script src="js/core/notificationService.js"></script>
+
+<!-- Notification Triggers -->
+<script src="js/core/notificationTriggers.js"></script>
+
+<script src="js/main.js"></script>
+
+<!-- PAGE CONTROLLER -->
+<script type="module" src="js/pages/billingPage.js"></script>
+
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+</button>
+
+</body>
+</html>

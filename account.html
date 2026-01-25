@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Account - Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="login.html" id="nav-login-link" style="display: none;">Login</a>
+      <a href="register.html" id="nav-register-link" style="display: none;">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="account-section">
+    <div class="container">
+      <h2>My Account</h2>
+
+      <div class="account-card">
+        <div class="profile-header">
+          <div class="profile-picture" id="profile-picture"></div>
+          <div class="profile-info">
+            <h3 id="user-name">Loading...</h3>
+            <p id="user-email">Loading...</p>
+          </div>
+        </div>
+
+        <div class="account-details">
+          <div class="detail-item">
+            <label>Account Type:</label>
+            <span id="account-type">Loading...</span>
+          </div>
+          <div class="detail-item">
+            <label>Member Since:</label>
+            <span id="member-since">Loading...</span>
+          </div>
+          <div class="detail-item" id="premium-since-container" style="display: none;">
+            <label>Premium Since:</label>
+            <span id="premium-since">Loading...</span>
+          </div>
+        </div>
+
+        <!-- Certificates Section -->
+        <div style="margin-top: 40px; padding-top: 32px; border-top: 2px solid #e5e7eb;">
+          <h3 style="font-size: 1.1rem; font-weight: 700; color: #1f2937; margin-bottom: 20px;">🏆 Certificates</h3>
+          <div id="certificates-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px;">
+            <p style="color: #9ca3af; font-size: 14px;">Complete courses to earn certificates!</p>
+          </div>
+        </div>
+
+        <div class="account-actions">
+          <button id="edit-profile-btn" class="btn-secondary">Edit Profile</button>
+          <button id="change-password-btn" class="btn-secondary">Change Password</button>
+          <button id="manage-billing-btn" class="btn-secondary">Manage Billing</button>
+          <button id="cancel-premium-btn" class="btn-danger" style="display: none;">Cancel Premium</button>
+          <button id="logout-btn" class="btn-danger">Logout</button>
+        </div>
+
+        <!-- Irreversible Actions Section -->
+        <div style="margin-top: 40px; padding-top: 32px; border-top: 2px solid #fee2e2;">
+          <div style="background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%); border-radius: 12px; padding: 24px; border-left: 4px solid #dc2626;">
+            <h4 style="color: #991b1b; margin: 0 0 12px 0; font-size: 1.1rem; font-weight: 700;">⚠️ Irreversible Actions</h4>
+            <p style="color: #7f1d1d; font-size: 0.95rem; margin: 0 0 16px 0; line-height: 1.5;">This action is permanent and cannot be undone. Your deleted account will no longer be used again on the platform.</p>
+            <button id="delete-account-btn" class="btn-danger" style="padding: 10px 20px; font-size: 0.9rem; min-height: auto;">Delete Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<script type="module" src="js/pages/accountPage.js"></script>
+<script src="js/main.js"></script>
+
+<!-- THEME TOGGLE -->
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+</button>
+
+</body>
+</html>

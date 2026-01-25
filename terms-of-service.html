@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Terms of Service - Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <style>
+    .terms-container {
+      max-width: 950px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .terms-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .terms-header h1 {
+      color: var(--green-main);
+      margin-bottom: 8px;
+      font-size: 2.8rem;
+    }
+
+    .terms-header .last-updated {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .terms-card {
+      background: var(--bg-main);
+      border: 1px solid rgba(0, 121, 107, 0.15);
+      border-radius: 12px;
+      padding: 30px;
+      margin-bottom: 24px;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .terms-card:hover {
+      box-shadow: 0 4px 16px rgba(0, 121, 107, 0.1);
+      border-color: rgba(0, 121, 107, 0.25);
+    }
+
+    .terms-card h2 {
+      color: var(--green-main);
+      font-size: 1.6rem;
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .terms-card h2::before {
+      content: '';
+      display: inline-block;
+      width: 4px;
+      height: 28px;
+      background: var(--green-main);
+      border-radius: 2px;
+    }
+
+    .terms-card h3 {
+      color: var(--text-main);
+      font-size: 1.15rem;
+      margin-top: 20px;
+      margin-bottom: 12px;
+    }
+
+    .terms-card p {
+      line-height: 1.8;
+      margin-bottom: 16px;
+      color: var(--text-main);
+      font-size: 15px;
+    }
+
+    .terms-card ul, .terms-card ol {
+      margin: 16px 0 16px 24px;
+      line-height: 1.9;
+    }
+
+    .terms-card li {
+      margin-bottom: 12px;
+      color: var(--text-main);
+      font-size: 15px;
+    }
+
+    .terms-card strong {
+      color: var(--green-main);
+      font-weight: 600;
+    }
+
+    .contact-card {
+      background: linear-gradient(135deg, rgba(0, 121, 107, 0.08) 0%, rgba(0, 179, 138, 0.08) 100%);
+      border-left: 5px solid var(--green-main);
+      border-radius: 12px;
+      padding: 30px;
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .contact-card h3 {
+      color: var(--green-main);
+      font-size: 1.3rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .contact-card p {
+      color: var(--text-main);
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.6;
+    }
+
+    .contact-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green-main);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      width: fit-content;
+      margin-top: 8px;
+    }
+
+    .contact-button:hover {
+      background: var(--green-dark);
+      transform: translateX(4px);
+      box-shadow: 0 6px 20px rgba(0, 121, 107, 0.2);
+    }
+
+    .back-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: transparent;
+      color: var(--green-main);
+      padding: 12px 24px;
+      border: 2px solid var(--green-main);
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      margin-top: 16px;
+    }
+
+    .back-button:hover {
+      background: var(--green-main);
+      color: white;
+      transform: translateX(-4px);
+      box-shadow: 0 6px 20px rgba(0, 121, 107, 0.2);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    /* Dark mode enhancements */
+    body.dark .terms-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(0, 179, 138, 0.2);
+    }
+
+    body.dark .terms-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(0, 179, 138, 0.35);
+      box-shadow: 0 4px 16px rgba(0, 179, 138, 0.15);
+    }
+
+    body.dark .contact-card {
+      background: linear-gradient(135deg, rgba(0, 179, 138, 0.12) 0%, rgba(0, 179, 138, 0.06) 100%);
+      border-left-color: var(--green-main);
+    }
+
+    body.dark .terms-card h2,
+    body.dark .terms-card h3,
+    body.dark .contact-card h3 {
+      color: var(--green-main);
+    }
+
+    body.dark .terms-card strong {
+      color: var(--green-main);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .terms-container {
+        padding: 30px 16px;
+      }
+
+      .terms-header h1 {
+        font-size: 2rem;
+      }
+
+      .terms-card {
+        padding: 20px;
+      }
+
+      .terms-card h2 {
+        font-size: 1.3rem;
+      }
+
+      .contact-card {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="login.html">Login</a>
+      <a href="register.html">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="terms-container">
+    <div class="terms-header">
+      <h1>Terms of Service</h1>
+      <p class="last-updated">Last Updated: January 2026</p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Welcome to Renewable Energy Hub</h2>
+      <p>
+        Thank you for using Renewable Energy Hub (the "Platform"). These Terms of Service govern your use of our Platform, website, and all related services. By accessing or using the Platform, you agree to comply with these terms. If you do not agree, please do not use our services.
+      </p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Platform Access & User Accounts</h2>
+      <h3>Account Registration</h3>
+      <p>To access certain features, you may need to create an account. You must provide accurate information and maintain the confidentiality of your login credentials.</p>
+      
+      <h3>Account Responsibility</h3>
+      <p>You are responsible for all activities that occur under your account. You agree to notify us immediately of any unauthorized access.</p>
+      
+      <h3>Account Eligibility</h3>
+      <p>You must be at least 13 years old to use this Platform. By using the Platform, you represent that you meet this requirement.</p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Intellectual Property Rights</h2>
+      <p>
+        All content on the Platform, including courses, materials, text, graphics, and videos, is owned by Renewable Energy Hub or its partners and is protected by copyright law. You may use this content for educational purposes only. Unauthorized reproduction, distribution, or modification is prohibited.
+      </p>
+    </div>
+
+    <div class="terms-card">
+      <h2>User Conduct & Restrictions</h2>
+      <p>You agree not to:</p>
+      <ul>
+        <li>Engage in illegal activities or violate any laws</li>
+        <li>Share offensive, discriminatory, or abusive content</li>
+        <li>Attempt to hack, breach, or disable the Platform</li>
+        <li>Upload malware, viruses, or harmful code</li>
+        <li>Impersonate others or misrepresent your identity</li>
+        <li>Spam, harass, or bully other users</li>
+        <li>Share others' personal information without consent</li>
+        <li>Use automation tools to scrape or access the Platform</li>
+      </ul>
+    </div>
+
+    <div class="terms-card">
+      <h2>Course Content & Learning</h2>
+      <h3>Learning Materials</h3>
+      <p>Course content is provided for educational purposes. We strive for accuracy, but do not guarantee that all information is complete or error-free.</p>
+      
+      <h3>Certificates</h3>
+      <p>Certificates are issued upon course completion. They represent completion of the course but do not guarantee employment or professional certification.</p>
+      
+      <h3>Course Updates</h3>
+      <p>We may update or modify course content at any time. Discontinued courses may no longer be accessible.</p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Payments & Billing</h2>
+      <h3>Payment Terms</h3>
+      <p>Premium features require payment. By purchasing, you authorize us to charge your payment method.</p>
+      
+      <h3>Refund Policy</h3>
+      <p>Refunds may be available within 14 days of purchase if you have not accessed premium content. Contact us for refund requests.</p>
+      
+      <h3>Billing</h3>
+      <p>You agree to provide accurate billing information. We are not responsible for failed transactions due to incorrect payment details.</p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Limitation of Liability</h2>
+      <p>
+        To the fullest extent permitted by law, the Platform is provided "as is" without warranties of any kind. We are not liable for lost data, loss of profits, or indirect damages resulting from your use of the Platform.
+      </p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Privacy & Data Protection</h2>
+      <p>
+        Your privacy is important to us. We collect and use your information in accordance with our Privacy Policy. By using the Platform, you consent to our data practices.
+      </p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Termination & Suspension</h2>
+      <p>
+        We reserve the right to suspend or terminate your account if you violate these terms. Violations include illegal activity, harassment, or misuse of the Platform. We will provide notice when possible.
+      </p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Changes to Terms</h2>
+      <p>
+        We may update these terms at any time. Continued use of the Platform after updates constitutes your acceptance of the new terms. We will notify you of significant changes via email.
+      </p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Third-Party Links & Content</h2>
+      <p>
+        The Platform may contain links to third-party websites. We are not responsible for their content or practices. Your use of third-party services is governed by their terms.
+      </p>
+    </div>
+
+    <div class="terms-card">
+      <h2>Disclaimer of Warranties</h2>
+      <p>
+        The Platform is provided on an "as-is" basis. We make no warranties regarding accuracy, reliability, or availability. Your use is at your own risk.
+      </p>
+    </div>
+
+    <div class="contact-card">
+      <h3><i class="fas fa-question-circle"></i> Have Questions About These Terms?</h3>
+      <p>If you have questions or concerns about our Terms of Service, we're here to help. Reach out to our support team through multiple channels.</p>
+      <div class="button-group">
+        <a href="help.html" class="contact-button">
+          <i class="fas fa-headset"></i> Contact Support
+        </a>
+        <a href="register.html" class="back-button">
+          <i class="fas fa-arrow-left"></i> Back to Register
+        </a>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-socials">
+      <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+      <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+      <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+    </div>
+    <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+  </div>
+</footer>
+
+<!-- THEME TOGGLE -->
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+  <span class="text">Dark</span>
+</button>
+
+<!-- GLOBAL UI -->
+<script src="js/main.js"></script>
+
+<!-- Notification Service (must load BEFORE main.js) -->
+<script src="js/core/notificationService.js"></script>
+
+<!-- Notification Triggers -->
+<script src="js/core/notificationTriggers.js"></script>
+
+</body>
+</html>

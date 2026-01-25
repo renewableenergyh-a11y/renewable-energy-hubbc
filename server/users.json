@@ -1,0 +1,150 @@
+{
+  "aubieob9@gmail.com": {
+    "_id": "696974378c747f4ea11f26d9",
+    "email": "aubieob9@gmail.com",
+    "__v": 0,
+    "createdAt": "2026-01-15T23:11:49.952Z",
+    "hasPremium": true,
+    "lastLogin": "2026-01-16T22:35:23.247Z",
+    "name": "Aubrey Mkhulana",
+    "password": "d1ba6de4004c51bc2b4d80edfa0c5cb1d26802de6704300733b57d4214b44d65",
+    "pendingVerification": false,
+    "premiumActivatedAt": "2026-01-16T13:49:18.435Z",
+    "registeredAt": "2026-01-15T23:12:10.664Z",
+    "token": "a20f1594ca64f464091e98dcd49c31ed42b1e95a0e08635969e097399abb5721",
+    "verificationCode": "567258",
+    "verificationExpiresAt": "2026-01-15T23:26:49.952Z",
+    "certificates": [
+      {
+        "id": "q18u3sggm",
+        "courseId": "3e2cd8b66f93",
+        "courseName": "Renewable Energy III",
+        "studentName": "Aubrey Mkhulana",
+        "studentEmail": "aubieob9@gmail.com",
+        "completedDate": "2026-01-17T00:04:28.220Z",
+        "certificateNumber": "CERT-1768608268220-VDX8T"
+      }
+    ],
+    "completedCourses": [
+      "3e2cd8b66f93"
+    ],
+    "avatarUrl": "/data/avatars/aubieob9_gmail.com.jpg"
+  },
+  "obbanda067@gmail.com": {
+    "_id": "696a5f04b430a632b69e2e88",
+    "email": "obbanda067@gmail.com",
+    "__v": 0,
+    "createdAt": "2026-01-16T15:53:39.643Z",
+    "name": "Aubrey Mkhulana",
+    "password": "d1ba6de4004c51bc2b4d80edfa0c5cb1d26802de6704300733b57d4214b44d65",
+    "pendingVerification": false,
+    "verificationCode": "735158",
+    "verificationExpiresAt": "2026-01-16T16:08:39.643Z",
+    "hasPremium": true,
+    "registeredAt": "2026-01-16T15:54:04.552Z",
+    "token": "dd9403737efef5957237655a58a9d02fbd4ab6db907cd5ce1dd9fb9d5e632374",
+    "lastLogin": "2026-01-22T05:49:26.311Z",
+    "pendingPayment": {
+      "transactionId": "RET-1768583547920-LKC7Z1F",
+      "amount": 16000,
+      "currency": "MWK",
+      "initiatedAt": "2026-01-16T17:12:29.332Z",
+      "status": "pending"
+    },
+    "lastPaymentAmount": 16000,
+    "lastPaymentDate": "2026-01-16T17:14:34.028Z",
+    "lastPaymentRef": "RET-1768583547920-LKC7Z1F",
+    "premiumActivatedAt": "2026-01-16T17:14:34.028Z",
+    "premiumCancelled": false,
+    "certificates": [
+      {
+        "id": "of35d6w43",
+        "courseId": "3e2cd8b66f93",
+        "courseName": "Renewable Energy III",
+        "studentName": "Aubrey Mkhulana",
+        "studentEmail": "obbanda067@gmail.com",
+        "completedDate": "2026-01-17T10:26:12.920Z",
+        "certificateNumber": "CERT-1768645572920-T2Z5F"
+      },
+      {
+        "id": "s9z0ofkzk",
+        "courseId": "eda3a57a486f",
+        "courseName": "Introduction to Renewable Energy",
+        "studentName": "Aubrey Mkhulana",
+        "studentEmail": "obbanda067@gmail.com",
+        "completedDate": "2026-01-20T14:35:11.999Z",
+        "certificateNumber": "CERT-1768919711999-88A3K"
+      }
+    ],
+    "completedCourses": [
+      "3e2cd8b66f93",
+      "eda3a57a486f"
+    ],
+    "avatarUrl": "/data/avatars/obbanda067_gmail.com.jpg"
+  },
+  "mkhulanaaubrey@gmail.com": {
+    "_id": "696b6f9b114dbc2f90d77b14",
+    "email": "mkhulanaaubrey@gmail.com",
+    "__v": 0,
+    "createdAt": "2026-01-17T11:16:43.643Z",
+    "name": "Aubrey Mkhulana",
+    "password": "d1ba6de4004c51bc2b4d80edfa0c5cb1d26802de6704300733b57d4214b44d65",
+    "pendingVerification": true,
+    "verificationCode": "754574",
+    "verificationExpiresAt": "2026-01-17T11:51:16.263Z"
+  },
+  "biep21-abanda@mubas.ac.mw": {
+    "_id": "696b9aba114dbc2f90d77b3e",
+    "email": "biep21-abanda@mubas.ac.mw",
+    "__v": 0,
+    "createdAt": "2026-01-17T14:20:42.410Z",
+    "hasPremium": false,
+    "name": "Gift Mkhulana",
+    "password": "d1ba6de4004c51bc2b4d80edfa0c5cb1d26802de6704300733b57d4214b44d65",
+    "role": "student",
+    "token": "6e9ed5ca45757051bfcf5002e6e445a6a605dbaa3d4865f4ed71d26255e64162",
+    "lastLogin": "2026-01-20T01:27:13.141Z",
+    "pendingPayment": {
+      "transactionId": "RET-1768872300187-N4ZX65B",
+      "amount": 16000,
+      "currency": "MWK",
+      "initiatedAt": "2026-01-20T01:25:00.486Z",
+      "status": "pending"
+    }
+  },
+  "Aubreymkhulanabanda@gmail.com": {
+    "_id": "696dc74f114dbc2f90d77c26",
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "__v": 0,
+    "createdAt": "2026-01-19T05:55:27.680Z",
+    "hasPremium": false,
+    "name": "AubieOB",
+    "password": "b6abdfab1cba5690615114185ecad016f51782f6873101b7439db11283f35595",
+    "role": "admin",
+    "secret": "650c18f7920527613392ed7a09c3cb2241f94cf383b5dca047793cf4d53127a9",
+    "token": "dbd189b9fd08a72bc466611e7ea1cab0bd58feb5ae66665811bd2f922cf68ca8",
+    "lastLogin": "2026-01-19T05:56:30.617Z"
+  },
+  "benadettemakina@gmail.com": {
+    "_id": "696ff8fdf73f7f43f1613687",
+    "email": "benadettemakina@gmail.com",
+    "__v": 0,
+    "createdAt": "2026-01-20T21:51:57.491Z",
+    "name": "Benedette Makina",
+    "password": "e8b2259c18cb4c931df2bc381fe54ea57b41bb8289428e47544ea881b6d702b6",
+    "pendingVerification": false,
+    "verificationCode": "348195",
+    "verificationExpiresAt": "2026-01-20T22:06:57.491Z",
+    "hasPremium": false,
+    "registeredAt": "2026-01-20T21:52:31.117Z",
+    "token": "f652c0ace18d3ad313ca802e6541d851f82a295eca88b090743c99f30952e031",
+    "lastLogin": "2026-01-22T04:50:03.349Z",
+    "pendingPayment": {
+      "transactionId": "RET-1769056236878-N82RSY1",
+      "amount": 16000,
+      "currency": "MWK",
+      "initiatedAt": "2026-01-22T04:30:37.183Z",
+      "status": "pending"
+    }
+  }
+}

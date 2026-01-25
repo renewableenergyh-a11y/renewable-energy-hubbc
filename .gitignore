@@ -1,0 +1,46 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Environment variables (NEVER commit these!)
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+server/*.log
+*.log.*
+
+# Operating System
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Build outputs
+dist/
+build/
+out/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Database files (local testing only)
+*.db
+*.sqlite
+
+# Uploads (can be large)
+server/uploads/
+server/videos/
+
+# Testing
+coverage/
+.nyc_output/
+
+# IDE specific
+*.swp
+*.swo
+*~
