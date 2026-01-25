@@ -21,13 +21,15 @@ module.exports = function(db, discussionSessionService, participantService) {
     }
 
     // Extract user info from headers (these should be passed from frontend)
-    if (userId && userRole) {
-      req.user = { id: userId, role: userRole };
-      console.log('✅ [verifyAuth] User authenticated:', { id: userId, role: userRole });
+    // Use fallback to 'student' if role is missing
+    if (userId) {
+      const role = userRole || 'student';
+      req.user = { id: userId, role: role };
+      console.log('✅ [verifyAuth] User authenticated:', { id: userId, role: role, roleSource: userRole ? 'header' : 'fallback' });
       next();
     } else {
-      console.warn('⚠️ [verifyAuth] Missing user ID or role in headers');
-      return res.status(401).json({ error: 'Unauthorized - missing user info' });
+      console.warn('⚠️ [verifyAuth] Missing user ID in headers');
+      return res.status(401).json({ error: 'Unauthorized - missing user id' });
     }
   };
 
@@ -299,11 +301,24 @@ module.exports = function(db, discussionSessionService, participantService) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
+      console.log('📝 [participants/join] Attempting to join session', {
+        sessionId,
+        userId: req.user.id,
+        userRole: req.user.role,
+        requestBody: req.body
+      });
+
       const participant = await participantService.addOrRejoinParticipant(
         sessionId,
         req.user.id,
         req.user.role
       );
+
+      console.log('✅ [participants/join] Successfully joined session', {
+        participantId: participant._id,
+        sessionId,
+        role: participant.role
+      });
 
       res.status(201).json({
         success: true,
@@ -311,7 +326,7 @@ module.exports = function(db, discussionSessionService, participantService) {
         participant
       });
     } catch (error) {
-      console.error('Error joining session:', error);
+      console.error('❌ [participants/join] Error joining session:', error.message);
       res.status(400).json({ error: error.message });
     }
   });
