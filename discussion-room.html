@@ -455,14 +455,20 @@
         // NOW register participant AFTER session is successfully resolved
         console.log('📝 [discussion-room] Registering participant...');
         try {
+          const userRole = user.role || 'student';
+          console.log('📝 [discussion-room] User role:', userRole);
+          
           const joinResponse = await fetch(`/api/discussions/participants/${sessionId}/join`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${user.token}`,
-              'x-user-id': user.id,
-              'x-user-role': user.role,
+              'x-user-id': user.id || user._id,
+              'x-user-role': userRole,
               'Content-Type': 'application/json'
-            }
+            },
+            body: JSON.stringify({
+              role: userRole
+            })
           });
 
           const joinData = await joinResponse.json();
