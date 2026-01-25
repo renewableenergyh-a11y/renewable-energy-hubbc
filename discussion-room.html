@@ -480,6 +480,11 @@
             // User can still view the session
           } else {
             console.log('✅ [discussion-room] Participant registered successfully');
+            
+            // Now emit Socket.IO join-session event to broadcast to other participants
+            console.log('🔌 [discussion-room] Emitting join-session socket event');
+            discussionSocket.emit('join-session', { sessionId: sessionId });
+            console.log('✅ [discussion-room] Join-session event emitted');
           }
         } catch (error) {
           console.error('❌ [discussion-room] Error registering participant:', error);
