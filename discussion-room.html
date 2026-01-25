@@ -481,10 +481,10 @@
           } else {
             console.log('✅ [discussion-room] Participant registered successfully');
             
-            // Now emit Socket.IO join-session event to broadcast to other participants
-            console.log('🔌 [discussion-room] Emitting join-session socket event');
-            discussionSocket.emit('join-session', { sessionId: sessionId });
-            console.log('✅ [discussion-room] Join-session event emitted');
+            // Now join the Socket.IO discussion-session room to broadcast to other participants
+            console.log('🔌 [discussion-room] Joining socket discussion session');
+            await discussionSocket.joinSession(sessionId, user.token);
+            console.log('✅ [discussion-room] Socket session joined - participant list will update');
           }
         } catch (error) {
           console.error('❌ [discussion-room] Error registering participant:', error);
