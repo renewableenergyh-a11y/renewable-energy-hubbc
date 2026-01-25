@@ -241,11 +241,10 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
         // Notify other participants
         socket.to(`discussion-session:${sessionId}`).emit('participant-joined', {
-          participantId: participant.participantId,
           userId: user.id,
           role: user.role,
           name: user.name,
-          joinTime: participant.joinTime
+          joinTime: Date.now()
         });
 
         callback({
