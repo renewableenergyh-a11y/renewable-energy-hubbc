@@ -293,6 +293,7 @@ module.exports = function(db, discussionSessionService, participantService) {
    * POST /api/discussions/participants/:sessionId/join - Create/register participant (single source of truth)
    * This is the ONLY place where participants are created in the database
    * Socket.IO will only broadcast this state, never mutate it
+   * Upsert pattern: creates if new, returns existing if already joined
    * @returns {Object} Participant object
    */
   router.post('/participants/:sessionId/join', verifyAuth, async (req, res) => {
@@ -303,9 +304,10 @@ module.exports = function(db, discussionSessionService, participantService) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      console.log('📝 [REST/participants/join] Creating/registering participant', {
+      console.log('📝 [REST/participants/join] Registering participant', {
         sessionId,
         userId: req.user.id,
+        userName: req.user.name,
         userRole: req.user.role
       });
 
@@ -320,20 +322,31 @@ module.exports = function(db, discussionSessionService, participantService) {
         return res.status(403).json({ error: 'Session is closed' });
       }
 
-      // CREATE participant in database (only place this happens)
-      // Uses upsert pattern: creates if new, returns existing if already joined
-      const participant = await participantService.addOrRejoinParticipant(
-        sessionId,
-        req.user.id,
-        req.user.role
-      );
+      // Check if participant already exists
+      let participant = await participantService.getParticipant(sessionId, req.user.id);
+      
+      if (participant) {
+        console.log('🔄 [REST/participants/join] Participant already exists, returning existing', {
+          participantId: participant._id,
+          sessionId
+        });
+      } else {
+        // CREATE participant in database (upsert pattern)
+        console.log('📝 [REST/participants/join] Creating new participant');
+        participant = await participantService.addOrRejoinParticipant(
+          sessionId,
+          req.user.id,
+          req.user.role,
+          req.user.name || req.user.email
+        );
 
-      console.log('✅ [REST/participants/join] Participant registered in database', {
-        participantId: participant._id,
-        sessionId,
-        userId: req.user.id,
-        role: participant.role
-      });
+        console.log('✅ [REST/participants/join] Participant created in database', {
+          participantId: participant._id,
+          sessionId,
+          userId: req.user.id,
+          role: participant.role
+        });
+      }
 
       // Return participant object
       res.status(201).json({
@@ -343,6 +356,7 @@ module.exports = function(db, discussionSessionService, participantService) {
           _id: participant._id,
           sessionId: participant.sessionId,
           userId: participant.userId,
+          userName: participant.userName || req.user.name || req.user.email,
           role: participant.role,
           joinedAt: participant.joinedAt
         }

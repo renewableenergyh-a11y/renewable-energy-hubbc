@@ -18,6 +18,10 @@ const ParticipantSchema = new mongoose.Schema(
       required: true,
       index: true
     },
+    userName: {
+      type: String,
+      default: null
+    },
     role: {
       type: String,
       enum: ['admin', 'instructor', 'student'],

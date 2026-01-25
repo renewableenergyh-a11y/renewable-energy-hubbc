@@ -15,9 +15,10 @@ class ParticipantService {
    * @param {String} sessionId - Session ID
    * @param {String} userId - User ID
    * @param {String} role - User role (admin, instructor, student)
+   * @param {String} userName - User name/email for display
    * @returns {Object} Participant object
    */
-  async addOrRejoinParticipant(sessionId, userId, role) {
+  async addOrRejoinParticipant(sessionId, userId, role, userName = null) {
     const Participant = this.db.models.Participant;
     if (!Participant) {
       throw new Error('Participant model not initialized');
@@ -32,11 +33,13 @@ class ParticipantService {
     const now = new Date();
 
     if (participant) {
-      // Rejoin case: participant already exists, update to active
+      // Rejoin case: participant already exists
       if (participant.active) {
-        throw new Error('Participant already active in this session');
+        // Already active - just return it (upsert pattern, no error)
+        return participant.toObject();
       }
 
+      // Was inactive, now rejoining
       // Calculate duration for previous session
       if (participant.lastLeaveTime && participant.joinTime) {
         const previousDuration = participant.lastLeaveTime - participant.joinTime;
@@ -49,6 +52,10 @@ class ParticipantService {
       participant.disconnectCount += 1;
       participant.updatedAt = now;
 
+      if (userName && !participant.userName) {
+        participant.userName = userName;
+      }
+
       await participant.save();
       return participant.toObject();
     } else {
@@ -59,6 +66,7 @@ class ParticipantService {
         participantId,
         sessionId,
         userId,
+        userName: userName,
         role,
         active: true,
         joinTime: now,

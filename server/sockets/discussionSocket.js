@@ -95,6 +95,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         participants: participants.map(p => ({
           participantId: p.participantId,
           userId: p.userId,
+          userName: p.userName,
           role: p.role,
           active: p.active,
           joinTime: p.joinTime,
