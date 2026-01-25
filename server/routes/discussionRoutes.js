@@ -352,8 +352,6 @@ module.exports = function(db, discussionSessionService, participantService) {
       res.status(400).json({ error: error.message });
     }
   });
-    }
-  });
 
   /**
    * POST /api/discussions/participants/:sessionId/leave - Leave a session
