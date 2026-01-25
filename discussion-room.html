@@ -453,42 +453,40 @@
         }
 
         // NOW register participant AFTER session is successfully resolved
-        console.log('📝 [discussion-room] Registering participant...');
+        console.log('📝 [discussion-room] Authorizing session join via REST validation...');
         try {
           const userRole = user.role || 'student';
           console.log('📝 [discussion-room] User role:', userRole);
           
-          const joinResponse = await fetch(`/api/discussions/participants/${sessionId}/join`, {
+          // REST call only validates permissions and session state
+          const validateResponse = await fetch(`/api/discussions/participants/${sessionId}/join`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${user.token}`,
               'x-user-id': user.id || user._id,
               'x-user-role': userRole,
               'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              role: userRole
-            })
+            }
           });
 
-          const joinData = await joinResponse.json();
-          console.log('📝 [discussion-room] Participant registration result:', joinResponse.status, joinData);
+          const validateData = await validateResponse.json();
+          console.log('📝 [discussion-room] Session validation result:', validateResponse.status, validateData);
 
-          if (!joinResponse.ok) {
-            console.warn('⚠️ [discussion-room] Participant registration failed:', joinData);
-            // Don't block room access if participant registration fails
+          if (!validateResponse.ok) {
+            console.warn('⚠️ [discussion-room] Session validation failed:', validateData);
+            // Don't block room access if validation fails
             // User can still view the session
           } else {
-            console.log('✅ [discussion-room] Participant registered successfully');
+            console.log('✅ [discussion-room] Session authorization passed');
             
-            // Now join the Socket.IO discussion-session room to broadcast to other participants
-            console.log('🔌 [discussion-room] Joining socket discussion session');
+            // Now join the Socket.IO discussion-session room - this is where participant creation happens
+            console.log('🔌 [discussion-room] Joining socket discussion session (participant creation)');
             await discussionSocket.joinSession(sessionId, user.token);
-            console.log('✅ [discussion-room] Socket session joined - participant list will update');
+            console.log('✅ [discussion-room] Socket session joined - participant created and list will update');
           }
         } catch (error) {
-          console.error('❌ [discussion-room] Error registering participant:', error);
-          // Continue anyway - session is loaded even if participant registration failed
+          console.error('❌ [discussion-room] Error during session join flow:', error);
+          // Continue anyway - session is loaded even if join flow fails
         }
 
         // Setup event listeners

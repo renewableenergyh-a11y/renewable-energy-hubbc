@@ -290,8 +290,10 @@ module.exports = function(db, discussionSessionService, participantService) {
   // ==================== PARTICIPANT ENDPOINTS ====================
 
   /**
-   * POST /api/discussions/participants/:sessionId/join - Join or rejoin a session
-   * @returns {Object} Participant object
+   * POST /api/discussions/participants/:sessionId/join - Validate and authorize session join
+   * NOTE: Actual participant creation happens via Socket.IO join-session event
+   * This endpoint only validates permissions and session state
+   * @returns {Object} { success: true }
    */
   router.post('/participants/:sessionId/join', verifyAuth, async (req, res) => {
     try {
@@ -301,32 +303,40 @@ module.exports = function(db, discussionSessionService, participantService) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      console.log('📝 [participants/join] Attempting to join session', {
+      console.log('📝 [participants/join] Validating session join', {
         sessionId,
         userId: req.user.id,
-        userRole: req.user.role,
-        requestBody: req.body
+        userRole: req.user.role
       });
 
-      const participant = await participantService.addOrRejoinParticipant(
-        sessionId,
-        req.user.id,
-        req.user.role
-      );
+      // Validate session exists and is accessible
+      const session = await discussionSessionService.getSessionById(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: 'Session not found' });
+      }
 
-      console.log('✅ [participants/join] Successfully joined session', {
-        participantId: participant._id,
+      // Validate session state (active or upcoming)
+      if (session.status === 'closed') {
+        return res.status(403).json({ error: 'Session is closed' });
+      }
+
+      console.log('✅ [participants/join] Session validation passed', {
         sessionId,
-        role: participant.role
+        status: session.status
       });
 
-      res.status(201).json({
+      // Return success - actual participant creation happens via Socket.IO
+      res.status(200).json({
         success: true,
-        message: 'Joined session successfully',
-        participant
+        message: 'Authorized to join session - use Socket.IO to complete join',
+        session: {
+          sessionId: session.sessionId,
+          subject: session.subject,
+          status: session.status
+        }
       });
     } catch (error) {
-      console.error('❌ [participants/join] Error joining session:', error.message);
+      console.error('❌ [participants/join] Error validating session:', error.message);
       res.status(400).json({ error: error.message });
     }
   });
