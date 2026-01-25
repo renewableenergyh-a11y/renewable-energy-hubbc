@@ -480,9 +480,12 @@
 
         console.log('🔄 Loading sessions for course:', currentCourse);
 
+        const user = await authService.getCurrentUser();
         const response = await fetch(`/api/discussions/sessions/course/${currentCourse}`, {
           headers: {
-            'Authorization': 'Bearer ' + (await authService.getCurrentUser()).token
+            'Authorization': 'Bearer ' + user.token,
+            'x-user-id': user.id || user._id,
+            'x-user-role': user.role || 'student'
           }
         });
         
