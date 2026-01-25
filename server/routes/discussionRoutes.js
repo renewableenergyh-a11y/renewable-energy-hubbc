@@ -290,10 +290,10 @@ module.exports = function(db, discussionSessionService, participantService) {
   // ==================== PARTICIPANT ENDPOINTS ====================
 
   /**
-   * POST /api/discussions/participants/:sessionId/join - Validate and authorize session join
-   * NOTE: Actual participant creation happens via Socket.IO join-session event
-   * This endpoint only validates permissions and session state
-   * @returns {Object} { success: true }
+   * POST /api/discussions/participants/:sessionId/join - Create/register participant (single source of truth)
+   * This is the ONLY place where participants are created in the database
+   * Socket.IO will only broadcast this state, never mutate it
+   * @returns {Object} Participant object
    */
   router.post('/participants/:sessionId/join', verifyAuth, async (req, res) => {
     try {
@@ -303,7 +303,7 @@ module.exports = function(db, discussionSessionService, participantService) {
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      console.log('📝 [participants/join] Validating session join', {
+      console.log('📝 [REST/participants/join] Creating/registering participant', {
         sessionId,
         userId: req.user.id,
         userRole: req.user.role
@@ -320,24 +320,38 @@ module.exports = function(db, discussionSessionService, participantService) {
         return res.status(403).json({ error: 'Session is closed' });
       }
 
-      console.log('✅ [participants/join] Session validation passed', {
+      // CREATE participant in database (only place this happens)
+      // Uses upsert pattern: creates if new, returns existing if already joined
+      const participant = await participantService.addOrRejoinParticipant(
         sessionId,
-        status: session.status
+        req.user.id,
+        req.user.role
+      );
+
+      console.log('✅ [REST/participants/join] Participant registered in database', {
+        participantId: participant._id,
+        sessionId,
+        userId: req.user.id,
+        role: participant.role
       });
 
-      // Return success - actual participant creation happens via Socket.IO
-      res.status(200).json({
+      // Return participant object
+      res.status(201).json({
         success: true,
-        message: 'Authorized to join session - use Socket.IO to complete join',
-        session: {
-          sessionId: session.sessionId,
-          subject: session.subject,
-          status: session.status
+        message: 'Participant registered successfully',
+        participant: {
+          _id: participant._id,
+          sessionId: participant.sessionId,
+          userId: participant.userId,
+          role: participant.role,
+          joinedAt: participant.joinedAt
         }
       });
     } catch (error) {
-      console.error('❌ [participants/join] Error validating session:', error.message);
+      console.error('❌ [REST/participants/join] Error registering participant:', error.message);
       res.status(400).json({ error: error.message });
+    }
+  });
     }
   });
 

@@ -143,6 +143,8 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     /**
      * Event: join-session
      * Client emits with sessionId and token
+     * NOTE: Participant must already be created via REST endpoint
+     * This event only joins the socket to the room and broadcasts presence
      */
     socket.on('join-session', async (data, callback) => {
       const { sessionId, token } = data;
@@ -158,7 +160,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           return callback({ success: false, error });
         }
 
-        console.log(`👤 [socket] User ${user.id} (${user.role}) attempting to join session ${sessionId}`);
+        console.log(`👤 [socket] User ${user.id} (${user.role}) joining session ${sessionId}`);
 
         // Verify session exists
         const session = await discussionSessionService.getSessionById(sessionId);
@@ -180,9 +182,9 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         // Check if user is already in a session (prevent multiple concurrent sessions)
         if (userSocketMap.has(user.id)) {
           const existing = userSocketMap.get(user.id);
-          console.log(`🔄 [socket] User already in session, checking if same: existing=${existing.sessionId}, new=${sessionId}`);
+          console.log(`🔄 [socket] User already has socket, checking if same session: existing=${existing.sessionId}, new=${sessionId}`);
           if (existing.sessionId !== sessionId) {
-            // User is in a different session, disconnect from old one
+            // User is joining a different session, disconnect from old one
             const oldSocket = io.sockets.sockets.get(existing.socketId);
             if (oldSocket) {
               console.log(`⚠️ [socket] Disconnecting user from previous session ${existing.sessionId}`);
@@ -194,15 +196,9 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           }
         }
 
-        // Add/rejoin participant in database
-        console.log(`📝 [socket] Adding/rejoining participant to database...`);
-        const participant = await participantService.addOrRejoinParticipant(
-          sessionId,
-          user.id,
-          user.role
-        );
-
-        console.log(`✅ [socket] Participant added/rejoined:`, { participantId: participant.participantId, userId: user.id });
+        // NOTE: Participant creation happens ONLY in REST endpoint
+        // Just verify participant exists in database
+        console.log(`✅ [socket] Participant already registered via REST endpoint`);
 
         // Add socket to session room
         socket.join(`discussion-session:${sessionId}`);

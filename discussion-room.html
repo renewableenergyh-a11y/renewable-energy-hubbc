@@ -453,13 +453,13 @@
         }
 
         // NOW register participant AFTER session is successfully resolved
-        console.log('📝 [discussion-room] Authorizing session join via REST validation...');
+        console.log('📝 [discussion-room] Registering participant via REST (creates in database)...');
         try {
           const userRole = user.role || 'student';
           console.log('📝 [discussion-room] User role:', userRole);
           
-          // REST call only validates permissions and session state
-          const validateResponse = await fetch(`/api/discussions/participants/${sessionId}/join`, {
+          // Step 1: REST call CREATES participant in database (single source of truth)
+          const registerResponse = await fetch(`/api/discussions/participants/${sessionId}/join`, {
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${user.token}`,
@@ -469,23 +469,23 @@
             }
           });
 
-          const validateData = await validateResponse.json();
-          console.log('📝 [discussion-room] Session validation result:', validateResponse.status, validateData);
+          const registerData = await registerResponse.json();
+          console.log('📝 [discussion-room] Participant registration result:', registerResponse.status, registerData);
 
-          if (!validateResponse.ok) {
-            console.warn('⚠️ [discussion-room] Session validation failed:', validateData);
-            // Don't block room access if validation fails
-            // User can still view the session
+          if (!registerResponse.ok) {
+            console.warn('⚠️ [discussion-room] Participant registration failed:', registerData);
+            // Don't block room access if registration fails
           } else {
-            console.log('✅ [discussion-room] Session authorization passed');
+            console.log('✅ [discussion-room] Participant created in database');
             
-            // Now join the Socket.IO discussion-session room - this is where participant creation happens
-            console.log('🔌 [discussion-room] Joining socket discussion session (participant creation)');
+            // Step 2: ONLY AFTER REST succeeds, join socket to room
+            // This broadcasts the participant list (which was created by REST)
+            console.log('🔌 [discussion-room] Joining socket room (broadcasts presence)');
             await discussionSocket.joinSession(sessionId, user.token);
-            console.log('✅ [discussion-room] Socket session joined - participant created and list will update');
+            console.log('✅ [discussion-room] Socket joined and participant list broadcasted');
           }
         } catch (error) {
-          console.error('❌ [discussion-room] Error during session join flow:', error);
+          console.error('❌ [discussion-room] Error during participant join flow:', error);
           // Continue anyway - session is loaded even if join flow fails
         }
 
