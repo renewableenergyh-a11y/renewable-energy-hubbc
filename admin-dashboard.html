@@ -1604,73 +1604,73 @@
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; margin-bottom: 24px; height: 70vh;">
               <!-- CREATE NEW SESSION FORM -->
-              <div class="card" style="padding: 24px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow-y: auto; display: flex; flex-direction: column; height: 100%;">
-                <div style="display: flex; align-items: center; margin-bottom: 24px; flex-shrink: 0;">
-                  <div style="width: 40px; height: 40px; background: linear-gradient(135deg, var(--green-main), #00796b); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                    <i class="fas fa-plus" style="color: white; font-size: 18px;"></i>
+              <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); overflow-y: auto; display: flex; flex-direction: column; height: 100%; overflow-x: hidden;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
+                  <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--green-main), #00796b); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0;">
+                    <i class="fas fa-plus" style="color: white; font-size: 16px;"></i>
                   </div>
-                  <h3 style="margin: 0; font-size: 18px; color: var(--text-main);">Create New Session</h3>
+                  <h3 style="margin: 0; font-size: 16px; color: var(--text-main);">Create New Session</h3>
                 </div>
                 
-                <form id="create-discussion-form" style="display: flex; flex-direction: column; gap: 16px; flex: 1; overflow-y: auto; padding-right: 8px;">
+                <form id="create-discussion-form" style="display: flex; flex-direction: column; gap: 14px; flex: 1; overflow-y: auto; padding-right: 6px; min-width: 0;">
                   <div>
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
-                      <i class="fas fa-book" style="margin-right: 6px; color: var(--green-main);"></i>Course *
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-book" style="margin-right: 4px; color: var(--green-main); font-size: 12px;"></i>Course *
                     </label>
-                    <select id="disc-course-select" required style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-size: 13px; transition: all 0.3s;">
+                    <select id="disc-course-select" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-size: 12px; transition: all 0.3s; box-sizing: border-box;">
                       <option value="">-- Select a course --</option>
                     </select>
                   </div>
 
                   <div>
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
-                      <i class="fas fa-heading" style="margin-right: 6px; color: var(--green-main);"></i>Session Subject *
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-heading" style="margin-right: 4px; color: var(--green-main); font-size: 12px;"></i>Session Subject *
                     </label>
-                    <input id="disc-subject" type="text" placeholder="e.g., Q&A Discussion, Module Review" required style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 13px; transition: all 0.3s;" />
+                    <input id="disc-subject" type="text" placeholder="e.g., Q&A Discussion" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px; transition: all 0.3s;" />
                   </div>
 
                   <div>
-                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
-                      <i class="fas fa-align-left" style="margin-right: 6px; color: var(--green-main);"></i>Description
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-align-left" style="margin-right: 4px; color: var(--green-main); font-size: 12px;"></i>Description
                     </label>
-                    <textarea id="disc-description" placeholder="Optional: Describe the discussion topic" rows="2" style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 13px; resize: vertical; transition: all 0.3s;"></textarea>
+                    <textarea id="disc-description" placeholder="Optional: Describe the topic" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical; transition: all 0.3s;"></textarea>
                   </div>
 
-                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                  <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
                     <div>
-                      <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
-                        <i class="fas fa-users" style="margin-right: 6px; color: var(--green-main);"></i>Type *
+                      <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                        <i class="fas fa-users" style="margin-right: 4px; color: var(--green-main); font-size: 12px;"></i>Type *
                       </label>
-                      <select id="disc-type" required style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-size: 13px;">
+                      <select id="disc-type" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-size: 12px; box-sizing: border-box;">
                         <option value="peer">Peer Discussion</option>
                         <option value="instructor">Instructor-Led</option>
                       </select>
                     </div>
                   </div>
 
-                  <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
-                    <label style="display: block; font-size: 12px; font-weight: 700; color: var(--text-main); text-transform: uppercase; margin-bottom: 12px; letter-spacing: 0.5px;">
-                      <i class="fas fa-clock" style="margin-right: 6px; color: var(--green-main);"></i>Schedule
+                  <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
+                    <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-main); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.3px;">
+                      <i class="fas fa-clock" style="margin-right: 4px; color: var(--green-main); font-size: 11px;"></i>Schedule
                     </label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
                       <div>
-                        <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">Start Time *</label>
-                        <input id="disc-start-time" type="datetime-local" required style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 13px;" />
+                        <label style="display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Start *</label>
+                        <input id="disc-start-time" type="datetime-local" required style="width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 11px;" />
                       </div>
                       <div>
-                        <label style="display: block; font-size: 12px; color: var(--text-muted); margin-bottom: 6px;">End Time *</label>
-                        <input id="disc-end-time" type="datetime-local" required style="width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 13px;" />
+                        <label style="display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">End *</label>
+                        <input id="disc-end-time" type="datetime-local" required style="width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 11px;" />
                       </div>
                     </div>
                   </div>
 
-                  <div id="disc-form-notice" style="padding: 12px 14px; border-radius: 8px; font-size: 13px; display: none; margin-top: 8px; border-left: 4px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
+                  <div id="disc-form-notice" style="padding: 10px 12px; border-radius: 6px; font-size: 12px; display: none; margin-top: 6px; border-left: 3px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
 
-                  <div style="display: flex; gap: 10px; margin-top: 12px;">
-                    <button id="disc-create-btn" class="btn-primary" type="submit" style="flex: 1; padding: 12px 16px; font-weight: 600; font-size: 13px; border-radius: 8px;">
-                      <i class="fas fa-check-circle" style="margin-right: 6px;"></i>Create Session
+                  <div style="display: flex; gap: 8px; margin-top: 10px;">
+                    <button id="disc-create-btn" class="btn-primary" type="submit" style="flex: 1; padding: 10px 12px; font-weight: 600; font-size: 12px; border-radius: 6px;">
+                      <i class="fas fa-check-circle" style="margin-right: 4px; font-size: 12px;"></i>Create
                     </button>
-                    <button id="disc-clear-btn" class="btn" type="reset" style="padding: 12px 16px; font-size: 13px; border-radius: 8px;">Reset</button>
+                    <button id="disc-clear-btn" class="btn" type="reset" style="padding: 10px 12px; font-size: 12px; border-radius: 6px;">Reset</button>
                   </div>
                 </form>
               </div>
