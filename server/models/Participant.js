@@ -24,7 +24,7 @@ const ParticipantSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['admin', 'instructor', 'student'],
+      enum: ['superadmin', 'admin', 'instructor', 'student'],
       required: true
     },
     active: {
