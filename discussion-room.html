@@ -679,12 +679,7 @@
           sessionId: sessionData?.sessionId,
           subject: sessionData?.subject,
           status: sessionData?.status
-        })showModal('Session Not Found', 'This discussion session could not be found.', [
-            { text: 'Return', class: 'modal-btn-primary', callback: () => {
-              closeModal();
-              window.location.href = '/discussions.html';
-            }}
-          ])
+        });
         if (!sessionData) {
           console.error('❌ [discussion-room] Session data is null');
           alert('Session not found');
