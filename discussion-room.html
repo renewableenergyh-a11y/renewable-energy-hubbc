@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Discussion Room - Aubie RET Hub</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     .room-container {
       display: grid;
@@ -13,6 +14,7 @@
       height: 100vh;
       background: #f5f5f5;
       overflow: hidden;
+      font-family: 'Poppins', sans-serif;
     }
 
     .room-main {
@@ -432,17 +434,25 @@
      * Admins/instructors/superadmins bypass this if their name is already in currentUser
      */
     async function collectParticipantName(user) {
-      // If user is admin/instructor/superadmin and has a known name, skip modal
-      if (['admin', 'instructor', 'superadmin'].includes(user.role) && user.name && user.name.trim()) {
-        console.log('ℹ️ [name-modal] Admin/instructor has known name, skipping modal');
-        return user.name;
+      // If user is admin/instructor/superadmin, always use their account name
+      if (['admin', 'instructor', 'superadmin'].includes(user.role)) {
+        console.log('👤 [discussion-room] Admin/instructor/superadmin using account name:', user.name);
+        return user.name || user.email || 'Admin';
       }
 
-      // Show modal and collect name
+      // Show modal and collect name from regular students
       return new Promise((resolve) => {
         const overlay = document.getElementById('participantNameOverlay');
         const form = document.getElementById('participantNameForm');
         const nameInput = document.getElementById('participantFullName');
+
+        // Check if there's a previously stored name
+        const storedName = localStorage.getItem('userFullName');
+        if (storedName) {
+          console.log('👤 [discussion-room] Using stored name:', storedName);
+          resolve(storedName);
+          return;
+        }
 
         // Pre-fill if user has a name
         if (user.name && user.name.trim()) {
@@ -483,19 +493,25 @@
 
     async function init() {
       try {
+        console.log('🚀 [discussion-room] init() called');
         const user = await authService.getCurrentUser();
+        console.log('👤 [discussion-room] Current user:', { id: user?.id, email: user?.email, role: user?.role, token: !!user?.token });
+        
         if (!user) {
+          console.warn('⚠️ [discussion-room] No user found, redirecting to login');
           window.location.href = '/login.html';
           return;
         }
 
-        isInstructor = user.role === 'instructor' || user.role === 'admin';
+        isInstructor = user.role === 'instructor' || user.role === 'admin' || user.role === 'superadmin';
 
         // Get session ID from URL
         const params = new URLSearchParams(window.location.search);
         const sessionId = params.get('sessionId');
 
         console.log('🔍 [discussion-room] Parsed sessionId from URL:', sessionId);
+        console.log('🔍 [discussion-room] Full URL:', window.location.href);
+        console.log('🔍 [discussion-room] Search params:', window.location.search);
 
         if (!sessionId) {
           console.error('❌ [discussion-room] No sessionId in URL');

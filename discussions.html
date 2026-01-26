@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Live Discussions - Aubie RET Hub</title>
   <link rel="stylesheet" href="/css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
     .discussions-container {
       display: grid;
@@ -13,6 +14,7 @@
       padding: 24px;
       max-width: 1200px;
       margin: 0 auto;
+      font-family: 'Poppins', sans-serif;
     }
 
     .section-header {
@@ -415,7 +417,7 @@
   </div>
 </header>
 
-  <div class="discussions-container" id="discussionsContainer" style="display: none;">
+  <div class="discussions-container" id="discussionsContainer">
     <div class="section-header">
       <h2>Live Discussions</h2>
       <div class="filter-controls">
@@ -494,40 +496,17 @@
 
         console.log('👤 User data:', user);
 
-        // Update profile info - use name, username, or email as fallback
-        const displayName = user.name || user.username || user.email || 'User';
-        const firstChar = (displayName || 'U').charAt(0).toUpperCase();
-        const role = user.role || 'student';
-
-        document.getElementById('profile-circle').textContent = firstChar;
-        document.getElementById('profile-name').textContent = displayName;
-        document.getElementById('profile-role').textContent = role;
-        document.getElementById('profile-role').className = 'profile-role-badge ' + (role || '').toLowerCase();
-
-        // Setup logout
-        const logoutBtn = document.getElementById('profile-logout-btn');
-        if (logoutBtn) {
-          logoutBtn.addEventListener('click', async (e) => {
-            e.preventDefault();
-            await authService.logout();
-          });
+        // Show discussions link if logged in
+        const navDiscussionsLink = document.getElementById('nav-discussions-link');
+        if (navDiscussionsLink && user.role) {
+          navDiscussionsLink.style.display = 'block';
         }
-
-        // Setup profile dropdown
-        const profileCircle = document.getElementById('profile-circle');
-        const profileDropdown = document.getElementById('profile-dropdown');
-        if (profileCircle && profileDropdown) {
-          profileCircle.addEventListener('click', () => {
-            profileDropdown.style.display = profileDropdown.style.display === 'none' ? 'block' : 'none';
-          });
-          
-          // Close dropdown when clicking outside
-          document.addEventListener('click', (e) => {
-            if (!e.target.closest('#profile-menu-wrapper')) {
-              profileDropdown.style.display = 'none';
-            }
-          });
-        }
+        
+        // Hide login/register links
+        const navLoginLink = document.getElementById('nav-login-link');
+        const navRegisterLink = document.getElementById('nav-register-link');
+        if (navLoginLink) navLoginLink.style.display = 'none';
+        if (navRegisterLink) navRegisterLink.style.display = 'none';
 
         // Load courses
         console.log('🔄 Loading courses...');
