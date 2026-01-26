@@ -427,11 +427,6 @@
      * Show name collection modal and collect user's full name
      * Admins/instructors/superadmins bypass this if their name is already in currentUser
      */
-    async function collectParticipantName(user) {
-      const userRole = user.role || 'student';
-      console.log('👤 [discussion-room] collectParticipantName called with role:', userRole);
-      
-      // If user is admin/instructor/superadmin, always use their account name - skip modal completely
     /**
      * Get participant name from user details
      * Uses name, email, username, or Participant as fallback
