@@ -4726,6 +4726,11 @@
                 <button style="padding: 6px 12px; background: #0b6fb7; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="viewSessionDetails('${session.sessionId}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
                   <i class="fas fa-info-circle" style="margin-right: 4px;"></i>Details
                 </button>
+                ${session.status !== 'closed' ? `
+                  <button style="padding: 6px 12px; background: #f97316; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="endDiscussionSession('${session.sessionId}', '${session.subject}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                    <i class="fas fa-stop-circle" style="margin-right: 4px;"></i>End Session
+                  </button>
+                ` : ''}
                 <button style="padding: 6px 12px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="deleteDiscussionSession('${session.sessionId}', '${session.subject}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
                   <i class="fas fa-trash" style="margin-right: 4px;"></i>Delete
                 </button>
@@ -4756,6 +4761,26 @@
 
     async function joinDiscussionSession(sessionId) {
       try {
+        // Preserve admin authentication and promote to app auth
+        const adminToken = localStorage.getItem('adminToken');
+        const adminEmail = localStorage.getItem('adminEmail') || '';
+        const adminRole = localStorage.getItem('adminRole') || 'superadmin';
+        const adminName = localStorage.getItem('adminName') || 'Admin';
+
+        if (adminToken) {
+          // Set standard auth token and currentUser so public pages recognize admin
+          localStorage.setItem('authToken', adminToken);
+          localStorage.setItem('currentUser', JSON.stringify({
+            id: adminEmail,
+            email: adminEmail,
+            name: adminName,
+            role: adminRole
+          }));
+          // Mark that this user came from the admin dashboard (for audits/UI)
+          localStorage.setItem('fromAdminDashboard', 'true');
+        }
+
+        // Redirect into the discussion room using standard session URL
         window.location.href = `/discussion-room.html?sessionId=${sessionId}`;
       } catch (error) {
         alert('Error joining session: ' + error.message);
@@ -4791,6 +4816,38 @@
         }
       } catch (error) {
         alert('Error deleting session: ' + error.message);
+      }
+    }
+
+    async function endDiscussionSession(sessionId, subject) {
+      if (!confirm(`End the session "${subject}"? All participants will be notified and redirected.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/discussions/sessions/${sessionId}/close`, {
+          method: 'POST',
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('adminToken'),
+            'x-user-id': localStorage.getItem('adminEmail') || '',
+            'x-user-role': localStorage.getItem('adminRole') || 'superadmin'
+          }
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to end session');
+        }
+
+        alert('Session ended successfully');
+        
+        // Reload sessions list
+        const sessionsList = document.getElementById('disc-sessions-list');
+        if (sessionsList) {
+          await refreshDiscussionSessions(sessionsList);
+        }
+      } catch (error) {
+        alert('Error ending session: ' + error.message);
       }
     }
 

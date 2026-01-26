@@ -253,6 +253,36 @@ class DiscussionSessionService {
   }
 
   /**
+   * Close a session automatically by the system (no user permission checks)
+   * @param {String} sessionId
+   * @returns {Object} Updated session
+   */
+  async closeSessionAutomatically(sessionId) {
+    const DiscussionSession = this.db.models.DiscussionSession;
+    if (!DiscussionSession) {
+      throw new Error('DiscussionSession model not initialized');
+    }
+
+    const session = await DiscussionSession.findOne({ sessionId });
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    if (session.status === 'closed') {
+      return session.toObject();
+    }
+
+    const now = new Date();
+    session.status = 'closed';
+    session.closedAt = now;
+    session.closedReason = 'time_expired';
+    session.updatedAt = now;
+
+    await session.save();
+    return session.toObject();
+  }
+
+  /**
    * Update participant count for a session
    * @param {String} sessionId - Session ID
    * @param {Number} count - New participant count

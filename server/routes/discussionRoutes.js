@@ -5,7 +5,7 @@
 const express = require('express');
 const router = express.Router();
 
-module.exports = function(db, discussionSessionService, participantService) {
+module.exports = function(db, discussionSessionService, participantService, io = null) {
   // Middleware to verify authentication (assumes auth token in headers)
   const verifyAuth = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
@@ -288,6 +288,48 @@ module.exports = function(db, discussionSessionService, participantService) {
       });
     } catch (error) {
       console.error('❌ [DELETE] Error deleting session:', error);
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  /**
+   * POST /api/discussions/sessions/:sessionId/close - Manually close a session (admin/instructor only)
+   * Transitions session from active/upcoming to closed without deleting it
+   * @returns {Object} Updated session with status closed
+   */
+  router.post('/sessions/:sessionId/close', verifyAuth, async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+
+      // Only admins and instructors can close sessions
+      if (!['admin', 'instructor', 'superadmin'].includes(req.user.role)) {
+        return res.status(403).json({ error: 'Only admins and instructors can close sessions' });
+      }
+
+      console.log('🔒 [POST] Manual session close requested:', { sessionId, userId: req.user.id, role: req.user.role });
+
+      // Close session manually
+      const session = await discussionSessionService.closeSessionManually(sessionId, req.user.id, req.user.role);
+
+      console.log('✅ [POST] Session closed successfully:', sessionId);
+
+      // Broadcast session-closed event to all clients in the room (if io is available)
+      if (io) {
+        io.to(`discussion-session:${sessionId}`).emit('session-closed', {
+          sessionId: sessionId,
+          reason: 'Session ended by ' + (req.user.role === 'admin' ? 'administrator' : 'instructor'),
+          timestamp: new Date()
+        });
+        console.log('📡 Broadcasted session-closed event for:', sessionId);
+      }
+
+      res.json({
+        success: true,
+        message: 'Session closed successfully',
+        session
+      });
+    } catch (error) {
+      console.error('❌ [POST] Error closing session:', error);
       res.status(400).json({ error: error.message });
     }
   });

@@ -619,14 +619,15 @@ let participantService = null;
 
 // Initialize discussion services after db is ready (deferred initialization)
 // These will be properly initialized in startServer() when db.models are available
-const initializeDiscussionServices = () => {
+const initializeDiscussionServices = (ioInstance = null) => {
   if (db.models.DiscussionSession && db.models.Participant) {
     discussionSessionService = new DiscussionSessionService(db);
     participantService = new ParticipantService(db);
     console.log('✅ Discussion system services initialized');
     
     // Register discussion routes after services are initialized
-    const discussionRoutes = createDiscussionRoutes(db, discussionSessionService, participantService);
+    // Pass io instance if available (for broadcasting to clients)
+    const discussionRoutes = createDiscussionRoutes(db, discussionSessionService, participantService, ioInstance);
     app.use('/api/discussions', discussionRoutes);
     console.log('✅ Discussion routes registered');
   }
@@ -6402,7 +6403,7 @@ async function startServer() {
     await storage.init();
   } catch (e) { console.warn('storage.init warning', e); }
   
-  // Initialize discussion system services after MongoDB is ready
+  // Initialize discussion system services after MongoDB is ready (without io yet)
   initializeDiscussionServices();
   
   console.log('About to create HTTP server and initialize Socket.IO...');
@@ -6423,6 +6424,13 @@ async function startServer() {
   });
   
   console.log('✅ Socket.IO initialized');
+
+  // Re-register discussion routes with io instance so they can broadcast to clients
+  if (discussionSessionService && participantService) {
+    const discussionRoutes = createDiscussionRoutes(db, discussionSessionService, participantService, io);
+    app.use('/api/discussions', discussionRoutes);
+    console.log('✅ Discussion routes re-registered with Socket.IO');
+  }
   
   // Initialize discussion socket handlers
   if (discussionSessionService && participantService) {

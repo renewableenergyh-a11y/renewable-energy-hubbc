@@ -203,6 +203,33 @@ export class DiscussionSocketService {
   }
 
   /**
+   * Admin removes a participant from a session
+   * @param {String} sessionId
+   * @param {String} targetUserId
+   * @param {String} token
+   */
+  async removeParticipantByAdmin(sessionId, targetUserId, token) {
+    if (!this.socket || !this.connected) {
+      throw new Error('Socket not connected');
+    }
+
+    return new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        reject(new Error('Remove participant timeout'));
+      }, 5000);
+
+      this.socket.emit('admin-remove-participant', { sessionId, targetUserId, token }, (response) => {
+        clearTimeout(timeout);
+        if (response && response.success) {
+          resolve(response);
+        } else {
+          reject(new Error(response && response.error ? response.error : 'Failed to remove participant'));
+        }
+      });
+    });
+  }
+
+  /**
    * Check and update session status
    * @param {String} sessionId - Session ID
    * @returns {Promise} Resolves with session status

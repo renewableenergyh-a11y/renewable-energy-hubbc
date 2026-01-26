@@ -423,6 +423,49 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     });
 
     /**
+     * Event: admin-remove-participant
+     * Allows moderators (admin/instructor) to remove a participant
+     */
+    socket.on('admin-remove-participant', async (data, callback) => {
+      const { sessionId, targetUserId, token } = data;
+
+      try {
+        const user = verifyUserToken(token);
+        if (!user || !['admin', 'instructor'].includes(user.role)) {
+          return callback({ success: false, error: 'Unauthorized' });
+        }
+
+        // Remove participant from DB
+        await participantService.removeParticipant(sessionId, targetUserId);
+
+        // Update session participant count
+        const participantCount = await participantService.getActiveParticipantCount(sessionId);
+        await discussionSessionService.updateParticipantCount(sessionId, participantCount);
+
+        // Broadcast updated participant list and status
+        await broadcastParticipantList(sessionId);
+        await broadcastSessionStatus(sessionId);
+
+        // Notify removed participant sockets (if any)
+        const room = sessionRooms.get(sessionId);
+        if (room) {
+          room.forEach(socketId => {
+            const clientSocket = io.sockets.sockets.get(socketId);
+            if (clientSocket && clientSocket.userId === targetUserId) {
+              clientSocket.emit('force-disconnect', { reason: 'Removed by moderator' });
+              clientSocket.leave(`discussion-session:${sessionId}`);
+            }
+          });
+        }
+
+        callback({ success: true });
+      } catch (err) {
+        console.error('Error in admin-remove-participant:', err);
+        callback({ success: false, error: err.message });
+      }
+    });
+
+    /**
      * Event: check-session-status
      * Client checks for time-based status updates
      */
@@ -479,6 +522,42 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
   });
 
   console.log('✅ Discussion Socket.IO handlers initialized');
+  // Periodic task: reconcile session statuses and auto-close expired sessions
+  setInterval(async () => {
+    try {
+      const activeSessions = await discussionSessionService.getAllActiveSessions();
+      const now = new Date();
+      for (const s of activeSessions) {
+        if (s.endTime && new Date(s.endTime) <= now) {
+          try {
+            await discussionSessionService.closeSessionAutomatically(s.sessionId);
+            // Notify room
+            io.to(`discussion-session:${s.sessionId}`).emit('session-closed', {
+              sessionId: s.sessionId,
+              reason: 'Session time expired',
+              timestamp: new Date()
+            });
+            // Broadcast updated participant list and status
+            await broadcastParticipantList(s.sessionId);
+            await broadcastSessionStatus(s.sessionId);
+            // Clean up tracking
+            if (sessionRooms.has(s.sessionId)) {
+              sessionRooms.get(s.sessionId).forEach(socketId => {
+                const clientSocket = io.sockets.sockets.get(socketId);
+                if (clientSocket) clientSocket.leave(`discussion-session:${s.sessionId}`);
+              });
+              sessionRooms.delete(s.sessionId);
+            }
+            console.log('Auto-closed session due to time:', s.sessionId);
+          } catch (err) {
+            console.warn('Failed to auto-close session', s.sessionId, err.message);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Error during session reconciliation:', err);
+    }
+  }, 15000);
 
   return {
     io,

@@ -480,8 +480,9 @@
 
         roomTitle.textContent = sessionData.subject;
 
-        // Show close button for instructors
-        if (isInstructor && sessionData.creatorId === user.id) {
+        // Show close / end session button for instructors and admins (moderators)
+        const isModerator = user.role === 'instructor' || user.role === 'admin' || localStorage.getItem('fromAdminDashboard') === 'true';
+        if (isModerator) {
           closeBtn.style.display = 'block';
           closeBtn.addEventListener('click', handleCloseSession);
         }
@@ -621,6 +622,9 @@
     function renderParticipants(participants, stats) {
       participantCount.textContent = stats.activeCount;
 
+      const currentUser = getLocalCurrentUser();
+      const isModerator = currentUser && (currentUser.role === 'instructor' || currentUser.role === 'admin' || localStorage.getItem('fromAdminDashboard') === 'true');
+
       if (!participants || participants.length === 0) {
         participantsList.innerHTML = '<div class="empty-participants">No participants</div>';
         return;
@@ -628,22 +632,55 @@
 
       participantsList.innerHTML = participants
         .map(p => {
-          // Display user name if available, otherwise email, otherwise ID
-          const displayName = p.userName || p.email || p.userId;
+          // Display user name if available, otherwise email (if present), otherwise anonymized placeholder
+          const displayName = p.userName || p.email || 'Participant';
           const avatarText = (displayName || 'U').charAt(0).toUpperCase();
-          
+
+          const removeBtn = isModerator && currentUser && (p.userId !== currentUser.id)
+            ? `<button class="remove-participant-btn" data-userid="${escapeHtml(p.userId)}" title="Remove participant" style="background:transparent;border:none;color:var(--danger,#d32f2f);cursor:pointer;font-size:14px;margin-left:8px">✖</button>`
+            : '';
+
           return `
             <div class="participant-item">
-              <div class="participant-avatar">${escapeHtml(avatarText)}</div>
-              <div class="participant-info">
-                <div class="participant-name">${escapeHtml(displayName)}</div>
-                <div class="participant-role">${p.role}</div>
+              <div style="display:flex;align-items:center;gap:10px;flex:1">
+                <div class="participant-avatar">${escapeHtml(avatarText)}</div>
+                <div class="participant-info">
+                  <div class="participant-name">${escapeHtml(displayName)}</div>
+                  <div class="participant-role">${p.role}</div>
+                </div>
               </div>
-              <div class="participant-status">${p.active ? 'Active' : 'Away'}</div>
+              <div style="display:flex;align-items:center">
+                <div class="participant-status" style="margin-right:6px">${p.active ? 'Active' : 'Away'}</div>
+                ${removeBtn}
+              </div>
             </div>
           `;
         })
         .join('');
+
+      // Attach remove handlers for moderator remove buttons
+      if (isModerator) {
+        participantsList.querySelectorAll('.remove-participant-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            const targetUserId = btn.dataset.userid;
+            if (!confirm('Remove this participant from the session?')) return;
+            try {
+              const token = localStorage.getItem('authToken');
+              await discussionSocket.removeParticipantByAdmin(sessionData.sessionId, targetUserId, token);
+            } catch (err) {
+              console.error('Failed to remove participant:', err);
+              alert('Failed to remove participant: ' + (err.message || err));
+            }
+          });
+        });
+      }
+    }
+
+    function getLocalCurrentUser() {
+      try {
+        const s = localStorage.getItem('currentUser');
+        return s ? JSON.parse(s) : null;
+      } catch (e) { return null; }
     }
 
     function startTimeUpdate() {
