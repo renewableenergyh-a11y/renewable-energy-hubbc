@@ -22,43 +22,38 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
   const sessionRooms = new Map();
 
   /**
-   * Verify JWT token and extract user info from database
+   * Verify JWT token and extract user info
    * @param {String} token - JWT token from client
-   * @param {String} fallbackRole - Role from REST auth as fallback
    * @returns {Object|null} User object { id, role } or null if invalid
    */
-  const verifyUserToken = async (token, fallbackRole) => {
+  const verifyUserToken = (token, fallbackRole) => {
     if (!token) {
       console.warn('⚠️  No token provided for Socket.IO auth');
       return null;
     }
     
     try {
-      // First try database lookup by checking if MongoDB is available
-      if (db && db.models && db.models.User) {
-        try {
-          const User = db.models.User;
-          const user = await User.findOne({ token }).exec();
-          if (user) {
-            console.log('✅ Socket.IO auth verified from DB for:', user.email);
-            return {
-              id: user._id || user.id || user.email,
-              email: user.email,
-              role: user.role || 'student',
-              name: user.name || user.email.split('@')[0]
-            };
-          }
-        } catch (err) {
-          console.warn('⚠️  Could not query User model:', err.message);
-        }
-      }
-
-      // Try to load users from storage file as fallback
+      // Try to load users from correct path
       let users = {};
       try {
         users = require('../storage').loadUsers();
       } catch (err) {
         console.warn('⚠️  Could not load users from storage:', err.message);
+        // If fallback role is provided and not guest, use it
+        if (fallbackRole && fallbackRole !== 'guest') {
+          return {
+            id: 'verified-via-rest',
+            role: fallbackRole,
+            name: 'User'
+          };
+        }
+        // Continue without user verification - allow anonymous joins for now
+        return {
+          id: 'anonymous',
+          email: 'anonymous@discussion',
+          role: 'guest',
+          name: 'Guest'
+        };
       }
 
       // Look for matching token in regular users
@@ -84,6 +79,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           const admins = adminData.admins || [];
           console.log(`🔍 [verifyUserToken] Checking ${admins.length} admins for token match`);
           for (const admin of admins) {
+            console.log(`🔍 [verifyUserToken] Comparing token lengths: received=${token ? token.length : 0}, admin=${admin.token ? admin.token.length : 0}`);
             if (admin.token === token) {
               console.log('✅ Socket.IO auth verified for superadmin:', admin.email);
               return {
@@ -99,7 +95,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         console.warn('⚠️  Could not check admins.json:', err.message);
       }
 
-      console.warn('⚠️  Token not found in database or files');
+      console.warn('⚠️  Token not found in users or admins database');
       // If fallback role from REST is provided, use it
       if (fallbackRole && fallbackRole !== 'student') {
         console.log(`✅ Using fallback role from REST auth: ${fallbackRole}`);
@@ -109,11 +105,11 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           name: 'User'
         };
       }
-      // If token not found, still allow with fallback role
+      // If token not in DB, still allow (might be valid JWT elsewhere)
       return {
         id: 'verified-user',
         email: 'user@discussion',
-        role: fallbackRole || 'student',
+        role: 'student',
         name: 'User'
       };
     } catch (err) {
@@ -209,7 +205,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
       try {
         // Verify authentication - pass userRole as fallback
-        const user = await verifyUserToken(token, userRole);
+        const user = verifyUserToken(token, userRole);
         if (!user) {
           const error = 'Authentication failed';
           console.warn(`❌ [socket] ${error} for socket ${socket.id}`);
@@ -426,7 +422,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       const { sessionId, token } = data;
 
       try {
-        const user = await verifyUserToken(token);
+        const user = verifyUserToken(token);
         if (!user || !['superadmin', 'admin', 'instructor'].includes(user.role)) {
           return callback({ 
             success: false, 
@@ -485,7 +481,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       const { sessionId, targetUserId, token } = data;
 
       try {
-        const user = await verifyUserToken(token);
+        const user = verifyUserToken(token);
         if (!user || !['superadmin', 'admin', 'instructor'].includes(user.role)) {
           return callback({ success: false, error: 'Unauthorized' });
         }
