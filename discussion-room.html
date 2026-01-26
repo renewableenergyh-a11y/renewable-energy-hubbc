@@ -623,9 +623,6 @@
           return;
         }
 
-        // Ensure current user is stored in localStorage so renderParticipants can access it
-        localStorage.setItem('currentUser', JSON.stringify(user));
-
         isInstructor = user.role === 'instructor' || user.role === 'admin' || user.role === 'superadmin';
 
         // Get session ID from URL
