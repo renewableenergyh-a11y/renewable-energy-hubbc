@@ -226,6 +226,9 @@ module.exports = function(db, discussionSessionService, participantService, io =
 
   /**
    * POST /api/discussions/sessions/:sessionId/close - Manually close a session
+   * Superadmin: can close ANY session
+   * Admin/Instructor: can only close THEIR OWN sessions
+   * Student: cannot close sessions
    * @returns {Object} Updated session
    */
   router.post('/sessions/:sessionId/close', verifyAuth, async (req, res) => {
@@ -236,7 +239,29 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      const session = await discussionSessionService.closeSessionManually(
+      // ✅ CRITICAL: Check authorization BEFORE calling service
+      // Superadmin can close ANY session
+      const session = await discussionSessionService.getSessionById(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: 'Session not found' });
+      }
+
+      // Enforce role hierarchy: only admin+ can close
+      if (!roles.hasAtLeastRole(req.user, 'instructor')) {
+        console.warn('❌ [close] User lacks permission (not instructor+):', { userId: req.user.id, role: req.user.role });
+        return res.status(403).json({ error: 'Only admins and instructors can close sessions' });
+      }
+
+      // Superadmin bypass: can close ANY session
+      // Admin/Instructor: only own sessions
+      if (!roles.hasAtLeastRole(req.user, 'superadmin') && session.creatorId !== req.user.id) {
+        console.warn('❌ [close] User lacks ownership:', { userId: req.user.id, creatorId: session.creatorId });
+        return res.status(403).json({ error: 'You can only close sessions you created' });
+      }
+
+      console.log('✅ [close] Authorization passed, closing session:', { sessionId, userId: req.user.id, role: req.user.role });
+
+      const closedSession = await discussionSessionService.closeSessionManually(
         sessionId,
         req.user.id,
         req.user.role
@@ -245,7 +270,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
       res.json({
         success: true,
         message: 'Session closed successfully',
-        session
+        session: closedSession
       });
     } catch (error) {
       console.error('Error closing session:', error);

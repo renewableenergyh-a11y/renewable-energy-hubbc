@@ -696,47 +696,6 @@
         font-size: 11px;
       }
     }
-
-      .room-header {
-        flex-wrap: wrap;
-      }
-
-      .room-info {
-        flex-direction: column;
-        gap: 8px;
-      }
-
-      .room-controls {
-        flex-wrap: wrap;
-        padding: 12px;
-      }
-
-      .btn-control {
-        flex: 1;
-        min-width: 80px;
-        justify-content: center;
-        gap: 4px;
-      }
-
-      .btn-control span {
-        display: none;
-      }
-
-      .participants-list {
-        max-height: 300px;
-      }
-
-      .participant-item {
-        padding: 10px;
-        font-size: 12px;
-      }
-
-      .participant-avatar {
-        width: 28px;
-        height: 28px;
-        font-size: 11px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -1076,11 +1035,25 @@
 
         roomTitle.textContent = sessionData.subject;
 
-        // Show close / end session button for instructors and admins (moderators)
-        const isModerator = user.role === 'superadmin' || user.role === 'instructor' || user.role === 'admin' || localStorage.getItem('fromAdminDashboard') === 'true';
-        if (isModerator) {
+        // ✅ CRITICAL: Show close / end session button ONLY for moderators (superadmin/admin/instructor)
+        // Students and regular users MUST NOT see this button
+        const isModerator = ['superadmin', 'admin', 'instructor'].includes(user.role);
+        const isFromAdminDashboard = localStorage.getItem('fromAdminDashboard') === 'true';
+        const canShowCloseButton = isModerator || isFromAdminDashboard;
+        
+        console.log('🔐 [discussion-room] Authorization check:', {
+          userRole: user.role,
+          isModerator: isModerator,
+          isFromAdminDashboard: isFromAdminDashboard,
+          canShowCloseButton: canShowCloseButton
+        });
+        
+        if (canShowCloseButton) {
           closeBtn.style.display = 'block';
           closeBtn.addEventListener('click', handleCloseSession);
+        } else {
+          closeBtn.style.display = 'none';
+          console.log('ℹ️ [discussion-room] Close button hidden for role:', user.role);
         }
 
         // Setup event listeners BEFORE joining
@@ -1284,18 +1257,35 @@
         });
       }
 
-      // Features panel toggle for small screens
+      // ✅ CRITICAL: Features panel toggle for small screens - features NEVER disappear
       const featuresSidebar = document.querySelector('.features-sidebar');
       const featuresToggleBtn = document.getElementById('featuresToggleBtn');
       if (featuresSidebar && featuresToggleBtn) {
+        // Show toggle button on mobile, hide on desktop (done via CSS media queries)
+        const updateToggleVisibility = () => {
+          if (window.innerWidth <= 768) {
+            featuresToggleBtn.style.display = 'inline-flex';
+          } else {
+            featuresToggleBtn.style.display = 'none';
+            featuresSidebar.classList.remove('drawer-active'); // Close drawer on resize to desktop
+          }
+        };
+        
+        // Initial visibility
+        updateToggleVisibility();
+        window.addEventListener('resize', updateToggleVisibility);
+        
+        // Toggle drawer when button clicked
         featuresToggleBtn.addEventListener('click', () => {
+          console.log('🎨 [discussion-room] Features drawer toggled');
           featuresSidebar.classList.toggle('drawer-active');
         });
 
-        // Close drawer when clicking outside (mobile)
+        // Close drawer when clicking outside (mobile only)
         document.addEventListener('click', (e) => {
           if (window.innerWidth <= 768 && featuresSidebar.classList.contains('drawer-active')) {
             if (!featuresSidebar.contains(e.target) && !featuresToggleBtn.contains(e.target)) {
+              console.log('🎨 [discussion-room] Features drawer closed (outside click)');
               featuresSidebar.classList.remove('drawer-active');
             }
           }
@@ -1330,13 +1320,21 @@
     }
 
     async function handleLeave() {
-      try {
-        await discussionSocket.leaveSession();
-        window.location.href = '/discussions.html';
-      } catch (error) {
-        console.error('Error leaving session:', error);
-        window.location.href = '/discussions.html';
-      }
+      // ✅ CRITICAL: Show confirmation modal before leaving (all roles)
+      showModal('Leave Discussion', 'Are you sure you want to leave this discussion? You can rejoin later.', [
+        { text: 'Cancel', class: 'modal-btn-secondary', callback: closeModal },
+        { text: 'Leave', class: 'modal-btn-primary', callback: async () => {
+          closeModal();
+          try {
+            console.log('👋 [discussion-room] User confirmed leave');
+            await discussionSocket.leaveSession();
+            window.location.href = '/discussions.html';
+          } catch (error) {
+            console.error('Error leaving session:', error);
+            window.location.href = '/discussions.html';
+          }
+        }}
+      ]);
     }
 
     async function handleCloseSession() {
