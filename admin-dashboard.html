@@ -4797,7 +4797,8 @@
     }
 
     async function deleteDiscussionSession(sessionId, subject) {
-      if (!confirm(`Are you sure you want to delete the session "${subject}"? This action cannot be undone.`)) {
+      const confirmed = await showConfirm('Delete Session', `Are you sure you want to delete the session "${subject}"? This action cannot be undone.`);
+      if (!confirmed) {
         return;
       }
 
@@ -4816,7 +4817,7 @@
           throw new Error(error.error || 'Failed to delete session');
         }
 
-        alert('Session deleted successfully');
+        await showAlert('Success', 'Session deleted successfully.', 'success');
         
         // Reload sessions list
         const sessionsList = document.getElementById('disc-sessions-list');
@@ -4824,12 +4825,13 @@
           await refreshDiscussionSessions(sessionsList);
         }
       } catch (error) {
-        alert('Error deleting session: ' + error.message);
+        await showAlert('Error', 'Error deleting session: ' + error.message, 'error');
       }
     }
 
     async function endDiscussionSession(sessionId, subject) {
-      if (!confirm(`End the session "${subject}"? All participants will be notified and redirected.`)) {
+      const confirmed = await showConfirm('End Session', `End the session "${subject}"? All participants will be notified and redirected.`);
+      if (!confirmed) {
         return;
       }
 
@@ -4848,7 +4850,7 @@
           throw new Error(error.error || 'Failed to end session');
         }
 
-        alert('Session ended successfully');
+        await showAlert('Success', 'Session ended successfully.', 'success');
         
         // Reload sessions list
         const sessionsList = document.getElementById('disc-sessions-list');
@@ -4856,7 +4858,7 @@
           await refreshDiscussionSessions(sessionsList);
         }
       } catch (error) {
-        alert('Error ending session: ' + error.message);
+        await showAlert('Error', 'Error ending session: ' + error.message, 'error');
       }
     }
 
