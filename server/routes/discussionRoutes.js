@@ -5,6 +5,37 @@
 const express = require('express');
 const router = express.Router();
 
+/**
+ * ROLE HIERARCHY (DO NOT MODIFY)
+ * superadmin > admin > instructor > student
+ */
+const ROLE_HIERARCHY = {
+  'superadmin': 4,
+  'admin': 3,
+  'instructor': 2,
+  'student': 1
+};
+
+/**
+ * Check if user can manage a session (based on role hierarchy)
+ * @param {String} userRole - User's role
+ * @param {String} sessionCreatorId - Session creator's user ID
+ * @param {String} userId - Current user's ID
+ * @returns {Boolean} True if user can manage session
+ */
+function canManageSession(userRole, sessionCreatorId, userId) {
+  // Superadmin can manage ANY session
+  if (userRole === 'superadmin') return true;
+  
+  // Admin and instructor can only manage their OWN sessions
+  if (['admin', 'instructor'].includes(userRole)) {
+    return sessionCreatorId === userId;
+  }
+  
+  // Students cannot manage any session
+  return false;
+}
+
 module.exports = function(db, discussionSessionService, participantService, io = null) {
   // Middleware to verify authentication (assumes auth token in headers)
   const verifyAuth = (req, res, next) => {
@@ -247,7 +278,10 @@ module.exports = function(db, discussionSessionService, participantService, io =
   });
 
   /**
-   * DELETE /api/discussions/sessions/:sessionId - Delete a session (admin only)
+   * DELETE /api/discussions/sessions/:sessionId - Delete a session
+   * Superadmin: can delete any session
+   * Admin/Instructor: can only delete their own sessions
+   * Student: cannot delete sessions
    * @returns {Object} Deletion confirmation
    */
   router.delete('/sessions/:sessionId', verifyAuth, async (req, res) => {
@@ -258,15 +292,27 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      // Only admins and instructors can delete sessions
+      // Only admins, instructors, and superadmins can delete sessions
       if (!['admin', 'instructor', 'superadmin'].includes(req.user.role)) {
         return res.status(403).json({ error: 'Only admins and instructors can delete sessions' });
       }
 
       console.log('🗑️ [DELETE] Session deletion requested:', { sessionId, userId: req.user.id, role: req.user.role });
 
+      // Fetch session to check ownership
+      const session = await discussionSessionService.getSessionById(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: 'Session not found' });
+      }
+
+      // Check if user has permission (role hierarchy + ownership)
+      if (!canManageSession(req.user.role, session.creatorId, req.user.id)) {
+        console.warn('❌ [DELETE] User does not have permission to delete session:', { userId: req.user.id, role: req.user.role, creatorId: session.creatorId });
+        return res.status(403).json({ error: 'You do not have permission to delete this session' });
+      }
+
       // Delete session from database
-      const session = await discussionSessionService.deleteSession(sessionId);
+      const deletedSession = await discussionSessionService.deleteSession(sessionId);
 
       // Delete all participants from session
       try {
@@ -293,7 +339,10 @@ module.exports = function(db, discussionSessionService, participantService, io =
   });
 
   /**
-   * POST /api/discussions/sessions/:sessionId/close - Manually close a session (admin/instructor only)
+   * POST /api/discussions/sessions/:sessionId/close - Manually close a session
+   * Superadmin: can close any session
+   * Admin/Instructor: can only close their own sessions
+   * Student: cannot close sessions
    * Transitions session from active/upcoming to closed without deleting it
    * @returns {Object} Updated session with status closed
    */
@@ -301,15 +350,31 @@ module.exports = function(db, discussionSessionService, participantService, io =
     try {
       const { sessionId } = req.params;
 
-      // Only admins and instructors can close sessions
+      if (!req.user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      // Only admins, instructors, and superadmins can close sessions
       if (!['admin', 'instructor', 'superadmin'].includes(req.user.role)) {
         return res.status(403).json({ error: 'Only admins and instructors can close sessions' });
       }
 
       console.log('🔒 [POST] Manual session close requested:', { sessionId, userId: req.user.id, role: req.user.role });
 
+      // Fetch session to check ownership
+      const session = await discussionSessionService.getSessionById(sessionId);
+      if (!session) {
+        return res.status(404).json({ error: 'Session not found' });
+      }
+
+      // Check if user has permission (role hierarchy + ownership)
+      if (!canManageSession(req.user.role, session.creatorId, req.user.id)) {
+        console.warn('❌ [POST] User does not have permission to close session:', { userId: req.user.id, role: req.user.role, creatorId: session.creatorId });
+        return res.status(403).json({ error: 'You do not have permission to close this session' });
+      }
+
       // Close session manually
-      const session = await discussionSessionService.closeSessionManually(sessionId, req.user.id, req.user.role);
+      const closedSession = await discussionSessionService.closeSessionManually(sessionId, req.user.id, req.user.role);
 
       console.log('✅ [POST] Session closed successfully:', sessionId);
 
@@ -317,7 +382,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
       if (io) {
         io.to(`discussion-session:${sessionId}`).emit('session-closed', {
           sessionId: sessionId,
-          reason: 'Session ended by ' + (req.user.role === 'admin' ? 'administrator' : 'instructor'),
+          reason: 'Session ended by ' + (req.user.role === 'admin' ? 'administrator' : req.user.role === 'superadmin' ? 'superadmin' : 'instructor'),
           timestamp: new Date()
         });
         console.log('📡 Broadcasted session-closed event for:', sessionId);
@@ -326,7 +391,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
       res.json({
         success: true,
         message: 'Session closed successfully',
-        session
+        session: closedSession
       });
     } catch (error) {
       console.error('❌ [POST] Error closing session:', error);

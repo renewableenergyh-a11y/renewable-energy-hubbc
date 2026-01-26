@@ -14,7 +14,7 @@
     }
     .room-container {
       display: grid;
-      grid-template-columns: 1fr 300px;
+      grid-template-columns: 1fr 250px 250px;
       gap: 20px;
       height: 100vh;
       background: #f5f5f5;
@@ -82,18 +82,32 @@
       justify-content: center;
       align-items: center;
       color: #999;
+      background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
     }
 
     .room-message {
       text-align: center;
       font-size: 18px;
       margin-bottom: 20px;
+      color: #333;
     }
 
     .room-note {
       font-size: 14px;
       color: #aaa;
       max-width: 400px;
+      line-height: 1.6;
+      text-align: center;
+    }
+
+    .room-controls {
+      padding: 20px;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      background: #f9f9f9;
     }
 
     .room-footer {
@@ -102,6 +116,34 @@
       display: flex;
       gap: 12px;
       justify-content: center;
+    }
+
+    .btn-control {
+      padding: 10px 16px;
+      background: white;
+      color: #666;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+    }
+
+    .btn-control:hover {
+      border-color: var(--green-main);
+      color: var(--green-main);
+      background: rgba(0, 121, 107, 0.05);
+    }
+
+    .btn-control.active {
+      background: var(--green-main);
+      color: white;
+      border-color: var(--green-main);
     }
 
     .btn-leave {
@@ -117,6 +159,7 @@
 
     .btn-leave:hover {
       background: #d32f2f;
+      box-shadow: 0 2px 8px rgba(244, 67, 54, 0.3);
     }
 
     .btn-close-session {
@@ -132,6 +175,7 @@
 
     .btn-close-session:hover {
       background: #e68900;
+      box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
     }
 
     .sidebar {
@@ -141,6 +185,7 @@
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
     }
 
     .sidebar-title {
@@ -149,8 +194,8 @@
       color: #333;
       margin-bottom: 16px;
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: center;
     }
 
     .participant-count {
@@ -179,6 +224,11 @@
       border-radius: 6px;
       font-size: 13px;
       color: #666;
+      transition: all 0.2s ease;
+    }
+
+    .participant-item:hover {
+      background: #f0f0f0;
     }
 
     .participant-avatar {
@@ -192,16 +242,19 @@
       justify-content: center;
       font-weight: 600;
       font-size: 12px;
+      flex-shrink: 0;
     }
 
     .participant-info {
       flex: 1;
+      min-width: 0;
     }
 
     .participant-name {
       font-weight: 500;
       color: #333;
       font-size: 13px;
+      word-break: break-word;
     }
 
     .participant-role {
@@ -215,6 +268,7 @@
       font-size: 10px;
       color: #4caf50;
       font-weight: 600;
+      white-space: nowrap;
     }
 
     .empty-participants {
@@ -222,6 +276,135 @@
       padding: 40px 20px;
       color: #999;
       font-size: 14px;
+    }
+
+    /* Zoom-like features sidebar */
+    .features-sidebar {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .features-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 16px;
+    }
+
+    .features-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .feature-btn {
+      padding: 10px 12px;
+      background: #f9f9f9;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-size: 12px;
+      color: #666;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 500;
+    }
+
+    .feature-btn:hover {
+      background: #f0f0f0;
+      border-color: var(--green-main);
+      color: var(--green-main);
+    }
+
+    .feature-btn.active {
+      background: var(--green-main);
+      color: white;
+      border-color: var(--green-main);
+    }
+
+    .feature-icon {
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .feature-label {
+      flex: 1;
+      text-align: left;
+    }
+
+    .reaction-picker {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      margin-top: 8px;
+      display: none;
+    }
+
+    .reaction-picker.active {
+      display: grid;
+    }
+
+    .reaction-btn {
+      padding: 8px;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+
+    .reaction-btn:hover {
+      background: #f0f0f0;
+      transform: scale(1.1);
+    }
+
+    .chat-preview {
+      padding: 12px;
+      background: #f9f9f9;
+      border-radius: 6px;
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .sidebar::-webkit-scrollbar,
+    .participants-list::-webkit-scrollbar,
+    .features-list::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .sidebar::-webkit-scrollbar-track,
+    .participants-list::-webkit-scrollbar-track,
+    .features-list::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb,
+    .participants-list::-webkit-scrollbar-thumb,
+    .features-list::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 3px;
+    }
+
+    .sidebar::-webkit-scrollbar-thumb:hover,
+    .participants-list::-webkit-scrollbar-thumb:hover,
+    .features-list::-webkit-scrollbar-thumb:hover {
+      background: #bbb;
     }
 
     .back-button {
@@ -237,10 +420,13 @@
       font-family: 'Poppins', sans-serif;
       font-weight: 500;
       color: #333;
+      transition: all 0.3s ease;
+      z-index: 10;
     }
 
     .back-button:hover {
       background: #d0d0d0;
+      transform: translateX(-2px);
     }
 
     .session-closed-overlay {
@@ -253,7 +439,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 2000;
     }
 
     .session-closed-modal {
@@ -262,20 +448,25 @@
       border-radius: 12px;
       text-align: center;
       max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: slideIn 0.3s ease;
     }
 
     .session-closed-modal h2 {
       color: #f44336;
-      margin-bottom: 12px;
+      margin: 0 0 12px 0;
+      font-size: 24px;
     }
 
     .session-closed-modal p {
       color: #666;
-      margin-bottom: 24px;
+      margin: 0 0 24px 0;
+      font-size: 14px;
+      line-height: 1.6;
     }
 
     .session-closed-modal button {
-      padding: 10px 24px;
+      padding: 12px 32px;
       background: var(--green-main);
       color: white;
       border: none;
@@ -283,10 +474,12 @@
       cursor: pointer;
       font-family: 'Poppins', sans-serif;
       font-weight: 600;
+      transition: all 0.3s ease;
     }
 
     .session-closed-modal button:hover {
       background: #005a4f;
+      box-shadow: 0 2px 8px rgba(0, 121, 107, 0.3);
     }
 
     /* Modal Styles */
@@ -407,6 +600,16 @@
       background: #e0e0e0;
     }
 
+    @media (max-width: 1024px) {
+      .room-container {
+        grid-template-columns: 1fr 200px;
+      }
+
+      .features-sidebar {
+        display: none;
+      }
+    }
+
     @media (max-width: 768px) {
       .room-container {
         grid-template-columns: 1fr;
@@ -428,6 +631,10 @@
         border-radius: 0;
       }
 
+      .features-sidebar {
+        display: none;
+      }
+
       .room-container {
         gap: 0;
       }
@@ -439,6 +646,22 @@
       .room-info {
         flex-direction: column;
         gap: 8px;
+      }
+
+      .room-controls {
+        flex-wrap: wrap;
+        padding: 12px;
+      }
+
+      .btn-control {
+        flex: 1;
+        min-width: 80px;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .btn-control span {
+        display: none;
       }
 
       .participants-list {
@@ -487,6 +710,29 @@
         </div>
       </div>
 
+      <div class="room-controls">
+        <button class="btn-control" id="muteBtn" title="Mute audio">
+          <i class="fas fa-microphone"></i>
+          <span>Mute</span>
+        </button>
+        <button class="btn-control" id="cameraBtn" title="Toggle camera">
+          <i class="fas fa-video"></i>
+          <span>Camera</span>
+        </button>
+        <button class="btn-control" id="raiseHandBtn" title="Raise hand">
+          <i class="fas fa-hand-paper"></i>
+          <span>Raise Hand</span>
+        </button>
+        <button class="btn-control" id="chatBtn" title="Open chat">
+          <i class="fas fa-comments"></i>
+          <span>Chat</span>
+        </button>
+        <button class="btn-control" id="shareBtn" title="Share screen">
+          <i class="fas fa-share-square"></i>
+          <span>Share</span>
+        </button>
+      </div>
+
       <div class="room-footer">
         <button class="btn-leave" id="leaveBtn">Leave Room</button>
         <button class="btn-close-session" id="closeBtn" style="display: none;">Close Session</button>
@@ -499,6 +745,35 @@
         <span class="participant-count" id="participantCount">0</span>
       </div>
       <div class="participants-list" id="participantsList"></div>
+    </div>
+
+    <div class="features-sidebar">
+      <div class="features-title">Features</div>
+      <div class="features-list">
+        <button class="feature-btn" id="reactionBtn" title="Send reaction">
+          <span class="feature-icon">😊</span>
+          <span class="feature-label">Reactions</span>
+        </button>
+        <div class="reaction-picker" id="reactionPicker">
+          <button class="reaction-btn" data-reaction="👍">👍</button>
+          <button class="reaction-btn" data-reaction="❤️">❤️</button>
+          <button class="reaction-btn" data-reaction="😂">😂</button>
+          <button class="reaction-btn" data-reaction="🤔">🤔</button>
+          <button class="reaction-btn" data-reaction="😮">😮</button>
+          <button class="reaction-btn" data-reaction="🙌">🙌</button>
+        </div>
+        <button class="feature-btn" id="chatFeatureBtn" title="Open chat">
+          <span class="feature-icon">💬</span>
+          <span class="feature-label">Chat (Coming Soon)</span>
+        </button>
+        <div class="chat-preview">
+          Chat feature coming in next update
+        </div>
+        <button class="feature-btn" id="recordBtn" title="Record session" style="margin-top: auto;">
+          <span class="feature-icon">⏱️</span>
+          <span class="feature-label">Session Info</span>
+        </button>
+      </div>
     </div>
   </div>
 
@@ -601,15 +876,63 @@
     });
 
     /**
-     * Show name collection modal and collect user's full name
-     * Admins/instructors/superadmins bypass this if their name is already in currentUser
+     * Get participant name from user details with fallback
+     * Uses: user.fullName > user.name > user.username > user.email > 'Participant'
+     * If none available, shows a modal to ask user for a name
      */
+    async function getOrPromptParticipantName(user) {
+      // Try to get name from user object in this priority order
+      if (user.fullName && user.fullName.trim()) return user.fullName;
+      if (user.name && user.name.trim()) return user.name;
+      if (user.username && user.username.trim()) return user.username;
+      if (user.email && user.email.trim()) return user.email;
+      
+      // If no name found, prompt user to enter one
+      return new Promise((resolve) => {
+        let userInput = '';
+        
+        showModal(
+          'Display Name',
+          `
+            <p>Please enter your name for this discussion:</p>
+            <input type="text" id="displayNameInput" placeholder="Enter your name" style="width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-family:Poppins,sans-serif;font-size:14px;box-sizing:border-box;" />
+          `,
+          [
+            {
+              text: 'Join',
+              class: 'modal-btn-primary',
+              callback: () => {
+                userInput = document.getElementById('displayNameInput')?.value || '';
+                closeModal();
+                resolve(userInput || 'Participant');
+              }
+            }
+          ]
+        );
+        
+        // Focus input and allow Enter key
+        setTimeout(() => {
+          const input = document.getElementById('displayNameInput');
+          if (input) {
+            input.focus();
+            input.addEventListener('keypress', (e) => {
+              if (e.key === 'Enter') {
+                userInput = input.value || '';
+                closeModal();
+                resolve(userInput || 'Participant');
+              }
+            });
+          }
+        }, 100);
+      });
+    }
+
     /**
      * Get participant name from user details
      * Uses name, email, username, or Participant as fallback
      */
     function getParticipantName(user) {
-      return user.name || user.email || user.username || 'Participant';
+      return user.fullName || user.name || user.username || user.email || 'Participant';
     }
 
     async function init() {
@@ -700,13 +1023,14 @@
         // Setup event listeners BEFORE joining
         setupListeners();
 
-        // Get participant name from user details (no modal)
+        // Get participant name from user details or prompt for one
         console.log('👤 [discussion-room] Getting participant name from user details...');
-        const participantFullName = getParticipantName(user);
+        const participantFullName = await getOrPromptParticipantName(user);
         console.log('✅ [discussion-room] Participant name:', participantFullName);
 
         // Update user object with the full name so it's sent with join request
         user.fullName = participantFullName;
+        localStorage.setItem('currentUser', JSON.stringify(user));
 
         // NOW register participant AFTER session is successfully resolved
         console.log('📝 [discussion-room] Registering participant via REST (creates in database)...');
@@ -819,6 +1143,109 @@
       // Button events
       leaveBtn.addEventListener('click', handleLeave);
       backBtn.addEventListener('click', handleLeave);
+
+      // Control button events (UI placeholders for WebRTC)
+      const muteBtn = document.getElementById('muteBtn');
+      const cameraBtn = document.getElementById('cameraBtn');
+      const raiseHandBtn = document.getElementById('raiseHandBtn');
+      const chatBtn = document.getElementById('chatBtn');
+      const shareBtn = document.getElementById('shareBtn');
+
+      if (muteBtn) {
+        let isMuted = false;
+        muteBtn.addEventListener('click', () => {
+          isMuted = !isMuted;
+          muteBtn.classList.toggle('active', !isMuted);
+          muteBtn.innerHTML = isMuted 
+            ? '<i class="fas fa-microphone-slash"></i><span>Unmute</span>'
+            : '<i class="fas fa-microphone"></i><span>Mute</span>';
+        });
+      }
+
+      if (cameraBtn) {
+        let isCameraOn = false;
+        cameraBtn.addEventListener('click', () => {
+          isCameraOn = !isCameraOn;
+          cameraBtn.classList.toggle('active', isCameraOn);
+          cameraBtn.innerHTML = isCameraOn
+            ? '<i class="fas fa-video"></i><span>Camera On</span>'
+            : '<i class="fas fa-video-slash"></i><span>Camera Off</span>';
+        });
+      }
+
+      if (raiseHandBtn) {
+        let isRaised = false;
+        raiseHandBtn.addEventListener('click', () => {
+          isRaised = !isRaised;
+          raiseHandBtn.classList.toggle('active', isRaised);
+          raiseHandBtn.innerHTML = isRaised
+            ? '<i class="fas fa-hand-paper"></i><span>Lower Hand</span>'
+            : '<i class="fas fa-hand-paper"></i><span>Raise Hand</span>';
+        });
+      }
+
+      if (chatBtn) {
+        chatBtn.addEventListener('click', () => {
+          showModal('Chat', 'Chat feature will be available in the next update with real-time messaging.', [
+            { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
+          ]);
+        });
+      }
+
+      if (shareBtn) {
+        shareBtn.addEventListener('click', () => {
+          showModal('Screen Share', 'Screen sharing feature will be available in the next update with WebRTC implementation.', [
+            { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
+          ]);
+        });
+      }
+
+      // Reaction buttons
+      const reactionBtn = document.getElementById('reactionBtn');
+      const reactionPicker = document.getElementById('reactionPicker');
+      if (reactionBtn && reactionPicker) {
+        reactionBtn.addEventListener('click', () => {
+          reactionPicker.classList.toggle('active');
+        });
+
+        reactionPicker.querySelectorAll('.reaction-btn').forEach(btn => {
+          btn.addEventListener('click', (e) => {
+            const reaction = btn.dataset.reaction;
+            console.log('Reaction sent:', reaction);
+            // TODO: Send reaction via socket.io
+            reactionPicker.classList.remove('active');
+            showModal('Reaction Sent', `Sent ${reaction} reaction to all participants`, [
+              { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
+            ]);
+          });
+        });
+      }
+
+      // Session info button
+      const recordBtn = document.getElementById('recordBtn');
+      if (recordBtn) {
+        recordBtn.addEventListener('click', () => {
+          if (!sessionData) return;
+          const startTime = new Date(sessionData.startTime).toLocaleString();
+          const endTime = new Date(sessionData.endTime).toLocaleString();
+          const now = new Date();
+          const elapsed = Math.floor((now - new Date(sessionData.startTime)) / 60000);
+          
+          showModal('Session Information', `
+            <div style="text-align: left;">
+              <p><strong>Subject:</strong> ${escapeHtml(sessionData.subject)}</p>
+              <p><strong>Type:</strong> ${sessionData.sessionType === 'instructor' ? 'Instructor-Led' : 'Peer Discussion'}</p>
+              <p><strong>Start Time:</strong> ${startTime}</p>
+              <p><strong>End Time:</strong> ${endTime}</p>
+              <p><strong>Duration:</strong> ${elapsed} minutes elapsed</p>
+              <p><strong>Participants:</strong> ${participantCount.textContent}</p>
+              <p><strong>Status:</strong> ${sessionData.status}</p>
+            </div>
+          `, [
+            { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
+          ]);
+        });
+      }
     }
 
     async function handleLeave() {
@@ -858,21 +1285,26 @@
       participantCount.textContent = stats.activeCount;
 
       const currentUser = getLocalCurrentUser();
-      const isModerator = currentUser && (currentUser.role === 'superadmin' || currentUser.role === 'instructor' || currentUser.role === 'admin' || localStorage.getItem('fromAdminDashboard') === 'true');
+      const userRole = currentUser?.role || 'student';
+      const isModerator = ['superadmin', 'admin', 'instructor'].includes(userRole);
 
       if (!participants || participants.length === 0) {
         participantsList.innerHTML = '<div class="empty-participants">No participants</div>';
         return;
       }
 
+      // Display ALL participants - do NOT filter by role
       participantsList.innerHTML = participants
         .map(p => {
-          // Display user name if available, otherwise email (if present), otherwise anonymized placeholder
+          // Display user name if available, otherwise email (if present), otherwise placeholder
           const displayName = p.userName || p.email || 'Participant';
           const avatarText = (displayName || 'U').charAt(0).toUpperCase();
 
-          const removeBtn = isModerator && currentUser && (p.userId !== currentUser.id)
-            ? `<button class="remove-participant-btn" data-userid="${escapeHtml(p.userId)}" title="Remove participant" style="background:transparent;border:none;color:var(--danger,#d32f2f);cursor:pointer;font-size:14px;margin-left:8px">✖</button>`
+          // ❌ Remove button shows ONLY for students when moderator is viewing
+          // NEVER show remove button next to admins, instructors, or superadmins
+          const showRemoveBtn = isModerator && currentUser && (p.userId !== currentUser.id) && p.role === 'student';
+          const removeBtn = showRemoveBtn
+            ? `<button class="remove-participant-btn" data-userid="${escapeHtml(p.userId)}" title="Remove participant" style="background:transparent;border:none;color:#d32f2f;cursor:pointer;font-size:14px;margin-left:8px">✖</button>`
             : '';
 
           return `
@@ -881,11 +1313,11 @@
                 <div class="participant-avatar">${escapeHtml(avatarText)}</div>
                 <div class="participant-info">
                   <div class="participant-name">${escapeHtml(displayName)}</div>
-                  <div class="participant-role">${p.role}</div>
+                  <div class="participant-role">${p.role.toUpperCase()}</div>
                 </div>
               </div>
               <div style="display:flex;align-items:center">
-                <div class="participant-status" style="margin-right:6px">${p.active ? 'Active' : 'Away'}</div>
+                <div class="participant-status" style="margin-right:6px">${p.active ? '🟢 Active' : '⚫ Away'}</div>
                 ${removeBtn}
               </div>
             </div>
@@ -897,6 +1329,7 @@
       if (isModerator) {
         participantsList.querySelectorAll('.remove-participant-btn').forEach(btn => {
           btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
             const targetUserId = btn.dataset.userid;
             if (!confirm('Remove this participant from the session?')) return;
             try {
@@ -921,13 +1354,40 @@
     }
 
     function startTimeUpdate() {
-      setInterval(() => {
+      setInterval(async () => {
         if (!sessionData) return;
 
         const now = new Date();
         const endTime = new Date(sessionData.endTime);
+        const startTime = new Date(sessionData.startTime);
         const diff = endTime - now;
 
+        // Check if session status needs updating (time-based)
+        if (sessionData.status === 'upcoming' && now >= startTime) {
+          // Session should be active now
+          console.log('⏱️ Session start time reached, status should be active');
+          sessionData.status = 'active';
+        }
+
+        // Check if session has ended
+        if ((sessionData.status === 'active' || sessionData.status === 'upcoming') && diff <= 0) {
+          console.log('⏱️ Session end time reached, closing...');
+          sessionData.status = 'closed';
+          
+          // Show session ended overlay
+          closedReason.textContent = 'The session has ended.';
+          sessionClosedOverlay.style.display = 'flex';
+          
+          // Auto-redirect after 3 seconds
+          setTimeout(() => {
+            window.location.href = '/discussions.html';
+          }, 3000);
+          
+          timeInfo.textContent = 'Session ended';
+          return;
+        }
+
+        // Update time display
         if (diff <= 0) {
           timeInfo.textContent = 'Session ended';
           return;

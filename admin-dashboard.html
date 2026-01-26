@@ -4768,6 +4768,7 @@
         const adminEmail = localStorage.getItem('adminEmail') || '';
         const adminRole = localStorage.getItem('adminRole') || 'superadmin';
         const adminName = localStorage.getItem('adminName') || 'Admin';
+        const adminId = localStorage.getItem('adminId') || adminEmail;
 
         console.log('🔐 [admin-dashboard] Admin credentials:', { adminEmail, adminRole, token: !!adminToken });
 
@@ -4775,15 +4776,21 @@
           // Set standard auth token and currentUser so public pages recognize admin
           localStorage.setItem('authToken', adminToken);
           localStorage.setItem('currentUser', JSON.stringify({
-            id: adminEmail,
+            id: adminId,
+            _id: adminId,
             email: adminEmail,
             name: adminName,
+            fullName: adminName,
+            username: adminName,
             role: adminRole
           }));
+          localStorage.setItem('isLoggedIn', 'true');
           // Mark that this user came from the admin dashboard (for audits/UI)
           localStorage.setItem('fromAdminDashboard', 'true');
           
           console.log('✅ [admin-dashboard] Auth tokens set. Redirecting to discussion room...');
+        } else {
+          throw new Error('No admin token found');
         }
 
         // Redirect into the discussion room using standard session URL

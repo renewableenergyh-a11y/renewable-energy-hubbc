@@ -1,6 +1,37 @@
 const crypto = require('crypto');
 
 /**
+ * ROLE HIERARCHY (DO NOT MODIFY)
+ * superadmin > admin > instructor > student
+ */
+const ROLE_HIERARCHY = {
+  'superadmin': 4,
+  'admin': 3,
+  'instructor': 2,
+  'student': 1
+};
+
+/**
+ * Check if user can manage a session (based on role hierarchy)
+ * @param {String} userRole - User's role
+ * @param {String} sessionCreatorId - Session creator's user ID
+ * @param {String} userId - Current user's ID
+ * @returns {Boolean} True if user can manage session
+ */
+function canManageSession(userRole, sessionCreatorId, userId) {
+  // Superadmin can manage ANY session
+  if (userRole === 'superadmin') return true;
+  
+  // Admin and instructor can only manage their OWN sessions
+  if (['admin', 'instructor'].includes(userRole)) {
+    return sessionCreatorId === userId;
+  }
+  
+  // Students cannot manage any session
+  return false;
+}
+
+/**
  * DiscussionSessionService - Handles all discussion session operations
  * Single source of truth for session state and lifecycle
  */
@@ -211,7 +242,7 @@ class DiscussionSessionService {
    * Manually close a session (by instructor or admin)
    * @param {String} sessionId - Session ID
    * @param {String} userId - User ID closing the session
-   * @param {String} userRole - User role (admin, instructor)
+   * @param {String} userRole - User role (admin, instructor, superadmin)
    * @returns {Object} Updated session
    */
   async closeSessionManually(sessionId, userId, userRole) {
@@ -220,7 +251,7 @@ class DiscussionSessionService {
       throw new Error('DiscussionSession model not initialized');
     }
 
-    // Validate permissions
+    // Validate permissions - only admins, instructors, and superadmins can close sessions
     if (!['superadmin', 'admin', 'instructor'].includes(userRole)) {
       throw new Error('Only admins and instructors can close sessions');
     }
@@ -230,9 +261,9 @@ class DiscussionSessionService {
       throw new Error('Session not found');
     }
 
-    // Instructors can only close their own sessions
-    if (userRole === 'instructor' && session.creatorId !== userId) {
-      throw new Error('Instructors can only close their own sessions');
+    // Check ownership/permission using role hierarchy
+    if (!canManageSession(userRole, session.creatorId, userId)) {
+      throw new Error('You do not have permission to close this session');
     }
 
     // Only close if not already closed

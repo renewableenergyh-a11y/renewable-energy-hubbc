@@ -6,6 +6,37 @@
 const crypto = require('crypto');
 
 /**
+ * ROLE HIERARCHY (DO NOT MODIFY)
+ * superadmin > admin > instructor > student
+ */
+const ROLE_HIERARCHY = {
+  'superadmin': 4,
+  'admin': 3,
+  'instructor': 2,
+  'student': 1
+};
+
+/**
+ * Check if user can manage a session (based on role hierarchy)
+ * @param {String} userRole - User's role
+ * @param {String} sessionCreatorId - Session creator's user ID
+ * @param {String} userId - Current user's ID
+ * @returns {Boolean} True if user can manage session
+ */
+function canManageSession(userRole, sessionCreatorId, userId) {
+  // Superadmin can manage ANY session
+  if (userRole === 'superadmin') return true;
+  
+  // Admin and instructor can only manage their OWN sessions
+  if (['admin', 'instructor'].includes(userRole)) {
+    return sessionCreatorId === userId;
+  }
+  
+  // Students cannot manage any session
+  return false;
+}
+
+/**
  * Initialize Socket.IO for discussion system
  * @param {Object} io - Socket.IO server instance
  * @param {Object} db - Database instance with models
@@ -366,6 +397,8 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     /**
      * Event: close-session (admin/instructor only)
      * Force close a session
+     * Superadmin: can close any session
+     * Admin/Instructor: can only close their own sessions
      */
     socket.on('close-session', async (data, callback) => {
       const { sessionId, token } = data;
@@ -381,8 +414,20 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
         console.log(`🔒 User ${user.id} (${user.role}) closing session ${sessionId}`);
 
+        // Fetch session to check ownership/permission
+        const session = await discussionSessionService.getSessionById(sessionId);
+        if (!session) {
+          return callback({ success: false, error: 'Session not found' });
+        }
+
+        // Check if user has permission (role hierarchy + ownership)
+        if (!canManageSession(user.role, session.creatorId, user.id)) {
+          console.warn(`❌ User ${user.id} (${user.role}) does not have permission to close session ${sessionId}`);
+          return callback({ success: false, error: 'You do not have permission to close this session' });
+        }
+
         // Close session in database
-        const session = await discussionSessionService.closeSessionManually(
+        const closedSession = await discussionSessionService.closeSessionManually(
           sessionId,
           user.id,
           user.role
@@ -400,7 +445,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
             if (clientSocket) {
               clientSocket.emit('session-closed', {
                 sessionId: sessionId,
-                reason: 'Session closed by instructor/admin',
+                reason: 'Session closed by ' + (user.role === 'superadmin' ? 'superadmin' : user.role === 'admin' ? 'administrator' : 'instructor'),
                 closedBy: user.id,
                 closedByRole: user.role,
                 timestamp: new Date()
@@ -424,7 +469,9 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
     /**
      * Event: admin-remove-participant
-     * Allows moderators (admin/instructor) to remove a participant
+     * Allows moderators (admin/instructor/superadmin) to remove a participant
+     * Superadmin: can remove any participant from any session
+     * Admin/Instructor: can only remove from their own sessions
      */
     socket.on('admin-remove-participant', async (data, callback) => {
       const { sessionId, targetUserId, token } = data;
@@ -433,6 +480,18 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         const user = verifyUserToken(token);
         if (!user || !['superadmin', 'admin', 'instructor'].includes(user.role)) {
           return callback({ success: false, error: 'Unauthorized' });
+        }
+
+        // Fetch session to check ownership
+        const session = await discussionSessionService.getSessionById(sessionId);
+        if (!session) {
+          return callback({ success: false, error: 'Session not found' });
+        }
+
+        // Check if user has permission to remove participants from this session
+        if (!canManageSession(user.role, session.creatorId, user.id)) {
+          console.warn(`❌ User ${user.id} (${user.role}) does not have permission to manage session ${sessionId}`);
+          return callback({ success: false, error: 'You do not have permission to manage this session' });
         }
 
         // Remove participant from DB
