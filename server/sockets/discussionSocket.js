@@ -26,7 +26,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
    * @param {String} token - JWT token from client
    * @returns {Object|null} User object { id, role } or null if invalid
    */
-  const verifyUserToken = (token, fallbackRole) => {
+  const verifyUserToken = (token) => {
     if (!token) {
       console.warn('⚠️  No token provided for Socket.IO auth');
       return null;
@@ -39,14 +39,6 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         users = require('../storage').loadUsers();
       } catch (err) {
         console.warn('⚠️  Could not load users from storage:', err.message);
-        // If fallback role is provided and not guest, use it
-        if (fallbackRole && fallbackRole !== 'guest') {
-          return {
-            id: 'verified-via-rest',
-            role: fallbackRole,
-            name: 'User'
-          };
-        }
         // Continue without user verification - allow anonymous joins for now
         return {
           id: 'anonymous',
@@ -77,9 +69,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         if (fs.existsSync(adminsPath)) {
           const adminData = JSON.parse(fs.readFileSync(adminsPath, 'utf8'));
           const admins = adminData.admins || [];
-          console.log(`🔍 [verifyUserToken] Checking ${admins.length} admins for token match`);
           for (const admin of admins) {
-            console.log(`🔍 [verifyUserToken] Comparing token lengths: received=${token ? token.length : 0}, admin=${admin.token ? admin.token.length : 0}`);
             if (admin.token === token) {
               console.log('✅ Socket.IO auth verified for superadmin:', admin.email);
               return {
@@ -96,15 +86,6 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       }
 
       console.warn('⚠️  Token not found in users or admins database');
-      // If fallback role from REST is provided, use it
-      if (fallbackRole && fallbackRole !== 'student') {
-        console.log(`✅ Using fallback role from REST auth: ${fallbackRole}`);
-        return {
-          id: 'verified-via-rest',
-          role: fallbackRole,
-          name: 'User'
-        };
-      }
       // If token not in DB, still allow (might be valid JWT elsewhere)
       return {
         id: 'verified-user',
@@ -114,14 +95,6 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       };
     } catch (err) {
       console.warn('⚠️  Token verification error:', err.message);
-      // If fallback role is provided, use it
-      if (fallbackRole && fallbackRole !== 'student') {
-        return {
-          id: 'fallback-verified',
-          role: fallbackRole,
-          name: 'User'
-        };
-      }
       // Allow fallback for Socket.IO connections
       return {
         id: 'fallback-user',
@@ -199,13 +172,13 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
      * This event only joins the socket to the room and broadcasts presence
      */
     socket.on('join-session', async (data, callback) => {
-      const { sessionId, token, userRole } = data;
+      const { sessionId, token } = data;
 
       console.log('🔌 [socket] join-session event received:', { sessionId, socketId: socket.id });
 
       try {
-        // Verify authentication - pass userRole as fallback
-        const user = verifyUserToken(token, userRole);
+        // Verify authentication
+        const user = verifyUserToken(token);
         if (!user) {
           const error = 'Authentication failed';
           console.warn(`❌ [socket] ${error} for socket ${socket.id}`);

@@ -125,21 +125,12 @@ export class DiscussionSocketService {
       throw new Error('Socket not connected. Call connect() first.');
     }
 
-    // Get current user role to send along with token
-    let userRole = 'student';
-    try {
-      const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
-      userRole = currentUser.role || 'student';
-    } catch (e) {
-      // Default to student if parsing fails
-    }
-
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
         reject(new Error('Join session timeout'));
       }, 10000);
 
-      this.socket.emit('join-session', { sessionId, token, userRole }, (response) => {
+      this.socket.emit('join-session', { sessionId, token }, (response) => {
         clearTimeout(timeout);
 
         if (response.success) {
