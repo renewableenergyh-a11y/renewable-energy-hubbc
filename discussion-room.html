@@ -382,6 +382,18 @@
     </div>
   </div>
 
+  <!-- Participant Name Modal -->
+  <div class="participant-name-overlay" id="participantNameOverlay" style="display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); display: flex; align-items: center; justify-content: center; z-index: 2000;">
+    <div style="background: white; padding: 32px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); max-width: 400px; width: 90%;">
+      <h2 style="margin: 0 0 16px 0; font-size: 20px; font-weight: 600; color: #333;">Welcome to the Discussion</h2>
+      <p style="margin: 0 0 20px 0; color: #666; font-size: 14px;">Please enter your full name to join</p>
+      <form id="participantNameForm" style="display: flex; flex-direction: column; gap: 16px;">
+        <input type="text" id="participantFullName" placeholder="Full Name" required style="padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; font-family: inherit;">
+        <button type="submit" style="padding: 10px 12px; background: var(--green-main, #007968); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s ease;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">Join Session</button>
+      </form>
+    </div>
+  </div>
+
   <script type="module">
     import { getCurrentUser, logoutUser } from '/js/core/auth.js';
     
@@ -414,6 +426,60 @@
 
     let sessionData = null;
     let isInstructor = false;
+
+    /**
+     * Show name collection modal and collect user's full name
+     * Admins/instructors/superadmins bypass this if their name is already in currentUser
+     */
+    async function collectParticipantName(user) {
+      // If user is admin/instructor/superadmin and has a known name, skip modal
+      if (['admin', 'instructor', 'superadmin'].includes(user.role) && user.name && user.name.trim()) {
+        console.log('ℹ️ [name-modal] Admin/instructor has known name, skipping modal');
+        return user.name;
+      }
+
+      // Show modal and collect name
+      return new Promise((resolve) => {
+        const overlay = document.getElementById('participantNameOverlay');
+        const form = document.getElementById('participantNameForm');
+        const nameInput = document.getElementById('participantFullName');
+
+        // Pre-fill if user has a name
+        if (user.name && user.name.trim()) {
+          nameInput.value = user.name;
+        }
+
+        // Show modal
+        overlay.style.display = 'flex';
+        nameInput.focus();
+
+        // Handle form submission
+        const handleSubmit = (e) => {
+          e.preventDefault();
+          const fullName = nameInput.value.trim();
+          if (!fullName) {
+            alert('Please enter your full name');
+            return;
+          }
+
+          // Hide modal
+          overlay.style.display = 'none';
+          form.removeEventListener('submit', handleSubmit);
+
+          // Store name in localStorage for future sessions
+          localStorage.setItem('userFullName', fullName);
+
+          // Update currentUser with the name
+          const currentUser = JSON.parse(localStorage.getItem('currentUser') || '{}');
+          currentUser.name = fullName;
+          localStorage.setItem('currentUser', JSON.stringify(currentUser));
+
+          resolve(fullName);
+        };
+
+        form.addEventListener('submit', handleSubmit);
+      });
+    }
 
     async function init() {
       try {
@@ -481,7 +547,7 @@
         roomTitle.textContent = sessionData.subject;
 
         // Show close / end session button for instructors and admins (moderators)
-        const isModerator = user.role === 'instructor' || user.role === 'admin' || localStorage.getItem('fromAdminDashboard') === 'true';
+        const isModerator = user.role === 'superadmin' || user.role === 'instructor' || user.role === 'admin' || localStorage.getItem('fromAdminDashboard') === 'true';
         if (isModerator) {
           closeBtn.style.display = 'block';
           closeBtn.addEventListener('click', handleCloseSession);
@@ -489,6 +555,14 @@
 
         // Setup event listeners BEFORE joining
         setupListeners();
+
+        // Collect participant name before joining the session
+        console.log('👤 [discussion-room] Collecting participant name...');
+        const participantFullName = await collectParticipantName(user);
+        console.log('✅ [discussion-room] Participant name collected:', participantFullName);
+
+        // Update user object with the full name so it's sent with join request
+        user.fullName = participantFullName;
 
         // NOW register participant AFTER session is successfully resolved
         console.log('📝 [discussion-room] Registering participant via REST (creates in database)...');
@@ -503,6 +577,7 @@
               'Authorization': `Bearer ${user.token}`,
               'x-user-id': user.id || user._id,
               'x-user-role': userRole,
+              'x-user-name': user.fullName || user.name || '',
               'Content-Type': 'application/json'
             }
           });
@@ -623,7 +698,7 @@
       participantCount.textContent = stats.activeCount;
 
       const currentUser = getLocalCurrentUser();
-      const isModerator = currentUser && (currentUser.role === 'instructor' || currentUser.role === 'admin' || localStorage.getItem('fromAdminDashboard') === 'true');
+      const isModerator = currentUser && (currentUser.role === 'superadmin' || currentUser.role === 'instructor' || currentUser.role === 'admin' || localStorage.getItem('fromAdminDashboard') === 'true');
 
       if (!participants || participants.length === 0) {
         participantsList.innerHTML = '<div class="empty-participants">No participants</div>';

@@ -372,7 +372,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
       try {
         const user = verifyUserToken(token);
-        if (!user || !['admin', 'instructor'].includes(user.role)) {
+        if (!user || !['superadmin', 'admin', 'instructor'].includes(user.role)) {
           return callback({ 
             success: false, 
             error: 'Only admins and instructors can close sessions' 
@@ -431,7 +431,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
       try {
         const user = verifyUserToken(token);
-        if (!user || !['admin', 'instructor'].includes(user.role)) {
+        if (!user || !['superadmin', 'admin', 'instructor'].includes(user.role)) {
           return callback({ success: false, error: 'Unauthorized' });
         }
 

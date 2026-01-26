@@ -392,10 +392,13 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
+      // Get user name from header (sent from discussion room after name modal)
+      const userName = req.headers['x-user-name'] || req.user.name || req.user.email;
+
       console.log('📝 [REST/participants/join] Registering participant', {
         sessionId,
         userId: req.user.id,
-        userName: req.user.name,
+        userName: userName,
         userRole: req.user.role
       });
 
@@ -425,7 +428,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
           sessionId,
           req.user.id,
           req.user.role,
-          req.user.name || req.user.email
+          userName
         );
 
         console.log('✅ [REST/participants/join] Participant created in database', {
@@ -562,7 +565,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
 
       // Check permissions - only admins, instructors, or session participants
       const isParticipant = await participantService.isUserInSession(sessionId, req.user.id);
-      if (!isParticipant && !['admin', 'instructor'].includes(req.user.role)) {
+      if (!isParticipant && !['superadmin', 'admin', 'instructor'].includes(req.user.role)) {
         return res.status(403).json({ error: 'Access denied' });
       }
 

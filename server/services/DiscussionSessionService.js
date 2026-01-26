@@ -221,7 +221,7 @@ class DiscussionSessionService {
     }
 
     // Validate permissions
-    if (!['admin', 'instructor'].includes(userRole)) {
+    if (!['superadmin', 'admin', 'instructor'].includes(userRole)) {
       throw new Error('Only admins and instructors can close sessions');
     }
 
