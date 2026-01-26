@@ -48,7 +48,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         };
       }
 
-      // Look for matching token
+      // Look for matching token in regular users
       for (const [email, user] of Object.entries(users)) {
         if (user && user.token === token) {
           console.log('✅ Socket.IO auth verified for:', email);
@@ -61,7 +61,31 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         }
       }
 
-      console.warn('⚠️  Token not found in users database');
+      // Check admins.json for superadmin tokens
+      try {
+        const fs = require('fs');
+        const path = require('path');
+        const adminsPath = path.join(__dirname, '../admins.json');
+        if (fs.existsSync(adminsPath)) {
+          const adminData = JSON.parse(fs.readFileSync(adminsPath, 'utf8'));
+          const admins = adminData.admins || [];
+          for (const admin of admins) {
+            if (admin.token === token) {
+              console.log('✅ Socket.IO auth verified for superadmin:', admin.email);
+              return {
+                id: admin.id || admin.email,
+                email: admin.email,
+                role: 'superadmin',
+                name: admin.name || admin.email.split('@')[0]
+              };
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('⚠️  Could not check admins.json:', err.message);
+      }
+
+      console.warn('⚠️  Token not found in users or admins database');
       // If token not in DB, still allow (might be valid JWT elsewhere)
       return {
         id: 'verified-user',
