@@ -1127,20 +1127,25 @@
             console.log('✅ [discussion-room] Socket joined and participant list broadcasted');
           }
         } catch (error) {
-        showModal('Failed to Load', 'Unable to initialize the discussion room.', [
-          { text: 'Return', class: 'modal-btn-primary', callback: () => {
-            closeModal();
-            window.location.href = '/discussions.html';
-          }}
-        ]);
+          console.error('Failed to initialize room:', error);
+          showModal('Failed to Load', `Unable to initialize the discussion room: ${error.message}`, [
+            { text: 'Return', class: 'modal-btn-primary', callback: () => {
+              closeModal();
+              window.location.href = '/discussions.html';
+            }}
+          ]);
         }
 
         // Start time update
         startTimeUpdate();
       } catch (error) {
         console.error('Failed to initialize room:', error);
-        alert('Failed to load room');
-        window.location.href = '/discussions.html';
+        showModal('Failed to Load Room', `Error: ${error.message}`, [
+          { text: 'Return', class: 'modal-btn-primary', callback: () => {
+            closeModal();
+            window.location.href = '/discussions.html';
+          }}
+        ]);
       }
     }
 
