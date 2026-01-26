@@ -3346,6 +3346,7 @@
         type: 'info',
         title: `Preview: ${item.title || item.file}`,
         message: `<pre style="max-height:400px; overflow-y:auto; background:#f5f5f5; padding:10px; border-radius:4px; font-size:12px; font-family:monospace; white-space:pre-wrap; word-break:break-word;">${escapeHtml(content)}</pre>`,
+        messageHtml: true,
         onConfirm: () => {}
       });
     }
@@ -4845,7 +4846,7 @@
           </div>
         `;
         
-        await showAlert('Session Details', detailsHtml, 'info');
+        await showAlert('Session Details', detailsHtml, 'info', true);
       } catch (error) {
         console.error('Error loading session details:', error);
         await showAlert('Error', 'Failed to load session details: ' + error.message, 'error');
@@ -5672,7 +5673,7 @@
 
     // Styled Modal Dialogs
     function showModal(options) {
-      const { type = 'info', title, message, onConfirm, onCancel } = options;
+      const { type = 'info', title, message, onConfirm, onCancel, messageHtml = false } = options;
       const overlay = document.createElement('div');
       overlay.className = 'modal-overlay';
       
@@ -5695,7 +5696,7 @@
       content.innerHTML = `
         <div class="modal-icon ${iconColor[type]}">${icons[type]}</div>
         <h2 class="modal-title">${escapeHtml(title)}</h2>
-        <p class="modal-message">${escapeHtml(message)}</p>
+        ${messageHtml ? `<div class="modal-message">${message || ''}</div>` : `<p class="modal-message">${escapeHtml(message)}</p>`}
         <div class="modal-buttons">
           ${onCancel ? '<button class="modal-btn modal-btn-secondary" id="modal-cancel">Cancel</button>' : ''}
           ${onConfirm ? `<button class="modal-btn modal-btn-primary" id="modal-confirm">${onCancel ? 'Confirm' : 'OK'}</button>` : ''}
@@ -5728,12 +5729,13 @@
       if (confirmBtn) confirmBtn.focus();
     }
 
-    function showAlert(title, message, type = 'info') {
+    function showAlert(title, message, type = 'info', messageHtml = false) {
       return new Promise((resolve) => {
         showModal({
           type,
           title,
           message,
+          messageHtml,
           onConfirm: resolve
         });
       });
