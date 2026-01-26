@@ -1038,8 +1038,7 @@
         // ✅ CRITICAL: Show close / end session button ONLY for moderators (superadmin/admin/instructor)
         // Students and regular users MUST NOT see this button
         const isModerator = ['superadmin', 'admin', 'instructor'].includes(user.role);
-        const isFromAdminDashboard = localStorage.getItem('fromAdminDashboard') === 'true';
-        const canShowCloseButton = isModerator || isFromAdminDashboard;
+        const canShowCloseButton = isModerator;
         
         console.log('🔐 [discussion-room] Authorization check:', {
           userRole: user.role,
@@ -1160,8 +1159,13 @@
       });
 
       discussionSocket.on('session-closed', (data) => {
+        console.log('🔴 [discussion-room] Session closed event received:', data);
+        // Immediately disable all controls
+        document.querySelectorAll('button').forEach(btn => btn.disabled = true);
+        document.querySelectorAll('input').forEach(input => input.disabled = true);
         closedReason.textContent = data.reason || 'The session has been closed.';
         sessionClosedOverlay.style.display = 'flex';
+        // Redirect after 3 seconds
         setTimeout(() => {
           window.location.href = '/discussions.html';
         }, 3000);

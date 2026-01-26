@@ -424,10 +424,12 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         // Get all sockets in the session room
         const room = sessionRooms.get(sessionId);
         if (room) {
+          console.log(`📡 [socket] Broadcasting session-closed to ${room.size} sockets in room`);
           // Force disconnect all clients in the session
           room.forEach(socketId => {
             const clientSocket = io.sockets.sockets.get(socketId);
             if (clientSocket) {
+              console.log(`   → Sending to socket ${socketId}`);
               clientSocket.emit('session-closed', {
                 sessionId: sessionId,
                 reason: 'Session closed by ' + (user.role === 'superadmin' ? 'superadmin' : user.role === 'admin' ? 'administrator' : 'instructor'),
@@ -439,6 +441,15 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
             }
           });
           sessionRooms.delete(sessionId);
+        } else {
+          console.warn(`⚠️  [socket] No room found for session ${sessionId}, using io.to() broadcast`);
+          io.to(`discussion-session:${sessionId}`).emit('session-closed', {
+            sessionId: sessionId,
+            reason: 'Session closed by ' + (user.role === 'superadmin' ? 'superadmin' : user.role === 'admin' ? 'administrator' : 'instructor'),
+            closedBy: user.id,
+            closedByRole: user.role,
+            timestamp: new Date()
+          });
         }
 
         // Broadcast final status
