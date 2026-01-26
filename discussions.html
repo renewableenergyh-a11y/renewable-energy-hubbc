@@ -314,6 +314,124 @@
       font-size: 13px;
     }
 
+    /* Modal Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      padding: 32px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 16px;
+    }
+
+    .modal-header h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+      transition: color 0.3s ease;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close-btn:hover {
+      color: #333;
+    }
+
+    .modal-body {
+      margin-bottom: 24px;
+      color: #666;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .modal-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .modal-btn-primary {
+      background: var(--green-main);
+      color: white;
+    }
+
+    .modal-btn-primary:hover {
+      background: #005a4f;
+      box-shadow: 0 2px 8px rgba(0, 121, 107, 0.3);
+    }
+
+    .modal-btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .modal-btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
     @media (max-width: 768px) {
       .discussions-container {
         padding: 16px;
@@ -414,6 +532,18 @@
   </div>
 </footer>
 
+  <!-- Modal -->
+  <div class="modal-overlay" id="customModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Modal Title</h3>
+        <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">Modal body content</div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
+
   <script type="module">
     import { getCurrentUser, logoutUser } from '/js/core/auth.js';
     import { discussionSocket } from '/js/services/discussionSocket.js';
@@ -443,9 +573,62 @@
     let allSessions = [];
     let courses = [];
 
+    // Modal Helper Functions
+    function showModal(title, body, buttons = []) {
+      const modal = document.getElementById('customModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+      const modalFooter = document.getElementById('modalFooter');
+
+      modalTitle.textContent = title;
+      modalBody.innerHTML = body;
+
+      // Build footer buttons
+      modalFooter.innerHTML = buttons
+        .map(btn => `<button class="modal-btn ${btn.class}">${btn.text}</button>`)
+        .join('');
+
+      // Attach callbacks
+      buttons.forEach((btn, index) => {
+        const footer = modalFooter.querySelectorAll('.modal-btn')[index];
+        if (footer) {
+          footer.addEventListener('click', btn.callback);
+        }
+      });
+
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('customModal');
+      modal.classList.remove('active');
+    }
+
+    // Close modal when clicking overlay
+    window.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('customModal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+      }
+    });
+
     // Initialize page
     async function init() {
       try {
+        // Setup modal overlay click handler
+        const modal = document.getElementById('customModal');
+        if (modal) {
+          modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+              closeModal();
+            }
+          });
+        }
+
         const user = await authService.getCurrentUser();
         if (!user) {
           window.location.href = '/login.html';
@@ -651,14 +834,27 @@
         await discussionSocket.joinSession(sessionId, user.token);
         window.location.href = `/discussion-room.html?sessionId=${sessionId}`;
       } catch (error) {
-        alert(`Failed to join: ${error.message}`);
+        showModal('Join Failed', `Unable to join discussion: ${error.message}`, [
+          { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
+        ]);
       }
     }
 
     function handleViewDetails(sessionId) {
       const session = allSessions.find(s => s.sessionId === sessionId);
       if (session) {
-        alert(`Discussion: ${session.subject}\n\nStatus: ${session.status}\nParticipants: ${session.participantCount}`);
+        const startTime = new Date(session.startTime).toLocaleString();
+        const endTime = new Date(session.endTime).toLocaleTimeString();
+        const detailsHtml = `
+          <strong>Status:</strong> ${session.status}<br>
+          <strong>Type:</strong> ${session.sessionType}<br>
+          <strong>Starts:</strong> ${startTime}<br>
+          <strong>Ends:</strong> ${endTime}<br>
+          <strong>Participants:</strong> ${session.participantCount || 0}
+        `;
+        showModal('Discussion Details', detailsHtml, [
+          { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
+        ]);
       }
     }
 
@@ -683,8 +879,12 @@
       });
 
       discussionSocket.on('session-closed', () => {
-        alert('The session has been closed.');
-        loadSessions();
+        showModal('Session Closed', 'The discussion session has been closed.', [
+          { text: 'OK', class: 'modal-btn-primary', callback: () => {
+            closeModal();
+            loadSessions();
+          }}
+        ]);
       });
 
       // Auto-refresh every 30 seconds
