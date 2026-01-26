@@ -292,18 +292,111 @@
       color: #666;
       font-weight: 500;
     }
+
+    .site-footer {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 40px 20px 20px;
+      margin-top: 60px;
+    }
+
+    .footer-container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-content {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 30px;
+      margin-bottom: 30px;
+    }
+
+    .footer-section h4 {
+      margin-bottom: 15px;
+      color: #fff;
+      font-size: 16px;
+    }
+
+    .footer-section p {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #bdc3c7;
+    }
+
+    .footer-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .footer-section li {
+      margin-bottom: 8px;
+    }
+
+    .footer-section a {
+      color: #bdc3c7;
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.3s ease;
+    }
+
+    .footer-section a:hover {
+      color: #fff;
+    }
+
+    .footer-bottom {
+      border-top: 1px solid #34495e;
+      padding-top: 20px;
+      text-align: center;
+      color: #95a5a6;
+      font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+      .discussions-container {
+        padding: 16px;
+        gap: 16px;
+      }
+
+      .section-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .filter-controls {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .sessions-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .course-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .footer-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+    }
   </style>
 </head>
 <body>
-  <header class="site-header" style="display: none;">
+  <!-- Header -->
+  <header class="site-header">
     <div class="header-container">
       <h1 class="logo">
         <i class="fas fa-comments"></i>
-        Aubie RET Hub — Live Discussions
+        Aubie RET Hub
       </h1>
       <nav class="nav-menu">
         <a href="index.html"><i class="fas fa-home"></i> Home</a>
         <a href="courses.html"><i class="fas fa-book"></i> Courses</a>
+        <a href="discussions.html" class="active"><i class="fas fa-comments"></i> Discussions</a>
         <button id="fullscreen-toggle" class="fullscreen-btn" title="Toggle fullscreen"><i class="fas fa-expand"></i></button>
         <a id="logout-link" href="#" style="display:none;"><i class="fas fa-sign-out-alt"></i> Logout</a>
         <div id="profile-menu-wrapper" style="position:relative;">
@@ -325,14 +418,6 @@
     </div>
   </header>
 
-  <header id="site-header" class="site-header" style="display: none;">
-    <!-- Header will be inserted by script -->
-  </header>
-
-  <div id="app" class="app" style="display: none;">
-    <!-- Navigation will be inserted here by main.js -->
-  </div>
-
   <div class="discussions-container" id="discussionsContainer" style="display: none;">
     <div class="section-header">
       <h2>Live Discussions</h2>
@@ -352,6 +437,38 @@
       </div>
     </div>
   </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="footer-container">
+      <div class="footer-content">
+        <div class="footer-section">
+          <h4>About Aubie RET Hub</h4>
+          <p>A comprehensive platform for real-time discussions and collaborative learning.</p>
+        </div>
+        <div class="footer-section">
+          <h4>Quick Links</h4>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="courses.html">Courses</a></li>
+            <li><a href="discussions.html">Discussions</a></li>
+            <li><a href="help.html">Help</a></li>
+          </ul>
+        </div>
+        <div class="footer-section">
+          <h4>Support</h4>
+          <ul>
+            <li><a href="#">Contact Us</a></li>
+            <li><a href="#">Documentation</a></li>
+            <li><a href="#">Report an Issue</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2025 Aubie RET Hub. All rights reserved.</p>
+      </div>
+    </div>
+  </footer>
 
   <script type="module">
     import { getCurrentUser, logoutUser } from '/js/core/auth.js';
@@ -409,6 +526,22 @@
           logoutBtn.addEventListener('click', async (e) => {
             e.preventDefault();
             await authService.logout();
+          });
+        }
+
+        // Setup profile dropdown
+        const profileCircle = document.getElementById('profile-circle');
+        const profileDropdown = document.getElementById('profile-dropdown');
+        if (profileCircle && profileDropdown) {
+          profileCircle.addEventListener('click', () => {
+            profileDropdown.style.display = profileDropdown.style.display === 'none' ? 'block' : 'none';
+          });
+          
+          // Close dropdown when clicking outside
+          document.addEventListener('click', (e) => {
+            if (!e.target.closest('#profile-menu-wrapper')) {
+              profileDropdown.style.display = 'none';
+            }
           });
         }
 

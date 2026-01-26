@@ -282,16 +282,50 @@
     @media (max-width: 768px) {
       .room-container {
         grid-template-columns: 1fr;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      .room-main {
+        min-height: 60vh;
       }
 
       .sidebar {
-        position: fixed;
-        right: 0;
-        top: 0;
         width: 100%;
-        max-width: 250px;
-        height: 100vh;
-        z-index: 100;
+        max-width: none;
+        height: auto;
+        min-height: 300px;
+        position: static;
+        margin-top: 20px;
+        border-radius: 0;
+      }
+
+      .room-container {
+        gap: 0;
+      }
+
+      .room-header {
+        flex-wrap: wrap;
+      }
+
+      .room-info {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .participants-list {
+        max-height: 300px;
+      }
+
+      .participant-item {
+        padding: 10px;
+        font-size: 12px;
+      }
+
+      .participant-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
       }
     }
   </style>
@@ -452,6 +486,9 @@
           closeBtn.addEventListener('click', handleCloseSession);
         }
 
+        // Setup event listeners BEFORE joining
+        setupListeners();
+
         // NOW register participant AFTER session is successfully resolved
         console.log('📝 [discussion-room] Registering participant via REST (creates in database)...');
         try {
@@ -478,7 +515,33 @@
           } else {
             console.log('✅ [discussion-room] Participant created in database');
             
-            // Step 2: ONLY AFTER REST succeeds, join socket to room
+            // Step 2: Fetch initial participant list from REST API
+            console.log('📖 [discussion-room] Fetching initial participant list from REST API');
+            const participantsResponse = await fetch(`/api/discussions/participants/${sessionId}`, {
+              headers: {
+                'Authorization': `Bearer ${user.token}`,
+                'x-user-id': user.id || user._id,
+                'x-user-role': userRole
+              }
+            });
+
+            if (participantsResponse.ok) {
+              const participantsData = await participantsResponse.json();
+              const participants = participantsData.participants || participantsData;
+              const stats = participantsData.stats || { activeCount: participants.length };
+              
+              console.log('✅ [discussion-room] Initial participant list fetched:', {
+                count: participants.length,
+                activeCount: stats.activeCount
+              });
+              
+              // Initialize UI with current participant list
+              renderParticipants(participants, stats);
+            } else {
+              console.warn('⚠️ [discussion-room] Failed to fetch initial participants');
+            }
+            
+            // Step 3: ONLY AFTER REST succeeds, join socket to room
             // This broadcasts the participant list (which was created by REST)
             console.log('🔌 [discussion-room] Joining socket room (broadcasts presence)');
             await discussionSocket.joinSession(sessionId, user.token);
@@ -488,9 +551,6 @@
           console.error('❌ [discussion-room] Error during participant join flow:', error);
           // Continue anyway - session is loaded even if join flow fails
         }
-
-        // Setup event listeners
-        setupListeners();
 
         // Start time update
         startTimeUpdate();
@@ -567,16 +627,22 @@
       }
 
       participantsList.innerHTML = participants
-        .map(p => `
-          <div class="participant-item">
-            <div class="participant-avatar">${p.userId.charAt(0).toUpperCase()}</div>
-            <div class="participant-info">
-              <div class="participant-name">${escapeHtml(p.userId)}</div>
-              <div class="participant-role">${p.role}</div>
+        .map(p => {
+          // Display user name if available, otherwise email, otherwise ID
+          const displayName = p.userName || p.email || p.userId;
+          const avatarText = (displayName || 'U').charAt(0).toUpperCase();
+          
+          return `
+            <div class="participant-item">
+              <div class="participant-avatar">${escapeHtml(avatarText)}</div>
+              <div class="participant-info">
+                <div class="participant-name">${escapeHtml(displayName)}</div>
+                <div class="participant-role">${p.role}</div>
+              </div>
+              <div class="participant-status">${p.active ? 'Active' : 'Away'}</div>
             </div>
-            <div class="participant-status">${p.active ? 'Active' : 'Away'}</div>
-          </div>
-        `)
+          `;
+        })
         .join('');
     }
 

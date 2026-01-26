@@ -315,6 +315,30 @@ class DiscussionSessionService {
 
     return sessions;
   }
+
+  /**
+   * Delete a session (admin only)
+   * @param {String} sessionId - Session ID
+   * @returns {Object} Deleted session
+   */
+  async deleteSession(sessionId) {
+    const DiscussionSession = this.db.models.DiscussionSession;
+    if (!DiscussionSession) {
+      throw new Error('DiscussionSession model not initialized');
+    }
+
+    const session = await DiscussionSession.findOneAndDelete(
+      { sessionId },
+      { new: true }
+    ).lean();
+
+    if (!session) {
+      throw new Error('Session not found');
+    }
+
+    console.log('🗑️ Session deleted successfully:', sessionId);
+    return session;
+  }
 }
 
 module.exports = DiscussionSessionService;

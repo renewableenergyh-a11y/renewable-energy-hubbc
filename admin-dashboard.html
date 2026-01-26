@@ -4717,9 +4717,19 @@
                   ${startTime.toLocaleDateString()} ${startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </div>
               </div>
-              <button style="padding: 6px 12px; background: var(--green-main); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap;" onclick="viewSessionDetails('${session.sessionId}')">
-                View Details
-              </button>
+              <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+                ${session.status !== 'closed' ? `
+                  <button style="padding: 6px 12px; background: var(--green-main); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="joinDiscussionSession('${session.sessionId}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                    <i class="fas fa-sign-in-alt" style="margin-right: 4px;"></i>Join Session
+                  </button>
+                ` : ''}
+                <button style="padding: 6px 12px; background: #0b6fb7; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="viewSessionDetails('${session.sessionId}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                  <i class="fas fa-info-circle" style="margin-right: 4px;"></i>Details
+                </button>
+                <button style="padding: 6px 12px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="deleteDiscussionSession('${session.sessionId}', '${session.subject}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                  <i class="fas fa-trash" style="margin-right: 4px;"></i>Delete
+                </button>
+              </div>
             </div>
           `;
           container.appendChild(card);
@@ -4742,6 +4752,46 @@
     function viewSessionDetails(sessionId) {
       // Placeholder for viewing session details
       alert('Session ID: ' + sessionId + '\n\nFull details view coming soon.');
+    }
+
+    async function joinDiscussionSession(sessionId) {
+      try {
+        window.location.href = `/discussion-room.html?sessionId=${sessionId}`;
+      } catch (error) {
+        alert('Error joining session: ' + error.message);
+      }
+    }
+
+    async function deleteDiscussionSession(sessionId, subject) {
+      if (!confirm(`Are you sure you want to delete the session "${subject}"? This action cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/discussions/sessions/${sessionId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('adminToken'),
+            'x-user-id': localStorage.getItem('adminEmail') || '',
+            'x-user-role': localStorage.getItem('adminRole') || 'superadmin'
+          }
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to delete session');
+        }
+
+        alert('Session deleted successfully');
+        
+        // Reload sessions list
+        const sessionsList = document.getElementById('disc-sessions-list');
+        if (sessionsList) {
+          await refreshDiscussionSessions(sessionsList);
+        }
+      } catch (error) {
+        alert('Error deleting session: ' + error.message);
+      }
     }
 
     function showNotice(element, message, type) {

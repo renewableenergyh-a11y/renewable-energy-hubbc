@@ -247,6 +247,52 @@ module.exports = function(db, discussionSessionService, participantService) {
   });
 
   /**
+   * DELETE /api/discussions/sessions/:sessionId - Delete a session (admin only)
+   * @returns {Object} Deletion confirmation
+   */
+  router.delete('/sessions/:sessionId', verifyAuth, async (req, res) => {
+    try {
+      const { sessionId } = req.params;
+
+      if (!req.user) {
+        return res.status(401).json({ error: 'User not authenticated' });
+      }
+
+      // Only admins and instructors can delete sessions
+      if (!['admin', 'instructor', 'superadmin'].includes(req.user.role)) {
+        return res.status(403).json({ error: 'Only admins and instructors can delete sessions' });
+      }
+
+      console.log('🗑️ [DELETE] Session deletion requested:', { sessionId, userId: req.user.id, role: req.user.role });
+
+      // Delete session from database
+      const session = await discussionSessionService.deleteSession(sessionId);
+
+      // Delete all participants from session
+      try {
+        const Participant = db.models.Participant;
+        if (Participant) {
+          await Participant.deleteMany({ sessionId });
+          console.log('✅ [DELETE] Deleted all participants for session:', sessionId);
+        }
+      } catch (err) {
+        console.warn('⚠️ [DELETE] Error deleting participants:', err.message);
+      }
+
+      console.log('✅ [DELETE] Session deleted successfully:', sessionId);
+
+      res.json({
+        success: true,
+        message: 'Session deleted successfully',
+        sessionId: sessionId
+      });
+    } catch (error) {
+      console.error('❌ [DELETE] Error deleting session:', error);
+      res.status(400).json({ error: error.message });
+    }
+  });
+
+  /**
    * POST /api/discussions/sessions/:sessionId/check-status - Check and update session status
    * @returns {Object} Updated session or null if no change
    */
