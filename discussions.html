@@ -3,15 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Live Discussions - Aubie RET Hub</title>
-  <link rel="stylesheet" href="/css/style.css">
+  <title>Live Discussions - Renewable Energy Hub</title>
+  <link rel="stylesheet" href="css/style.css">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
-    * {
-      font-family: 'Poppins', sans-serif;
-    }
-
     .discussions-container {
       display: grid;
       grid-template-columns: 1fr;
@@ -305,14 +301,6 @@
       font-weight: 500;
     }
 
-    .footer-bottom {
-      border-top: 1px solid #34495e;
-      padding-top: 20px;
-      text-align: center;
-      color: #95a5a6;
-      font-size: 13px;
-    }
-
     /* Modal Styles */
     .modal-overlay {
       display: none;
@@ -431,91 +419,6 @@
       background: #e0e0e0;
     }
 
-    /* Professional styling for discussions page */
-    .site-header {
-      background: white;
-      border-bottom: 1px solid #e0e0e0;
-      padding: 16px 0;
-      position: sticky;
-      top: 0;
-      z-index: 100;
-    }
-
-    .header-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 24px;
-    }
-
-    .logo {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--green-main);
-      margin: 0;
-    }
-
-    .nav-menu {
-      display: flex;
-      gap: 24px;
-      align-items: center;
-    }
-
-    .nav-menu a {
-      color: #333;
-      text-decoration: none;
-      font-weight: 500;
-      transition: color 0.3s ease;
-    }
-
-    .nav-menu a:hover {
-      color: var(--green-main);
-    }
-
-    .site-footer {
-      background: #1a1a1a;
-      color: #999;
-      padding: 40px 24px;
-      margin-top: 60px;
-      border-top: 1px solid #333;
-    }
-
-    .footer-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 40px;
-      align-items: center;
-    }
-
-    .footer-socials {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-    }
-
-    .footer-socials a {
-      color: #999;
-      font-size: 18px;
-      transition: color 0.3s ease;
-    }
-
-    .footer-socials a:hover {
-      color: var(--green-main);
-    }
-
-    .footer-text {
-      text-align: right;
-      font-size: 13px;
-    }
-
-    .footer-text p {
-      margin: 0;
-    }
-
     @media (max-width: 768px) {
       .discussions-container {
         padding: 16px;
@@ -550,6 +453,7 @@
   </style>
 </head>
 <body>
+
 <header class="site-header">
   <div class="container header-container">
     <h1 class="logo">Renewable Energy Hub</h1>
@@ -1026,5 +930,19 @@
 
 <!-- Global UI logic -->
 <script src="js/main.js"></script>
+
+<!-- Notification Service (must load BEFORE main.js) -->
+<script src="js/core/notificationService.js"></script>
+
+<!-- Notification Triggers -->
+<script src="js/core/notificationTriggers.js"></script>
+
+<!-- Storage sync utility -->
+<script src="js/core/storageSync.js"></script>
+
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+</button>
+
 </body>
 </html>
