@@ -288,6 +288,124 @@
       background: #005a4f;
     }
 
+    /* Modal Styles */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1001;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Poppins', sans-serif;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      max-width: 500px;
+      width: 90%;
+      padding: 32px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 16px;
+    }
+
+    .modal-header h3 {
+      font-size: 20px;
+      font-weight: 600;
+      color: #333;
+      margin: 0;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #999;
+      transition: color 0.3s ease;
+      padding: 0;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close-btn:hover {
+      color: #333;
+    }
+
+    .modal-body {
+      margin-bottom: 24px;
+      color: #666;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .modal-footer {
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .modal-btn {
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .modal-btn-primary {
+      background: var(--green-main);
+      color: white;
+    }
+
+    .modal-btn-primary:hover {
+      background: #005a4f;
+      box-shadow: 0 2px 8px rgba(0, 121, 107, 0.3);
+    }
+
+    .modal-btn-secondary {
+      background: #f0f0f0;
+      color: #333;
+    }
+
+    .modal-btn-secondary:hover {
+      background: #e0e0e0;
+    }
+
     @media (max-width: 768px) {
       .room-container {
         grid-template-columns: 1fr;
@@ -393,6 +511,17 @@
 
   <!-- Participant Name Modal -->
 
+  <!-- Modal -->
+  <div class="modal-overlay" id="customModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">Modal Title</h3>
+        <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="modalBody">Modal body content</div>
+      <div class="modal-footer" id="modalFooter"></div>
+    </div>
+  </div>
 
   <script type="module">
     import { getCurrentUser, logoutUser } from '/js/core/auth.js';
@@ -426,6 +555,49 @@
 
     let sessionData = null;
     let isInstructor = false;
+
+    // Modal Helper Functions
+    function showModal(title, body, buttons = []) {
+      const modal = document.getElementById('customModal');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalBody = document.getElementById('modalBody');
+      const modalFooter = document.getElementById('modalFooter');
+
+      modalTitle.textContent = title;
+      modalBody.innerHTML = body;
+
+      // Build footer buttons
+      modalFooter.innerHTML = buttons
+        .map(btn => `<button class="modal-btn ${btn.class}">${btn.text}</button>`)
+        .join('');
+
+      // Attach callbacks
+      buttons.forEach((btn, index) => {
+        const footer = modalFooter.querySelectorAll('.modal-btn')[index];
+        if (footer) {
+          footer.addEventListener('click', btn.callback);
+        }
+      });
+
+      modal.classList.add('active');
+    }
+
+    function closeModal() {
+      const modal = document.getElementById('customModal');
+      modal.classList.remove('active');
+    }
+
+    // Close modal when clicking overlay
+    window.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('customModal');
+      if (modal) {
+        modal.addEventListener('click', (e) => {
+          if (e.target === modal) {
+            closeModal();
+          }
+        });
+      }
+    });
 
     /**
      * Show name collection modal and collect user's full name
@@ -466,8 +638,12 @@
 
         if (!sessionId) {
           console.error('❌ [discussion-room] No sessionId in URL');
-          alert('Invalid session link');
-          window.location.href = '/discussions.html';
+          showModal('Invalid Session', 'This session link is not valid. Redirecting to discussions...', [
+            { text: 'OK', class: 'modal-btn-primary', callback: () => {
+              closeModal();
+              window.location.href = '/discussions.html';
+            }}
+          ]);
           return;
         }
 
@@ -492,8 +668,12 @@
         
         if (!response.ok) {
           console.error('❌ [discussion-room] Session fetch failed:', data);
-          alert(`Session error: ${data.error}`);
-          window.location.href = '/discussions.html';
+          showModal('Session Error', `Unable to load session: ${data.error}`, [
+            { text: 'Return', class: 'modal-btn-primary', callback: () => {
+              closeModal();
+              window.location.href = '/discussions.html';
+            }}
+          ]);
           return;
         }
 
@@ -502,8 +682,12 @@
           sessionId: sessionData?.sessionId,
           subject: sessionData?.subject,
           status: sessionData?.status
-        });
-
+        })showModal('Session Not Found', 'This discussion session could not be found.', [
+            { text: 'Return', class: 'modal-btn-primary', callback: () => {
+              closeModal();
+              window.location.href = '/discussions.html';
+            }}
+          ])
         if (!sessionData) {
           console.error('❌ [discussion-room] Session data is null');
           alert('Session not found');
@@ -591,8 +775,12 @@
             console.log('✅ [discussion-room] Socket joined and participant list broadcasted');
           }
         } catch (error) {
-          console.error('❌ [discussion-room] Error during participant join flow:', error);
-          // Continue anyway - session is loaded even if join flow fails
+        showModal('Failed to Load', 'Unable to initialize the discussion room.', [
+          { text: 'Return', class: 'modal-btn-primary', callback: () => {
+            closeModal();
+            window.location.href = '/discussions.html';
+          }}
+        ])ven if join flow fails
         }
 
         // Start time update
@@ -627,8 +815,12 @@
       });
 
       discussionSocket.on('force-disconnect', (data) => {
-        alert(data.reason);
-        window.location.href = '/discussions.html';
+        showModal('Disconnected', data.reason || 'You have been disconnected from the session.', [
+          { text: 'Return', class: 'modal-btn-primary', callback: () => {
+            closeModal();
+            window.location.href = '/discussions.html';
+          }}
+        ]);
       });
 
       // Button events
@@ -647,18 +839,26 @@
     }
 
     async function handleCloseSession() {
-      if (!confirm('Are you sure you want to close this session for all participants?')) {
-        return;
-      }
-
-      try {
-        const user = await authService.getCurrentUser();
-        await discussionSocket.closeSession(sessionData.sessionId, user.token);
-        alert('Session closed successfully');
-        window.location.href = '/discussions.html';
-      } catch (error) {
-        alert(`Failed to close session: ${error.message}`);
-      }
+      showModal('Close Session', 'Are you sure you want to close this session for all participants?', [
+        { text: 'Cancel', class: 'modal-btn-secondary', callback: closeModal },
+        { text: 'Close Session', class: 'modal-btn-primary', callback: async () => {
+          closeModal();
+          try {
+            const user = await authService.getCurrentUser();
+            await discussionSocket.closeSession(sessionData.sessionId, user.token);
+            showModal('Success', 'Session closed successfully.', [
+              { text: 'OK', class: 'modal-btn-primary', callback: () => {
+                closeModal();
+                window.location.href = '/discussions.html';
+              }}
+            ]);
+          } catch (error) {
+            showModal('Error', `Failed to close session: ${error.message}`, [
+              { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
+            ]);
+          }
+        }}
+      ]);
     }
 
     function renderParticipants(participants, stats) {
@@ -711,7 +911,9 @@
               await discussionSocket.removeParticipantByAdmin(sessionData.sessionId, targetUserId, token);
             } catch (err) {
               console.error('Failed to remove participant:', err);
-              alert('Failed to remove participant: ' + (err.message || err));
+              showModal('Error', 'Failed to remove participant: ' + (err.message || err), [
+                { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
+              ]);
             }
           });
         });
