@@ -4761,11 +4761,15 @@
 
     async function joinDiscussionSession(sessionId) {
       try {
+        console.log('🔗 [admin-dashboard] joinDiscussionSession called with sessionId:', sessionId);
+        
         // Preserve admin authentication and promote to app auth
         const adminToken = localStorage.getItem('adminToken');
         const adminEmail = localStorage.getItem('adminEmail') || '';
         const adminRole = localStorage.getItem('adminRole') || 'superadmin';
         const adminName = localStorage.getItem('adminName') || 'Admin';
+
+        console.log('🔐 [admin-dashboard] Admin credentials:', { adminEmail, adminRole, token: !!adminToken });
 
         if (adminToken) {
           // Set standard auth token and currentUser so public pages recognize admin
@@ -4778,11 +4782,16 @@
           }));
           // Mark that this user came from the admin dashboard (for audits/UI)
           localStorage.setItem('fromAdminDashboard', 'true');
+          
+          console.log('✅ [admin-dashboard] Auth tokens set. Redirecting to discussion room...');
         }
 
         // Redirect into the discussion room using standard session URL
-        window.location.href = `/discussion-room.html?sessionId=${sessionId}`;
+        const targetUrl = `/discussion-room.html?sessionId=${sessionId}`;
+        console.log('🔗 [admin-dashboard] Redirecting to:', targetUrl);
+        window.location.href = targetUrl;
       } catch (error) {
+        console.error('❌ [admin-dashboard] Error joining session:', error);
         alert('Error joining session: ' + error.message);
       }
     }
