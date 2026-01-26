@@ -176,20 +176,29 @@ function persistToDbOrFile(collectionName, keyField, mapOrArray, filePath) {
   }
 
   // Write each item as a document; mapOrArray may be a map (object) or array
-  if (Array.isArray(mapOrArray)) {
-    mapOrArray.forEach(async (doc) => {
-      // Only persist valid plain objects (not null, not arrays, not primitives)
-      if (!doc || typeof doc !== 'object' || Array.isArray(doc) || doc === null) return;
-      const filter = doc._id ? { _id: doc._id } : (doc.email ? { email: doc.email } : (doc.sessionId ? { sessionId: doc.sessionId } : {}));
-      try { await model.updateOne(filter, { $set: doc }, { upsert: true }); } catch(e) { console.warn('persist error', e && e.message); }
-    });
-  } else {
-    Object.keys(mapOrArray || {}).forEach(async (k) => {
-      const doc = mapOrArray[k];
-      // Skip non-plain-object values (strings, numbers, null, arrays, functions, etc.)
-      if (!doc || typeof doc !== 'object' || Array.isArray(doc) || doc === null) return;
-      try { await model.updateOne({ [keyField]: k }, { $set: doc }, { upsert: true }); } catch(e) { console.warn('persist error', e && e.message); }
-    });
+  // Collect promises and use Promise.all so failures are observed and handled
+  try {
+    if (Array.isArray(mapOrArray)) {
+      const promises = [];
+      for (const doc of mapOrArray) {
+        // Only persist valid plain objects (not null, not arrays, not primitives)
+        if (!doc || typeof doc !== 'object' || Array.isArray(doc) || doc === null) continue;
+        const filter = doc._id ? { _id: doc._id } : (doc.email ? { email: doc.email } : (doc.sessionId ? { sessionId: doc.sessionId } : {}));
+        promises.push(model.updateOne(filter, { $set: doc }, { upsert: true }).catch(e => { console.warn('persist error', e && e.message); }));
+      }
+      return Promise.all(promises);
+    } else {
+      const promises = Object.keys(mapOrArray || {}).map((k) => {
+        const doc = mapOrArray[k];
+        // Skip non-plain-object values (strings, numbers, null, arrays, functions, etc.)
+        if (!doc || typeof doc !== 'object' || Array.isArray(doc) || doc === null) return Promise.resolve();
+        return model.updateOne({ [keyField]: k }, { $set: doc }, { upsert: true }).catch(e => { console.warn('persist error', e && e.message); });
+      });
+      return Promise.all(promises);
+    }
+  } catch (err) {
+    console.warn('persist error collecting promises', err && err.message);
+    return Promise.resolve();
   }
 }
 
