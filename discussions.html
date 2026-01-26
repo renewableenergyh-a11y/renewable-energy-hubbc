@@ -388,37 +388,32 @@
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header class="site-header">
-    <div class="header-container">
-      <h1 class="logo">
-        <i class="fas fa-comments"></i>
-        Aubie RET Hub
-      </h1>
-      <nav class="nav-menu">
-        <a href="index.html"><i class="fas fa-home"></i> Home</a>
-        <a href="courses.html"><i class="fas fa-book"></i> Courses</a>
-        <a href="discussions.html" class="active"><i class="fas fa-comments"></i> Discussions</a>
-        <button id="fullscreen-toggle" class="fullscreen-btn" title="Toggle fullscreen"><i class="fas fa-expand"></i></button>
-        <a id="logout-link" href="#" style="display:none;"><i class="fas fa-sign-out-alt"></i> Logout</a>
-        <div id="profile-menu-wrapper" style="position:relative;">
-          <button id="profile-circle" class="profile-circle" title="Profile"></button>
-          <div id="profile-dropdown" class="profile-dropdown" style="display:none">
-            <div class="profile-dropdown-header">
-              <strong id="profile-name"></strong>
-              <div id="profile-role" class="profile-role-badge"></div>
-            </div>
-            <div class="profile-org">Aubie RET Hub</div>
-            <button id="profile-theme-toggle" class="profile-theme-toggle">
-              <i class="fas fa-moon"></i>
-              <span>Dark Mode</span>
-            </button>
-            <button id="profile-logout-btn" class="profile-logout-btn">Logout</button>
-          </div>
-        </div>
-      </nav>
-    </div>
-  </header>
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="discussions.html" style="display: none;" id="nav-discussions-link">Discussions</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="admin-login.html">Admin</a>
+      <a href="login.html" id="nav-login-link" style="display: none;">Login</a>
+      <a href="register.html" id="nav-register-link" style="display: none;">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
 
   <div class="discussions-container" id="discussionsContainer" style="display: none;">
     <div class="section-header">
@@ -441,35 +436,23 @@
   </div>
 
   <!-- Footer -->
-  <footer class="site-footer">
-    <div class="footer-container">
-      <div class="footer-content">
-        <div class="footer-section">
-          <h4>About Aubie RET Hub</h4>
-          <p>A comprehensive platform for real-time discussions and collaborative learning.</p>
-        </div>
-        <div class="footer-section">
-          <h4>Quick Links</h4>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="courses.html">Courses</a></li>
-            <li><a href="discussions.html">Discussions</a></li>
-            <li><a href="help.html">Help</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h4>Support</h4>
-          <ul>
-            <li><a href="#">Contact Us</a></li>
-            <li><a href="#">Report an Issue</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; 2025 Aubie RET Hub. All rights reserved.</p>
-      </div>
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-socials">
+      <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+      <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+      <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
     </div>
-  </footer>
+    <div class="footer-text">
+      <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
 
   <script type="module">
     import { getCurrentUser, logoutUser } from '/js/core/auth.js';
