@@ -65,7 +65,7 @@ const DiscussionSessionSchema = new mongoose.Schema(
     },
     closedByRole: {
       type: String,
-      enum: ['admin', 'instructor', null],
+      enum: ['superadmin', 'admin', 'instructor', null],
       default: null
     },
     closedAt: {
