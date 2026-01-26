@@ -1,32 +1,26 @@
 const crypto = require('crypto');
 
-/**
- * ROLE HIERARCHY (DO NOT MODIFY)
- * superadmin > admin > instructor > student
- */
-const ROLE_HIERARCHY = {
-  'superadmin': 4,
-  'admin': 3,
-  'instructor': 2,
-  'student': 1
-};
+// Use shared roles helper to avoid duplicated hierarchy definitions
+const roles = require('../utils/roles');
 
 /**
  * Check if user can manage a session (based on role hierarchy)
- * @param {String} userRole - User's role
+ * @param {String} userRole - User's role (string) or user-like object
  * @param {String} sessionCreatorId - Session creator's user ID
  * @param {String} userId - Current user's ID
  * @returns {Boolean} True if user can manage session
  */
 function canManageSession(userRole, sessionCreatorId, userId) {
-  // Superadmin can manage ANY session
-  if (userRole === 'superadmin') return true;
-  
-  // Admin and instructor can only manage their OWN sessions
-  if (['admin', 'instructor'].includes(userRole)) {
+  // Normalize minimal input
+  // If userRole is an object, hasAtLeastRole will handle it; if string, it will also work
+  // Superadmin (and roles above admin/instructor) bypass ownership checks
+  if (roles.hasAtLeastRole(userRole, 'superadmin')) return true;
+
+  // Admins and instructors can manage ONLY their own sessions
+  if (roles.hasAtLeastRole(userRole, 'instructor')) {
     return sessionCreatorId === userId;
   }
-  
+
   // Students cannot manage any session
   return false;
 }
@@ -70,8 +64,8 @@ class DiscussionSessionService {
       throw new Error('End time must be after start time');
     }
 
-    // Validate creator role permissions
-    if (!['admin', 'instructor', 'superadmin'].includes(creatorRole)) {
+    // Validate creator role permissions (use shared role hierarchy helper)
+    if (!roles.hasAtLeastRole(creatorRole, 'instructor')) {
       throw new Error('Only admins and instructors can create sessions');
     }
 
@@ -252,7 +246,7 @@ class DiscussionSessionService {
     }
 
     // Validate permissions - only admins, instructors, and superadmins can close sessions
-    if (!['superadmin', 'admin', 'instructor'].includes(userRole)) {
+    if (!roles.hasAtLeastRole(userRole, 'instructor')) {
       throw new Error('Only admins and instructors can close sessions');
     }
 

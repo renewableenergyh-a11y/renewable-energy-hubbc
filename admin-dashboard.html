@@ -4584,6 +4584,15 @@
       // Load active and upcoming sessions
       await refreshDiscussionSessions(sessionsList);
 
+      // Keep sessions list in sync (auto-refresh every 15 seconds)
+      setInterval(async () => {
+        try {
+          await refreshDiscussionSessions(sessionsList);
+        } catch (err) {
+          console.warn('Auto-refresh sessions failed:', err.message);
+        }
+      }, 15000);
+
       // Form submission
       form.onsubmit = async (e) => {
         e.preventDefault();

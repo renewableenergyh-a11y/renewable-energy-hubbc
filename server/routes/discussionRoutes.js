@@ -5,36 +5,10 @@
 const express = require('express');
 const router = express.Router();
 
-/**
- * ROLE HIERARCHY (DO NOT MODIFY)
- * superadmin > admin > instructor > student
- */
-const ROLE_HIERARCHY = {
-  'superadmin': 4,
-  'admin': 3,
-  'instructor': 2,
-  'student': 1
-};
+// Shared roles helper (single source of truth for role hierarchy)
+const roles = require('../utils/roles');
 
-/**
- * Check if user can manage a session (based on role hierarchy)
- * @param {String} userRole - User's role
- * @param {String} sessionCreatorId - Session creator's user ID
- * @param {String} userId - Current user's ID
- * @returns {Boolean} True if user can manage session
- */
-function canManageSession(userRole, sessionCreatorId, userId) {
-  // Superadmin can manage ANY session
-  if (userRole === 'superadmin') return true;
-  
-  // Admin and instructor can only manage their OWN sessions
-  if (['admin', 'instructor'].includes(userRole)) {
-    return sessionCreatorId === userId;
-  }
-  
-  // Students cannot manage any session
-  return false;
-}
+// Note: use roles.normalizeAuthUser(req.user) in verifyAuth to ensure superadmin and other special identities are normalized
 
 module.exports = function(db, discussionSessionService, participantService, io = null) {
   // Middleware to verify authentication (assumes auth token in headers)
@@ -56,7 +30,9 @@ module.exports = function(db, discussionSessionService, participantService, io =
     if (userId) {
       const role = userRole || 'student';
       req.user = { id: userId, role: role };
-      console.log('✅ [verifyAuth] User authenticated:', { id: userId, role: role, roleSource: userRole ? 'header' : 'fallback' });
+      // Normalize into canonical authUser shape (ensures superadmin predefined credentials are normalized)
+      req.user = roles.normalizeAuthUser(req.user);
+      console.log('✅ [verifyAuth] User authenticated:', { id: req.user.id, role: req.user.role, roleSource: userRole ? 'header' : 'fallback' });
       next();
     } else {
       console.warn('⚠️ [verifyAuth] Missing user ID in headers');
@@ -88,8 +64,8 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      // Only admins and instructors can create sessions
-      if (!['admin', 'instructor', 'superadmin'].includes(req.user.role)) {
+      // Only admins and instructors can create sessions (use role hierarchy)
+      if (!roles.hasAtLeastRole(req.user, 'instructor')) {
         console.error('❌ Unauthorized role:', req.user.role);
         return res.status(403).json({ error: 'Only admins and instructors can create sessions' });
       }
@@ -202,7 +178,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
       const isActive = now >= startTime && now <= endTime;
       const isUpcoming = now < startTime;
       const isCreator = session.creatorId === req.user?.id;
-      const isAdmin = ['admin', 'superadmin'].includes(req.user?.role);
+      const isAdmin = roles.hasAtLeastRole(req.user, 'admin');
       
       if (!isActive && !isUpcoming && !isCreator && !isAdmin) {
         console.warn('⚠️ [REST] Session access denied:', { sessionId, status: session.status });
@@ -292,8 +268,8 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      // Only admins, instructors, and superadmins can delete sessions
-      if (!['admin', 'instructor', 'superadmin'].includes(req.user.role)) {
+      // Only admins, instructors, and superadmins can delete sessions (use role hierarchy)
+      if (!roles.hasAtLeastRole(req.user, 'instructor')) {
         return res.status(403).json({ error: 'Only admins and instructors can delete sessions' });
       }
 
@@ -305,8 +281,8 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(404).json({ error: 'Session not found' });
       }
 
-      // Check if user has permission (role hierarchy + ownership)
-      if (!canManageSession(req.user.role, session.creatorId, req.user.id)) {
+      // Superadmin may delete any session; admins/instructors only their own
+      if (!roles.hasAtLeastRole(req.user, 'superadmin') && session.creatorId !== req.user.id) {
         console.warn('❌ [DELETE] User does not have permission to delete session:', { userId: req.user.id, role: req.user.role, creatorId: session.creatorId });
         return res.status(403).json({ error: 'You do not have permission to delete this session' });
       }
@@ -354,8 +330,8 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(401).json({ error: 'User not authenticated' });
       }
 
-      // Only admins, instructors, and superadmins can close sessions
-      if (!['admin', 'instructor', 'superadmin'].includes(req.user.role)) {
+      // Only admins, instructors, and superadmins can close sessions (use role hierarchy)
+      if (!roles.hasAtLeastRole(req.user, 'instructor')) {
         return res.status(403).json({ error: 'Only admins and instructors can close sessions' });
       }
 
@@ -367,8 +343,8 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(404).json({ error: 'Session not found' });
       }
 
-      // Check if user has permission (role hierarchy + ownership)
-      if (!canManageSession(req.user.role, session.creatorId, req.user.id)) {
+      // Superadmin may close any session; admins/instructors only their own
+      if (!roles.hasAtLeastRole(req.user, 'superadmin') && session.creatorId !== req.user.id) {
         console.warn('❌ [POST] User does not have permission to close session:', { userId: req.user.id, role: req.user.role, creatorId: session.creatorId });
         return res.status(403).json({ error: 'You do not have permission to close this session' });
       }
@@ -628,9 +604,9 @@ module.exports = function(db, discussionSessionService, participantService, io =
     try {
       const { sessionId } = req.params;
 
-      // Check permissions - only admins, instructors, or session participants
+      // Check permissions - only admins/instructors (by role) or session participants
       const isParticipant = await participantService.isUserInSession(sessionId, req.user.id);
-      if (!isParticipant && !['superadmin', 'admin', 'instructor'].includes(req.user.role)) {
+      if (!isParticipant && !roles.hasAtLeastRole(req.user, 'instructor')) {
         return res.status(403).json({ error: 'Access denied' });
       }
 

@@ -605,8 +605,10 @@
         grid-template-columns: 1fr 200px;
       }
 
+      /* On medium screens keep features but allow compacting - will show as drawer on smaller breakpoints */
       .features-sidebar {
-        display: none;
+        /* keep rendered but compact */
+        width: 200px;
       }
     }
 
@@ -631,13 +633,69 @@
         border-radius: 0;
       }
 
+      /* On mobile, features become a bottom drawer which is hidden by default but toggleable */
       .features-sidebar {
-        display: none;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 50%;
+        max-height: 60%;
+        transform: translateY(100%);
+        transition: transform 0.28s ease;
+        border-radius: 12px 12px 0 0;
+        z-index: 1500;
+        box-shadow: 0 -8px 30px rgba(0,0,0,0.2);
+      }
+
+      .features-sidebar.drawer-active {
+        transform: translateY(0);
       }
 
       .room-container {
         gap: 0;
       }
+
+      .room-header { flex-wrap: wrap; }
+
+      .features-toggle-btn { display: inline-flex; }
+
+      .room-info {
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .room-controls {
+        flex-wrap: wrap;
+        padding: 12px;
+      }
+
+      .btn-control {
+        flex: 1;
+        min-width: 80px;
+        justify-content: center;
+        gap: 4px;
+      }
+
+      .btn-control span {
+        display: none;
+      }
+
+      .participants-list {
+        max-height: 300px;
+      }
+
+      .participant-item {
+        padding: 10px;
+        font-size: 12px;
+      }
+
+      .participant-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+      }
+    }
 
       .room-header {
         flex-wrap: wrap;
@@ -697,6 +755,11 @@
             <div id="timeInfo">Ends in --:--</div>
           </div>
         </div>
+        <!-- Features toggle for small screens -->
+        <button class="btn-control features-toggle-btn" id="featuresToggleBtn" style="display:none;align-items:center;gap:8px;margin-left:12px;">
+          <i class="fas fa-th-large"></i>
+          <span>Features</span>
+        </button>
       </div>
 
       <div class="room-content">
@@ -1218,6 +1281,24 @@
               { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
             ]);
           });
+        });
+      }
+
+      // Features panel toggle for small screens
+      const featuresSidebar = document.querySelector('.features-sidebar');
+      const featuresToggleBtn = document.getElementById('featuresToggleBtn');
+      if (featuresSidebar && featuresToggleBtn) {
+        featuresToggleBtn.addEventListener('click', () => {
+          featuresSidebar.classList.toggle('drawer-active');
+        });
+
+        // Close drawer when clicking outside (mobile)
+        document.addEventListener('click', (e) => {
+          if (window.innerWidth <= 768 && featuresSidebar.classList.contains('drawer-active')) {
+            if (!featuresSidebar.contains(e.target) && !featuresToggleBtn.contains(e.target)) {
+              featuresSidebar.classList.remove('drawer-active');
+            }
+          }
         });
       }
 

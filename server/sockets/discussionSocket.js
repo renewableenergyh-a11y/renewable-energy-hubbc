@@ -5,34 +5,13 @@
 
 const crypto = require('crypto');
 
-/**
- * ROLE HIERARCHY (DO NOT MODIFY)
- * superadmin > admin > instructor > student
- */
-const ROLE_HIERARCHY = {
-  'superadmin': 4,
-  'admin': 3,
-  'instructor': 2,
-  'student': 1
-};
+// Shared roles helper (single source for hierarchy and normalization)
+const roles = require('../utils/roles');
 
-/**
- * Check if user can manage a session (based on role hierarchy)
- * @param {String} userRole - User's role
- * @param {String} sessionCreatorId - Session creator's user ID
- * @param {String} userId - Current user's ID
- * @returns {Boolean} True if user can manage session
- */
+// Keep a minimal canManageSession wrapper for readability using shared helper
 function canManageSession(userRole, sessionCreatorId, userId) {
-  // Superadmin can manage ANY session
-  if (userRole === 'superadmin') return true;
-  
-  // Admin and instructor can only manage their OWN sessions
-  if (['admin', 'instructor'].includes(userRole)) {
-    return sessionCreatorId === userId;
-  }
-  
-  // Students cannot manage any session
+  if (roles.hasAtLeastRole(userRole, 'superadmin')) return true;
+  if (roles.hasAtLeastRole(userRole, 'instructor')) return sessionCreatorId === userId;
   return false;
 }
 
@@ -83,12 +62,10 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       for (const [email, user] of Object.entries(users)) {
         if (user && user.token === token) {
           console.log('✅ Socket.IO auth verified for:', email);
-          return {
-            id: user.id || email,
-            email: email,
-            role: user.role || 'student',
-            name: user.fullName || user.name || email.split('@')[0]
-          };
+          const norm = roles.normalizeAuthUser({ id: user.id || email, role: user.role || 'student', email, fullName: user.fullName || user.name });
+          // include a human-friendly name property expected in frontend
+          norm.name = norm.fullName || (norm.email ? norm.email.split('@')[0] : 'User');
+          return norm;
         }
       }
 
@@ -405,7 +382,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
       try {
         const user = verifyUserToken(token);
-        if (!user || !['superadmin', 'admin', 'instructor'].includes(user.role)) {
+        if (!user || !roles.hasAtLeastRole(user, 'instructor')) {
           return callback({ 
             success: false, 
             error: 'Only admins and instructors can close sessions' 
@@ -420,8 +397,8 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           return callback({ success: false, error: 'Session not found' });
         }
 
-        // Check if user has permission (role hierarchy + ownership)
-        if (!canManageSession(user.role, session.creatorId, user.id)) {
+        // Superadmin may close any session; admins/instructors only their own
+        if (!roles.hasAtLeastRole(user, 'superadmin') && session.creatorId !== user.id) {
           console.warn(`❌ User ${user.id} (${user.role}) does not have permission to close session ${sessionId}`);
           return callback({ success: false, error: 'You do not have permission to close this session' });
         }
@@ -478,7 +455,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
       try {
         const user = verifyUserToken(token);
-        if (!user || !['superadmin', 'admin', 'instructor'].includes(user.role)) {
+        if (!user || !roles.hasAtLeastRole(user, 'instructor')) {
           return callback({ success: false, error: 'Unauthorized' });
         }
 
@@ -488,8 +465,8 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           return callback({ success: false, error: 'Session not found' });
         }
 
-        // Check if user has permission to remove participants from this session
-        if (!canManageSession(user.role, session.creatorId, user.id)) {
+        // Superadmin can manage any session; otherwise ensure creator ownership
+        if (!roles.hasAtLeastRole(user, 'superadmin') && session.creatorId !== user.id) {
           console.warn(`❌ User ${user.id} (${user.role}) does not have permission to manage session ${sessionId}`);
           return callback({ success: false, error: 'You do not have permission to manage this session' });
         }
