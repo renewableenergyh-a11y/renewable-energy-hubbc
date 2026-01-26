@@ -229,6 +229,8 @@
       border-radius: 6px;
       cursor: pointer;
       font-size: 14px;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 500;
       color: #333;
     }
 
@@ -274,6 +276,7 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
+      font-family: 'Poppins', sans-serif;
       font-weight: 600;
     }
 
@@ -434,10 +437,14 @@
      * Admins/instructors/superadmins bypass this if their name is already in currentUser
      */
     async function collectParticipantName(user) {
-      // If user is admin/instructor/superadmin, always use their account name
-      if (['admin', 'instructor', 'superadmin'].includes(user.role)) {
-        console.log('👤 [discussion-room] Admin/instructor/superadmin using account name:', user.name);
-        return user.name || user.email || 'Admin';
+      const userRole = user.role || 'student';
+      console.log('👤 [discussion-room] collectParticipantName called with role:', userRole);
+      
+      // If user is admin/instructor/superadmin, always use their account name - skip modal completely
+      if (['admin', 'instructor', 'superadmin'].includes(userRole)) {
+        const accountName = user.name || user.email || 'Admin';
+        console.log('✅ [discussion-room] Admin role detected, using account name:', accountName, 'for role:', userRole);
+        return accountName;
       }
 
       // Show modal and collect name from regular students
@@ -814,5 +821,24 @@
       init();
     }
   </script>
+
+<footer class="site-footer">
+  <div class="container footer-container">
+    <div class="footer-socials">
+      <a href="https://www.facebook.com/share/16eSPZmrA8/" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://x.com/AMkhulana86440" target="_blank"><i class="fab fa-x-twitter"></i></a>
+      <a href="https://www.instagram.com/aubieob" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://www.linkedin.com/in/aubrey-mkhulana-3768a5375/" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+      <a href="http://www.youtube.com/@AubieOb" target="_blank"><i class="fab fa-youtube"></i></a>
+      <a href="https://wa.me/265984941575" target="_blank"><i class="fab fa-whatsapp"></i></a>
+      <a href="mailto:aubreymkhulanabanda@gmail.com"><i class="fas fa-envelope"></i></a>
+      <a href="tel:+265984941575" target="_blank"><i class="fas fa-phone"></i></a>
+    </div>
+    <div class="footer-text">
+      <p>&copy; <span class="site-year"></span> Aubieob Renewable Energy Hub. All rights reserved.</p>
+    </div>
+  </div>
+</footer>
+
 </body>
 </html>
