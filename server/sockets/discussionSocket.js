@@ -378,10 +378,18 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
      * Admin/Instructor: can only close their own sessions
      */
     socket.on('close-session', async (data, callback) => {
-      const { sessionId, token } = data;
+      const { sessionId, token, userId, userRole } = data;
 
       try {
-        const user = verifyUserToken(token);
+        // Prefer explicit user info from data, fallback to token verification
+        let user = null;
+        if (userId && userRole) {
+          user = roles.normalizeAuthUser({ id: userId, role: userRole });
+          console.log('✅ [socket] User from headers:', { id: user.id, role: user.role });
+        } else {
+          user = verifyUserToken(token);
+        }
+        
         if (!user || !roles.hasAtLeastRole(user, 'instructor')) {
           return callback({ 
             success: false, 
@@ -451,10 +459,18 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
      * Admin/Instructor: can only remove from their own sessions
      */
     socket.on('admin-remove-participant', async (data, callback) => {
-      const { sessionId, targetUserId, token } = data;
+      const { sessionId, targetUserId, token, userId, userRole } = data;
 
       try {
-        const user = verifyUserToken(token);
+        // Prefer explicit user info from data, fallback to token verification
+        let user = null;
+        if (userId && userRole) {
+          user = roles.normalizeAuthUser({ id: userId, role: userRole });
+          console.log('✅ [socket] User from headers:', { id: user.id, role: user.role });
+        } else {
+          user = verifyUserToken(token);
+        }
+        
         if (!user || !roles.hasAtLeastRole(user, 'instructor')) {
           return callback({ success: false, error: 'Unauthorized' });
         }

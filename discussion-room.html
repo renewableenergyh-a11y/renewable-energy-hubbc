@@ -1344,7 +1344,9 @@
           closeModal();
           try {
             const user = await authService.getCurrentUser();
-            await discussionSocket.closeSession(sessionData.sessionId, user.token);
+            const userId = user.id || user._id;
+            const userRole = user.role || 'student';
+            await discussionSocket.closeSession(sessionData.sessionId, user.token, userId, userRole);
             showModal('Success', 'Session closed successfully.', [
               { text: 'OK', class: 'modal-btn-primary', callback: () => {
                 closeModal();
@@ -1413,7 +1415,10 @@
             if (!confirm('Remove this participant from the session?')) return;
             try {
               const token = localStorage.getItem('authToken');
-              await discussionSocket.removeParticipantByAdmin(sessionData.sessionId, targetUserId, token);
+              const currentUser = getLocalCurrentUser();
+              const userId = currentUser?.id || currentUser?._id;
+              const userRole = currentUser?.role || 'student';
+              await discussionSocket.removeParticipantByAdmin(sessionData.sessionId, targetUserId, token, userId, userRole);
             } catch (err) {
               console.error('Failed to remove participant:', err);
               showModal('Error', 'Failed to remove participant: ' + (err.message || err), [

@@ -177,9 +177,11 @@ export class DiscussionSocketService {
    * Close a session (admin/instructor only)
    * @param {String} sessionId - Session ID
    * @param {String} token - JWT token
+   * @param {String} userId - Current user ID
+   * @param {String} userRole - Current user role
    * @returns {Promise} Resolves when closed
    */
-  async closeSession(sessionId, token) {
+  async closeSession(sessionId, token, userId, userRole) {
     if (!this.socket || !this.connected) {
       throw new Error('Socket not connected');
     }
@@ -189,7 +191,7 @@ export class DiscussionSocketService {
         reject(new Error('Close session timeout'));
       }, 5000);
 
-      this.socket.emit('close-session', { sessionId, token }, (response) => {
+      this.socket.emit('close-session', { sessionId, token, userId, userRole }, (response) => {
         clearTimeout(timeout);
 
         if (response.success) {
@@ -207,8 +209,10 @@ export class DiscussionSocketService {
    * @param {String} sessionId
    * @param {String} targetUserId
    * @param {String} token
+   * @param {String} userId - Current user ID
+   * @param {String} userRole - Current user role
    */
-  async removeParticipantByAdmin(sessionId, targetUserId, token) {
+  async removeParticipantByAdmin(sessionId, targetUserId, token, userId, userRole) {
     if (!this.socket || !this.connected) {
       throw new Error('Socket not connected');
     }
@@ -218,7 +222,7 @@ export class DiscussionSocketService {
         reject(new Error('Remove participant timeout'));
       }, 5000);
 
-      this.socket.emit('admin-remove-participant', { sessionId, targetUserId, token }, (response) => {
+      this.socket.emit('admin-remove-participant', { sessionId, targetUserId, token, userId, userRole }, (response) => {
         clearTimeout(timeout);
         if (response && response.success) {
           resolve(response);
