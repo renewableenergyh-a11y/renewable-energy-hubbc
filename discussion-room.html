@@ -1715,7 +1715,7 @@
           // NEVER show remove button next to admins, instructors, or superadmins
           const showRemoveBtn = isModerator && currentUser && (p.userId !== currentUser.id) && p.role === 'student';
           const isStudent = p.role.toLowerCase() === 'student';
-          const currentUserIsAdmin = userData?.role?.toLowerCase() === 'admin';
+          const currentUserIsAdmin = isModerator;
           
           const micBtn = (showRemoveBtn && isStudent && currentUserIsAdmin)
             ? `<button class="mic-control-btn" data-userid="${escapeHtml(p.userId)}" title="Mute/Unmute participant" style="color:var(--text-secondary)">🎤</button>`
