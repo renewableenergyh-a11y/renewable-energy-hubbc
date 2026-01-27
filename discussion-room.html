@@ -306,12 +306,12 @@
     .participant-item {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 12px;
+      gap: 14px;
+      padding: 14px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-secondary);
       transition: all 0.2s ease;
     }
@@ -323,8 +323,8 @@
     }
 
     .participant-avatar {
-      width: 36px;
-      height: 36px;
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       background: linear-gradient(135deg, var(--accent-green), var(--accent-dark));
       color: white;
@@ -332,7 +332,7 @@
       align-items: center;
       justify-content: center;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 14px;
       flex-shrink: 0;
     }
 
@@ -344,20 +344,20 @@
     .participant-name {
       font-weight: 600;
       color: var(--text-primary);
-      font-size: 13px;
+      font-size: 12px;
       word-break: break-word;
-      margin-bottom: 2px;
+      margin-bottom: 3px;
     }
 
     .participant-role {
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
 
     .participant-status {
-      font-size: 10px;
+      font-size: 9px;
       color: #4caf50;
       font-weight: 700;
       white-space: nowrap;
@@ -382,23 +382,23 @@
       background: var(--accent-green);
       border: none;
       cursor: pointer;
-      padding: 8px 16px;
+      padding: 6px 8px;
       border-radius: 6px;
       transition: all 0.2s ease;
       color: white;
       font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
       font-family: 'Poppins', sans-serif;
-      font-size: 12px;
       white-space: nowrap;
       display: flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
     }
 
     .mic-control-btn i {
       font-size: 14px;
+      margin: 0;
     }
 
     .mic-control-btn:hover {
@@ -428,6 +428,11 @@
       border-radius: 4px;
       transition: all 0.2s ease;
       color: #d32f2f;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .remove-participant-btn:hover {
@@ -618,7 +623,7 @@
     }
 
     .session-closed-modal {
-      background: white;
+      background: var(--bg-primary);
       padding: 40px;
       border-radius: 16px;
       text-align: center;
@@ -635,7 +640,7 @@
     }
 
     .session-closed-modal p {
-      color: #666;
+      color: var(--text-secondary);
       margin: 0 0 24px 0;
       font-size: 14px;
       line-height: 1.6;
@@ -643,7 +648,7 @@
 
     .session-closed-modal button {
       padding: 10px 28px;
-      background: linear-gradient(135deg, #007979, #005a4f);
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-dark));
       color: white;
       border: none;
       border-radius: 8px;
@@ -658,7 +663,7 @@
     }
 
     .session-closed-modal button:hover {
-      background: linear-gradient(135deg, #005a4f, #004d42);
+      background: linear-gradient(135deg, var(--accent-dark), #003a32);
       box-shadow: 0 6px 16px rgba(0, 121, 107, 0.35);
       transform: translateY(-2px);
     }
@@ -1750,11 +1755,11 @@
           const currentUserIsAdmin = isModerator;
           
           const micBtn = (showRemoveBtn && isStudent && currentUserIsAdmin)
-            ? `<button class="mic-control-btn" data-userid="${escapeHtml(p.userId)}" title="Mute/Unmute participant"><i class="fas fa-microphone-slash"></i>MUTE</button>`
+            ? `<button class="mic-control-btn" data-userid="${escapeHtml(p.userId)}" title="Mute/Unmute participant"><i class="fas fa-microphone-slash"></i></button>`
             : '';
           
           const removeBtn = showRemoveBtn
-            ? `<button class="remove-participant-btn" data-userid="${escapeHtml(p.userId)}" title="Remove participant" style="color:#d32f2f">✖</button>`
+            ? `<button class="remove-participant-btn" data-userid="${escapeHtml(p.userId)}" title="Remove participant">✖</button>`
             : '';
 
           return `
@@ -1815,15 +1820,11 @@
               const icon = btn.querySelector('i');
               if (isMuted) {
                 // Switching to unmuted - show mute button
-                btn.textContent = '';
                 icon.className = 'fas fa-microphone-slash';
-                btn.innerHTML = '<i class="fas fa-microphone-slash"></i>MUTE';
                 btn.title = 'Mute participant';
               } else {
                 // Switching to muted - show unmute button
-                btn.textContent = '';
                 icon.className = 'fas fa-microphone';
-                btn.innerHTML = '<i class="fas fa-microphone"></i>UNMUTE';
                 btn.title = 'Unmute participant';
               }
               
