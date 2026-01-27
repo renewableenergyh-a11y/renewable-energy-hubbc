@@ -127,6 +127,12 @@ document.addEventListener('DOMContentLoaded', () => {
       localStorage.setItem('adminName', data.admin.name || '');
       localStorage.setItem('adminToken', data.token);
       localStorage.setItem('adminRole', data.admin.role || role);
+      localStorage.setItem('adminData', JSON.stringify({
+        id: data.admin.id,
+        email: data.admin.email,
+        name: data.admin.name,
+        role: data.admin.role || role
+      }));
 
       showNotice(noticeId, 'success', 'Signed in — redirecting...');
       setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 500);

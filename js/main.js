@@ -359,6 +359,9 @@ async function performLogout({ isAdmin = false, message = null } = {}) {
       localStorage.setItem('isAdmin', 'false');
       localStorage.removeItem('adminEmail');
       localStorage.removeItem('adminToken');
+      localStorage.removeItem('adminName');
+      localStorage.removeItem('adminRole');
+      localStorage.removeItem('adminData');
     } else {
       localStorage.setItem('isLoggedIn', 'false');
       localStorage.setItem('userEmail', '');

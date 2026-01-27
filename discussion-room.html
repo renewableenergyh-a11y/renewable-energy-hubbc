@@ -1425,11 +1425,27 @@
     // Create compatible authService interface
     const authService = {
       getCurrentUser: async () => {
-        const user = getCurrentUser();
+        // Check for regular app user first
+        let user = getCurrentUser();
+        let token = localStorage.getItem('authToken');
+        
+        // If no app user, check for admin user
+        if (!user) {
+          const adminDataStr = localStorage.getItem('adminData');
+          if (adminDataStr) {
+            try {
+              user = JSON.parse(adminDataStr);
+              token = localStorage.getItem('adminToken');
+            } catch (e) {
+              console.warn('Failed to parse adminData:', e);
+            }
+          }
+        }
+        
         if (!user) return null;
         return {
           ...user,
-          token: localStorage.getItem('authToken')
+          token: token
         };
       },
       logout: async () => {
