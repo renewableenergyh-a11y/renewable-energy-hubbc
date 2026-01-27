@@ -1505,6 +1505,89 @@
     let sessionData = null;
     let isInstructor = false;
 
+    /**
+     * Frontend participant state management
+     * Maintains a Map of userId -> participant to ensure uniqueness
+     * Single source of truth for what appears in the UI
+     */
+    const participantState = {
+      participants: new Map(), // userId -> participant object
+      
+      /**
+       * Add or update a participant, ensuring no duplicates
+       */
+      upsert(participant) {
+        if (!participant || !participant.userId) {
+          console.warn('Invalid participant object:', participant);
+          return false;
+        }
+        
+        const userId = participant.userId;
+        const existing = this.participants.get(userId);
+        
+        if (existing) {
+          // Update existing participant
+          this.participants.set(userId, { ...existing, ...participant });
+          console.log(`✏️ [participantState] Updated participant ${userId}:`, participant.userName);
+        } else {
+          // Add new participant
+          this.participants.set(userId, participant);
+          console.log(`➕ [participantState] Added participant ${userId}:`, participant.userName);
+        }
+        
+        return true;
+      },
+      
+      /**
+       * Remove a participant by userId
+       */
+      remove(userId) {
+        const existed = this.participants.has(userId);
+        if (existed) {
+          const removed = this.participants.get(userId);
+          this.participants.delete(userId);
+          console.log(`➖ [participantState] Removed participant ${userId}:`, removed.userName);
+        }
+        return existed;
+      },
+      
+      /**
+       * Replace all participants (used on page refresh)
+       */
+      replaceAll(newParticipants) {
+        this.participants.clear();
+        if (newParticipants && Array.isArray(newParticipants)) {
+          newParticipants.forEach(p => {
+            if (p && p.userId) {
+              this.participants.set(p.userId, p);
+            }
+          });
+        }
+        console.log(`🔄 [participantState] Replaced all participants. New count:`, this.participants.size);
+      },
+      
+      /**
+       * Get all participants as array
+       */
+      getAll() {
+        return Array.from(this.participants.values());
+      },
+      
+      /**
+       * Get participant count
+       */
+      getCount() {
+        return this.participants.size;
+      },
+      
+      /**
+       * Check if participant exists
+       */
+      has(userId) {
+        return this.participants.has(userId);
+      }
+    };
+
     // Modal Helper Functions
     function showModal(title, body, buttons = []) {
       const modal = document.getElementById('customModal');
@@ -1764,8 +1847,12 @@
                 activeCount: stats.activeCount
               });
               
-              // Initialize UI with current participant list
-              renderParticipants(participants, stats);
+              // Initialize frontend state with authoritative server list
+              // This is critical for page refresh - replaces any stale data
+              participantState.replaceAll(participants);
+              
+              // Initialize UI with deduplicated list from state
+              renderParticipants(participantState.getAll(), stats);
             } else {
               console.warn('⚠️ [discussion-room] Failed to fetch initial participants');
             }
@@ -1828,23 +1915,48 @@
       console.log('🎧 [setupListeners] Setting up all socket event listeners');
       // Socket events
       discussionSocket.on('participant-list-updated', (data) => {
-        console.log('📋 [discussion-room] Participant list updated:', data.participants.length);
-        renderParticipants(data.participants, data.stats);
+        console.log('📋 [discussion-room] Participant list updated from server:', data.participants.length);
+        
+        // Replace frontend state with server's authoritative list
+        participantState.replaceAll(data.participants);
+        
+        // Re-render UI with deduplicated list from state
+        renderParticipants(participantState.getAll(), data.stats);
       });
 
       discussionSocket.on('participant-joined', (data) => {
         console.log(`👤 [discussion-room] ${data.name} joined the discussion`);
+        
+        // Add to frontend state
+        participantState.upsert({
+          userId: data.userId,
+          userName: data.name,
+          role: data.role || 'student',
+          active: true,
+          joinTime: data.joinTime,
+          audioEnabled: false,
+          videoEnabled: false,
+          handRaised: false
+        });
+        
         showParticipantNotification(data.name, 'joined');
       });
 
       discussionSocket.on('participant-left', (data) => {
-        console.log(`👋 [discussion-room] ${data.userName} left (${data.participantCount} remaining)`);
+        console.log(`👋 [discussion-room] ${data.userName} left`);
+        
+        // Remove from frontend state using userId if available, else userName
+        if (data.userId) {
+          participantState.remove(data.userId);
+        }
+        
         // Show notification for participant leaving
         if (data.userName) {
           showParticipantNotification(data.userName, 'left');
         }
-        // The participant-list-updated event will be broadcasted by the server to update the UI
-        // This event is just for logging; the actual UI update happens via participant-list-updated
+        
+        // Re-render UI to reflect removal
+        renderParticipants(participantState.getAll(), { activeCount: participantState.getCount() });
       });
 
       discussionSocket.on('session-closed', (data) => {
@@ -1870,9 +1982,10 @@
       });
 
       discussionSocket.on('hand-raised-updated', (data) => {
-        // Re-render participants when hand raise status changes
+        // Update frontend state with new participants data
         if (data.participants) {
-          renderParticipants(data.participants, data.stats);
+          participantState.replaceAll(data.participants);
+          renderParticipants(participantState.getAll(), data.stats);
         }
       });
 
