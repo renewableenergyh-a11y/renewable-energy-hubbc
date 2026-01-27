@@ -1113,20 +1113,25 @@
         display: none;
       }
 
-      /* Participants button styling on mobile */
-      #participantsBtn {
-        display: flex;
+      /* Show participants below media controls on mobile */
+      .room-container {
+        grid-template-columns: 1fr;
       }
 
-      /* Participants sidebar positioning on mobile */
       .sidebars-container {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+        position: static !important;
         margin-top: 12px;
         max-height: 40vh;
         overflow-y: auto;
+        border-radius: 12px;
+        border: 1px solid var(--border-color);
+        background: var(--bg-primary);
       }
 
-      .sidebar {
-        width: 100%;
+      .room-main {
+        grid-row: 1 !important;
       }
     }
 
@@ -1196,10 +1201,6 @@
         <button class="btn-control" id="shareBtn" title="Share screen">
           <i class="fas fa-share-square"></i>
           <span>Share</span>
-        </button>
-        <button class="btn-control" id="participantsBtn" title="Show participants">
-          <i class="fas fa-users"></i>
-          <span>Participants</span>
         </button>
       </div>
 
@@ -1725,28 +1726,6 @@
           showModal('Screen Share', 'Screen sharing feature will be available in the next update with WebRTC implementation.', [
             { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
           ]);
-        });
-      }
-
-      // Mobile sidebar toggle functionality
-      const sidebarsContainer = document.querySelector('.sidebars-container');
-      const sidebar = document.querySelector('.sidebar');
-      const participantsBtn = document.getElementById('participantsBtn');
-
-      console.log('Toggle Debug:', {
-        sidebarsContainer: !!sidebarsContainer,
-        sidebar: !!sidebar,
-        participantsBtn: !!participantsBtn
-      });
-
-      // Participants list toggle
-      if (participantsBtn && sidebarsContainer) {
-        participantsBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          console.log('Participants toggle clicked');
-          sidebarsContainer.classList.toggle('mobile-sidebars-active');
-          console.log('Container active:', sidebarsContainer.classList.contains('mobile-sidebars-active'));
         });
       }
 
