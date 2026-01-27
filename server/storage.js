@@ -184,7 +184,10 @@ function persistToDbOrFile(collectionName, keyField, mapOrArray, filePath) {
         // Only persist valid plain objects (not null, not arrays, not primitives)
         if (!doc || typeof doc !== 'object' || Array.isArray(doc) || doc === null) continue;
         const filter = doc._id ? { _id: doc._id } : (doc.email ? { email: doc.email } : (doc.sessionId ? { sessionId: doc.sessionId } : {}));
-        promises.push(model.updateOne(filter, { $set: doc }, { upsert: true }).catch(e => { console.warn('persist error', e && e.message); }));
+        // Exclude _id from the update (it's immutable in MongoDB)
+        const docToSet = { ...doc };
+        delete docToSet._id;
+        promises.push(model.updateOne(filter, { $set: docToSet }, { upsert: true }).catch(e => { console.warn('persist error', e && e.message); }));
       }
       return Promise.all(promises);
     } else {
@@ -192,7 +195,10 @@ function persistToDbOrFile(collectionName, keyField, mapOrArray, filePath) {
         const doc = mapOrArray[k];
         // Skip non-plain-object values (strings, numbers, null, arrays, functions, etc.)
         if (!doc || typeof doc !== 'object' || Array.isArray(doc) || doc === null) return Promise.resolve();
-        return model.updateOne({ [keyField]: k }, { $set: doc }, { upsert: true }).catch(e => { console.warn('persist error', e && e.message); });
+        // Exclude _id from the update (it's immutable in MongoDB)
+        const docToSet = { ...doc };
+        delete docToSet._id;
+        return model.updateOne({ [keyField]: k }, { $set: docToSet }, { upsert: true }).catch(e => { console.warn('persist error', e && e.message); });
       });
       return Promise.all(promises);
     }

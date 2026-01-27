@@ -122,7 +122,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
       const { courseId } = req.params;
       const { status } = req.query;
 
-      console.log('📖 GET /sessions/course/:courseId - courseId:', courseId);
+      console.log('📖 [GET /sessions/course/:courseId] Authorized user:', { userId: req.user?.id, role: req.user?.role, courseId });
       const sessions = await discussionSessionService.getSessionsByCourse(courseId, status);
       console.log('📖 GET /sessions/course/:courseId - Found', sessions.length, 'sessions');
       if (sessions.length > 0) {
