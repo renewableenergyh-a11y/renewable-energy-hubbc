@@ -1527,12 +1527,19 @@
         
         if (existing) {
           // Update existing participant
-          this.participants.set(userId, { ...existing, ...participant });
-          console.log(`✏️ [participantState] Updated participant ${userId}:`, participant.userName);
+          const updated = { ...existing, ...participant };
+          this.participants.set(userId, updated);
+          console.log(`✏️ [participantState] Updated participant ${userId}:`, {
+            oldName: existing.userName,
+            newName: participant.userName,
+            oldActive: existing.active,
+            newActive: participant.active
+          });
         } else {
           // Add new participant
           this.participants.set(userId, participant);
           console.log(`➕ [participantState] Added participant ${userId}:`, participant.userName);
+          console.log(`📊 [participantState] Current map size:`, this.participants.size);
         }
         
         return true;
@@ -1547,6 +1554,7 @@
           const removed = this.participants.get(userId);
           this.participants.delete(userId);
           console.log(`➖ [participantState] Removed participant ${userId}:`, removed.userName);
+          console.log(`📊 [participantState] Current map size:`, this.participants.size);
         }
         return existed;
       },
@@ -1555,22 +1563,38 @@
        * Replace all participants (used on page refresh)
        */
       replaceAll(newParticipants) {
+        const oldSize = this.participants.size;
         this.participants.clear();
         if (newParticipants && Array.isArray(newParticipants)) {
+          // Check for duplicates in input
+          const userIds = new Set();
           newParticipants.forEach(p => {
             if (p && p.userId) {
+              if (userIds.has(p.userId)) {
+                console.warn(`⚠️ [participantState] DUPLICATE in server response! userId: ${p.userId}, name: ${p.userName}`);
+              }
+              userIds.add(p.userId);
               this.participants.set(p.userId, p);
             }
           });
         }
-        console.log(`🔄 [participantState] Replaced all participants. New count:`, this.participants.size);
+        console.log(`🔄 [participantState] Replaced participants. Old count: ${oldSize}, New count: ${this.participants.size}`);
+        
+        // Log all participants for debugging
+        console.table(Array.from(this.participants.values()).map(p => ({
+          userId: p.userId,
+          userName: p.userName,
+          active: p.active
+        })));
       },
       
       /**
        * Get all participants as array
        */
       getAll() {
-        return Array.from(this.participants.values());
+        const all = Array.from(this.participants.values());
+        console.log(`📋 [participantState.getAll] Returning ${all.length} participants`);
+        return all;
       },
       
       /**
@@ -2010,6 +2034,9 @@
           handRaised: false
         });
         
+        // Re-render immediately to show the new participant
+        renderParticipants(participantState.getAll(), { activeCount: participantState.getCount() });
+        
         showParticipantNotification(data.name, 'joined');
       });
 
@@ -2325,8 +2352,23 @@
         return;
       }
 
+      // Safety: Deduplicate by userId if any somehow made it through
+      const deduped = new Map();
+      participants.forEach(p => {
+        if (p && p.userId) {
+          if (deduped.has(p.userId)) {
+            console.warn(`⚠️ [renderParticipants] DUPLICATE participant in render! userId: ${p.userId}, existing: ${deduped.get(p.userId).userName}, new: ${p.userName}`);
+          }
+          deduped.set(p.userId, p);
+        }
+      });
+      
+      const finalParticipants = Array.from(deduped.values());
+      
+      console.log(`🎨 [renderParticipants] Rendering ${finalParticipants.length} participants (input had ${participants.length})`);
+
       // Display ALL participants - do NOT filter by role
-      participantsList.innerHTML = participants
+      participantsList.innerHTML = finalParticipants
         .map(p => {
           // Display user name if available, otherwise email (if present), otherwise placeholder
           const displayName = p.userName || p.email || 'Participant';
