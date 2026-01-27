@@ -483,8 +483,10 @@ module.exports = function(db, discussionSessionService, participantService, io =
 
       // CLEANUP: Remove user from ALL other sessions before joining this one
       // This prevents users from appearing in multiple sessions simultaneously
-      console.log(`🧹 [REST/participants/join] Cleaning up user ${req.user.id} from other sessions`);
+      // Also cleanup any orphaned records with different userId formats (UUID vs email)
+      console.log(`🧹 [REST/participants/join] Cleaning up user ${req.user.id} (email: ${req.user.email}) from other sessions and orphaned records`);
       try {
+        // First cleanup: by userId (normal case)
         const removedCount = await db.models.Participant.updateMany(
           {
             userId: req.user.id,
@@ -499,7 +501,40 @@ module.exports = function(db, discussionSessionService, participantService, io =
           }
         );
         if (removedCount.modifiedCount > 0) {
-          console.log(`✅ [REST/participants/join] Deactivated ${removedCount.modifiedCount} participant records from other sessions`);
+          console.log(`✅ [REST/participants/join] Deactivated ${removedCount.modifiedCount} participant records from other sessions by userId`);
+        }
+        
+        // Second cleanup: by email if user has email (catches orphaned email-based records)
+        if (req.user.email) {
+          const emailRemoved = await db.models.Participant.updateMany(
+            {
+              userId: req.user.email, // Email-based userId
+              sessionId: { $ne: sessionId },
+              active: true
+            },
+            {
+              $set: {
+                active: false,
+                lastLeaveTime: new Date()
+              }
+            }
+          );
+          if (emailRemoved.modifiedCount > 0) {
+            console.log(`✅ [REST/participants/join] Deactivated ${emailRemoved.modifiedCount} email-based orphaned records`);
+          }
+        }
+
+        // Third cleanup: Remove duplicate inactive records from THIS session
+        // This handles the case where user joined multiple times and has multiple participant records
+        const inactiveRemoved = await db.models.Participant.deleteMany({
+          sessionId: sessionId,
+          active: false, // Only delete inactive ones
+          userId: { 
+            $in: [req.user.id, req.user.email].filter(Boolean) 
+          }
+        });
+        if (inactiveRemoved.deletedCount > 0) {
+          console.log(`🗑️ [REST/participants/join] Purged ${inactiveRemoved.deletedCount} inactive duplicate records from this session`);
         }
       } catch (cleanupErr) {
         console.warn(`⚠️ [REST/participants/join] Cleanup failed: ${cleanupErr.message}`);

@@ -218,6 +218,21 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           }
         }
 
+        // CLEANUP: Remove duplicate inactive participant records in this session
+        // This prevents orphaned records from building up
+        try {
+          const inactiveRemoved = await participantService.db.models.Participant.deleteMany({
+            sessionId: sessionId,
+            userId: user.id,
+            active: false
+          });
+          if (inactiveRemoved.deletedCount > 0) {
+            console.log(`🗑️ [socket] Purged ${inactiveRemoved.deletedCount} inactive duplicate records for user ${user.id} in session ${sessionId}`);
+          }
+        } catch (cleanupErr) {
+          console.warn(`⚠️ [socket] Failed to cleanup inactive duplicates: ${cleanupErr.message}`);
+        }
+
         // CRITICAL: Ensure participant is active
         // Use atomic findOneAndUpdate to prevent race conditions from duplicate insertions
         // This is the authoritative source for ensuring participant state

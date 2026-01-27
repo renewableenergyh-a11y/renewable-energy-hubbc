@@ -148,11 +148,35 @@ class ParticipantService {
 
     // Deduplicate by userId - keep only the most recently joined
     const deduped = {};
+    const toDelete = []; // Track duplicate records for cleanup
+    
     participants.forEach(p => {
-      if (!deduped[p.userId] || new Date(p.joinTime) > new Date(deduped[p.userId].joinTime)) {
+      if (!deduped[p.userId]) {
         deduped[p.userId] = p;
+      } else {
+        // Keep newer record, mark older one for deletion
+        const existing = deduped[p.userId];
+        const pTime = new Date(p.joinTime).getTime();
+        const existingTime = new Date(existing.joinTime).getTime();
+        
+        if (pTime > existingTime) {
+          toDelete.push(existing._id); // Delete the old one
+          deduped[p.userId] = p;
+        } else {
+          toDelete.push(p._id); // Delete this one, keep existing
+        }
       }
     });
+    
+    // Cleanup duplicate records in background (don't block response)
+    if (toDelete.length > 0) {
+      try {
+        await Participant.deleteMany({ _id: { $in: toDelete } });
+        console.log(`🧹 [getActiveParticipants] Deleted ${toDelete.length} duplicate participant records from session ${sessionId}`);
+      } catch (err) {
+        console.warn(`⚠️ [getActiveParticipants] Failed to cleanup duplicates: ${err.message}`);
+      }
+    }
 
     return Object.values(deduped);
   }
