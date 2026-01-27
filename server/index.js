@@ -6454,6 +6454,7 @@ app.post('/api/notifications/create', (req, res) => {
 });
 
 // --- Start Server ---
+// Server startup function with proper initialization sequence
 
 // Diagnostic endpoint for email configuration
 app.get('/api/email-config', (req, res) => {
