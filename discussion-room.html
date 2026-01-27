@@ -2131,8 +2131,12 @@
     function getLocalCurrentUser() {
       try {
         const s = localStorage.getItem('currentUser');
+        console.log('🔍 [getLocalCurrentUser] Retrieved from localStorage:', s ? JSON.parse(s) : null);
         return s ? JSON.parse(s) : null;
-      } catch (e) { return null; }
+      } catch (e) { 
+        console.error('❌ [getLocalCurrentUser] Error parsing:', e);
+        return null; 
+      }
     }
 
     function startTimeUpdate() {
