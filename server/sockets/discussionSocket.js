@@ -42,7 +42,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
    */
   const verifyUserToken = (token) => {
     if (!token) {
-      console.warn('⚠️  No token provided for Socket.IO auth');
+      console.warn('🔐 [verifyUserToken] No token provided for Socket.IO auth - rejecting');
       return null;
     }
     
@@ -52,20 +52,15 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       try {
         users = require('../storage').loadUsers();
       } catch (err) {
-        console.warn('⚠️  Could not load users from storage:', err.message);
-        // Continue without user verification - allow anonymous joins for now
-        return {
-          id: 'anonymous',
-          email: 'anonymous@discussion',
-          role: 'guest',
-          name: 'Guest'
-        };
+        console.error('🔐 [verifyUserToken] Could not load users from storage:', err.message);
+        // CRITICAL: Reject if we can't verify users - don't allow anonymous joins
+        return null;
       }
 
-      // Look for matching token
+      // Look for matching token in verified users
       for (const [email, user] of Object.entries(users)) {
         if (user && user.token === token) {
-          console.log('✅ Socket.IO auth verified for:', email);
+          console.log('✅ [verifyUserToken] Socket.IO auth verified for:', email);
           const norm = roles.normalizeAuthUser({ id: user.id || email, role: user.role || 'student', email, fullName: user.fullName || user.name });
           // include a human-friendly name property expected in frontend
           norm.name = norm.fullName || (norm.email ? norm.email.split('@')[0] : 'User');
@@ -73,21 +68,13 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         }
       }
 
-      console.warn('⚠️  Token not found in users database');
-      // If token not in DB, still allow (might be valid JWT elsewhere)
-      return {
-        id: 'verified-user',
-        email: 'user@discussion',
-        role: 'student',
-        name: 'User'
-      };
+      console.warn('🔐 [verifyUserToken] Token not found in users database - rejecting');
+      // CRITICAL: Reject if token can't be verified - don't allow anonymous or fallback users
+      return null;
     } catch (err) {
-      console.warn('⚠️  Token verification error:', err.message);
-      // Allow fallback for Socket.IO connections
-      return {
-        id: 'fallback-user',
-        email: 'user@discussion',
-        role: 'student',
+      console.error('🔐 [verifyUserToken] Token verification error:', err.message);
+      // CRITICAL: Reject on any error - don't allow fallback connections
+      return null;
         name: 'User'
       };
     }

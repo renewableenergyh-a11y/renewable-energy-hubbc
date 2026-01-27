@@ -1412,7 +1412,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalTitle">Modal Title</h3>
-        <button class="modal-close-btn" onclick="closeModal()">&times;</button>
+        <button class="modal-close-btn" id="modalCloseBtn">&times;</button>
       </div>
       <div class="modal-body" id="modalBody">Modal body content</div>
       <div class="modal-footer" id="modalFooter"></div>
@@ -1677,11 +1677,20 @@
     // Close modal when clicking overlay
     window.addEventListener('DOMContentLoaded', () => {
       const modal = document.getElementById('customModal');
+      const closeBtn = document.getElementById('modalCloseBtn');
+      
       if (modal) {
         modal.addEventListener('click', (e) => {
           if (e.target === modal) {
             closeModal();
           }
+        });
+      }
+      
+      if (closeBtn) {
+        closeBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          closeModal();
         });
       }
     });
