@@ -494,7 +494,6 @@ module.exports = function(db, discussionSessionService, participantService, io =
           $set: {
             active: true,
             lastLeaveTime: null,
-            role: req.user.role,
             userName: userName,
             updatedAt: now
           },
