@@ -3297,6 +3297,64 @@ app.post('/api/auth/me', (req, res) => {
   }
 });
 
+// GET equivalent of /api/auth/me for simpler usage
+app.get('/api/user/me', (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    // Check session validity (timeout check)
+    if (!isSessionValid(token)) {
+      return res.status(401).json({ error: 'Session expired due to inactivity', sessionExpired: true });
+    }
+
+    // Reject revoked tokens immediately
+    try {
+      const revoked = loadRevokedTokens();
+      if (revoked && revoked.includes(token)) return res.status(401).json({ error: 'Invalid or expired token' });
+    } catch (e) { console.warn('revoked tokens check failed', e); }
+
+    // Record activity for this session
+    recordSessionActivity(token);
+
+    const users = loadUsers();
+
+    // Find user by token
+    let currentUser = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        currentUser = { ...user };
+        delete currentUser.password; // Never send password
+        // Add avatar URL if it exists
+        if (!currentUser.avatarUrl) {
+          const avatarManager = require('./avatars');
+          const avatarUrl = avatarManager.getAvatarUrl(email);
+          if (avatarUrl) {
+            currentUser.avatarUrl = avatarUrl;
+          }
+        }
+        break;
+      }
+    }
+
+    if (!currentUser) {
+      return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+
+    res.json({
+      success: true,
+      user: currentUser,
+      sessionTimeoutMs: SESSION_TIMEOUT_MS
+    });
+  } catch (err) {
+    console.error('Auth verification error:', err);
+    res.status(500).json({ error: 'Authentication check failed' });
+  }
+});
+
 // Logout user (revoke session)
 app.post('/api/auth/logout', (req, res) => {
   try {
