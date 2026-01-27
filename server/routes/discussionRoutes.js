@@ -23,39 +23,36 @@ module.exports = function(db, discussionSessionService, participantService, io =
     const userId = req.headers['x-user-id'];
     const userRole = req.headers['x-user-role'];
 
-    console.log('🔐 [verifyAuth] Token present:', !!token);
-    console.log('🔐 [verifyAuth] Headers:', { userId, userRole, authHeader: req.headers.authorization ? '***' : 'missing' });
+    console.log('🔐 [verifyAuth] Headers:', { hasToken: !!token, userId, userRole });
 
-    // Require EITHER a token OR (userId + userRole)
-    if (!token && (!userId || !userRole)) {
-      console.warn('⚠️ [verifyAuth] No authorization token or user headers');
-      return res.status(401).json({ error: 'Unauthorized - missing token and user info' });
-    }
-
-    // If we have userId and userRole (from headers), use those even without token
+    // ACCEPT: userId + userRole (header-based auth, preferred for discussion routes)
     if (userId && userRole) {
-      // Validate userId format: only email is allowed, except for admins
       const role = userRole;
       const isAdmin = roles.hasAtLeastRole({ role }, 'admin');
       
+      // Validate userId format: only email allowed for regular users
       if (!isValidEmail(userId) && !isAdmin) {
         console.warn('⚠️ [verifyAuth] Non-email userId not allowed for regular users:', { userId, role });
         return res.status(401).json({ error: 'Unauthorized - userId must be an email address' });
       }
 
       req.user = { id: userId, role: role };
-      // Normalize into canonical authUser shape (ensures superadmin predefined credentials are normalized)
       req.user = roles.normalizeAuthUser(req.user);
-      console.log('✅ [verifyAuth] User authenticated via headers:', { id: req.user.id, role: req.user.role, isEmailValidated: isValidEmail(req.user.id) || isAdmin });
-      next();
-    } else if (token) {
-      // Fallback: accept token without user headers (shouldn't normally happen)
-      console.warn('⚠️ [verifyAuth] Token provided but no user headers - this should not happen in normal flow');
-      return res.status(401).json({ error: 'Unauthorized - missing user info headers' });
-    } else {
-      console.warn('⚠️ [verifyAuth] No valid auth combination found');
-      return res.status(401).json({ error: 'Unauthorized - invalid authentication' });
+      console.log('✅ [verifyAuth] User authenticated via headers:', { id: req.user.id, role: req.user.role });
+      return next();
     }
+
+    // FALLBACK: Accept token-only auth if no headers provided
+    if (token && !userId) {
+      console.warn('⚠️ [verifyAuth] Token provided but missing user headers - recommend adding x-user-id and x-user-role');
+      // For now, allow it but set placeholder user
+      req.user = { id: 'token-user', role: 'student' };
+      return next();
+    }
+
+    // REJECT: No valid auth found
+    console.warn('⚠️ [verifyAuth] No valid authentication found - missing both headers and token');
+    return res.status(401).json({ error: 'Unauthorized - missing authentication' });
   };
 
   // ==================== SESSION ENDPOINTS ====================
