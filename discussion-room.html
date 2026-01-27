@@ -1039,65 +1039,74 @@
       }
 
       .sidebars-container {
-        display: none !important;
-        position: static;
-      }
-
-      .sidebar,
-      .features-sidebar {
-        position: fixed !important;
+        position: fixed;
         bottom: 0;
         left: 0;
         right: 0;
         width: 100%;
-        max-width: 100%;
-        height: auto;
-        max-height: 80vh;
-        margin: 0;
-        padding: 24px;
-        border-radius: 16px 16px 0 0;
         z-index: 1000;
-        display: none !important;
-        flex: none;
-        grid-column: unset;
-        grid-row: unset;
-        background: var(--bg-primary);
-        border: 1px solid var(--border-color);
-        box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+        display: flex;
+        flex-direction: column;
+        height: 0;
+        overflow: hidden;
+        transition: height 0.3s ease;
       }
 
-      .sidebar.mobile-visible,
-      .features-sidebar.mobile-visible {
-        display: flex !important;
+      .sidebars-container.mobile-sidebars-active {
+        height: 80vh;
+        overflow-y: auto;
+      }
+
+      .sidebar,
+      .features-sidebar {
+        max-height: 100%;
+        flex: none;
+        height: auto;
+        position: relative;
+        bottom: auto;
+        margin: 0;
+        border-radius: 0;
       }
 
       .sidebar-toggle-btn {
-        display: inline-flex;
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 16px;
+        right: 16px;
         padding: 12px 16px;
         background: var(--accent-green);
         color: white;
         border: none;
-        border-radius: 8px;
+        border-radius: 8px 8px 0 0;
         cursor: pointer;
         font-size: 14px;
         font-weight: 600;
         gap: 8px;
         align-items: center;
-        width: 100%;
-        margin-bottom: 12px;
+        margin: 0;
         transition: all 0.2s ease;
         font-family: 'Poppins', sans-serif;
-        position: relative;
         z-index: 999;
+        width: calc(100% - 32px);
+      }
+
+      #participantsToggleBtn {
+        bottom: 50px;
+      }
+
+      #featuresToggleBtn {
+        bottom: 0;
       }
 
       .sidebar-toggle-btn:hover {
         opacity: 0.9;
-        box-shadow: 0 2px 8px rgba(0, 121, 107, 0.2);
       }
 
       body.dark .sidebar-toggle-btn {
         background: var(--accent-green);
+      }
+    }
       }
     }
 
@@ -1787,12 +1796,14 @@
       }
 
       // Mobile sidebar toggle functionality
+      const sidebarsContainer = document.querySelector('.sidebars-container');
       const sidebar = document.querySelector('.sidebar');
       const featuresSidebar = document.querySelector('.features-sidebar');
       const participantsToggleBtn = document.getElementById('participantsToggleBtn');
       const featuresToggleBtn = document.getElementById('featuresToggleBtn');
 
       console.log('Toggle Debug:', {
+        sidebarsContainer: !!sidebarsContainer,
         sidebar: !!sidebar,
         featuresSidebar: !!featuresSidebar,
         participantsToggleBtn: !!participantsToggleBtn,
@@ -1800,38 +1811,24 @@
       });
 
       // Participants sidebar toggle
-      if (participantsToggleBtn) {
+      if (participantsToggleBtn && sidebarsContainer) {
         participantsToggleBtn.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
           console.log('Participants toggle clicked');
-          // Close features if open
-          if (featuresSidebar && featuresSidebar.classList.contains('mobile-visible')) {
-            featuresSidebar.classList.remove('mobile-visible');
-          }
-          // Toggle participants
-          if (sidebar) {
-            sidebar.classList.toggle('mobile-visible');
-            console.log('Sidebar mobile-visible:', sidebar.classList.contains('mobile-visible'));
-          }
+          sidebarsContainer.classList.toggle('mobile-sidebars-active');
+          console.log('Container active:', sidebarsContainer.classList.contains('mobile-sidebars-active'));
         });
       }
 
       // Features sidebar toggle
-      if (featuresToggleBtn) {
+      if (featuresToggleBtn && sidebarsContainer) {
         featuresToggleBtn.addEventListener('click', (e) => {
           e.preventDefault();
           e.stopPropagation();
           console.log('Features toggle clicked');
-          // Close participants if open
-          if (sidebar && sidebar.classList.contains('mobile-visible')) {
-            sidebar.classList.remove('mobile-visible');
-          }
-          // Toggle features
-          if (featuresSidebar) {
-            featuresSidebar.classList.toggle('mobile-visible');
-            console.log('FeaturesSidebar mobile-visible:', featuresSidebar.classList.contains('mobile-visible'));
-          }
+          sidebarsContainer.classList.toggle('mobile-sidebars-active');
+          console.log('Container active:', sidebarsContainer.classList.contains('mobile-sidebars-active'));
         });
       }
 
