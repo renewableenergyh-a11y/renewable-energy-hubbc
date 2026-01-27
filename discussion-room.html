@@ -1761,6 +1761,43 @@
         }
       });
 
+      discussionSocket.on('user-reaction', (data) => {
+        const { reaction, userName, userId } = data;
+        
+        // Skip if it's our own reaction (we already displayed it)
+        const currentUser = window.currentUser || {};
+        if (userId === currentUser.id) {
+          return;
+        }
+        
+        // Create floating reaction animation for other user's reaction
+        const floatingReaction = document.createElement('div');
+        floatingReaction.className = 'floating-reaction';
+        floatingReaction.textContent = reaction;
+        
+        // Position randomly in the room content area
+        const roomContent = document.getElementById('room-content');
+        const rect = roomContent?.getBoundingClientRect() || document.body.getBoundingClientRect();
+        
+        // Random position within the room area
+        const randomX = rect.left + Math.random() * rect.width;
+        const randomY = rect.top + Math.random() * rect.height;
+        const randomDrift = (Math.random() - 0.5) * 150;
+        
+        floatingReaction.style.left = randomX + 'px';
+        floatingReaction.style.top = randomY + 'px';
+        floatingReaction.style.setProperty('--tx', randomDrift + 'px');
+        
+        document.body.appendChild(floatingReaction);
+        
+        // Remove element after animation completes
+        setTimeout(() => {
+          floatingReaction.remove();
+        }, 3500);
+        
+        console.log(`${userName} sent reaction: ${reaction}`);
+      });
+
       // Button events
       leaveBtn.addEventListener('click', handleLeave);
 
@@ -1864,7 +1901,14 @@
               floatingReaction.remove();
             }, 3500);
             
-            // TODO: Send reaction via socket.io
+            // Send reaction via socket.io
+            const currentUser = window.currentUser || {};
+            discussionSocket.emitReaction(
+              sessionData.id,
+              reaction,
+              currentUser.id,
+              currentUser.name || 'Anonymous'
+            );
           });
         });
       }

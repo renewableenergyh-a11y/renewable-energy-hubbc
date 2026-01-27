@@ -617,6 +617,34 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     });
 
     /**
+     * Event: reaction
+     * Broadcast reaction from user to all participants
+     */
+    socket.on('reaction', async (data) => {
+      const { sessionId, reaction, userId, userName } = data;
+
+      if (!sessionId || !reaction || !userId) {
+        console.warn('Invalid reaction data', data);
+        return;
+      }
+
+      try {
+        // Broadcast reaction to all users in the session
+        io.to(`discussion-session:${sessionId}`).emit('user-reaction', {
+          sessionId,
+          reaction,
+          userId,
+          userName,
+          timestamp: Date.now()
+        });
+
+        console.log(`User ${userId} (${userName}) sent reaction ${reaction} in session ${sessionId}`);
+      } catch (error) {
+        console.error('Error handling reaction:', error);
+      }
+    });
+
+    /**
      * Event: ping (heartbeat)
      * Keep connection alive and detect client presence
      */

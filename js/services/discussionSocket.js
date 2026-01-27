@@ -99,6 +99,10 @@ export class DiscussionSocketService {
             this._emit('force-disconnect', data);
             this.disconnect();
           });
+
+          this.socket.on('user-reaction', (data) => {
+            this._emit('user-reaction', data);
+          });
         };
 
         script.onerror = () => {
@@ -276,6 +280,27 @@ export class DiscussionSocketService {
       sessionId,
       isRaised,
       userId
+    });
+  }
+
+  /**
+   * Emit reaction event
+   * @param {String} sessionId - Session ID
+   * @param {String} reaction - Reaction emoji
+   * @param {String} userId - Current user ID
+   * @param {String} userName - Current user name
+   */
+  emitReaction(sessionId, reaction, userId, userName) {
+    if (!this.socket || !this.socket.connected) {
+      console.warn('Socket not connected');
+      return;
+    }
+
+    this.socket.emit('reaction', {
+      sessionId,
+      reaction,
+      userId,
+      userName
     });
   }
 
