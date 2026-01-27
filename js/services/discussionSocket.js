@@ -128,9 +128,11 @@ export class DiscussionSocketService {
    * Join a discussion session
    * @param {String} sessionId - Session ID
    * @param {String} token - JWT token
+   * @param {String} userId - User ID (from REST auth, can be used as fallback)
+   * @param {String} userRole - User role (from REST auth, can be used as fallback)
    * @returns {Promise} Resolves with join result
    */
-  async joinSession(sessionId, token) {
+  async joinSession(sessionId, token, userId, userRole) {
     if (!this.socket || !this.connected) {
       throw new Error('Socket not connected. Call connect() first.');
     }
@@ -140,7 +142,7 @@ export class DiscussionSocketService {
         reject(new Error('Join session timeout'));
       }, 10000);
 
-      this.socket.emit('join-session', { sessionId, token }, (response) => {
+      this.socket.emit('join-session', { sessionId, token, userId, userRole }, (response) => {
         clearTimeout(timeout);
 
         if (response.success) {
