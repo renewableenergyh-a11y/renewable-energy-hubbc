@@ -1908,7 +1908,7 @@
             const currentUser = getLocalCurrentUser();
             if (currentUser) {
               discussionSocket.emitReaction(
-                sessionData.id,
+                sessionData.sessionId,
                 reaction,
                 currentUser.id,
                 currentUser.name || 'Anonymous'
