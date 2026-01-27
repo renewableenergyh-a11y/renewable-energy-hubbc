@@ -1830,41 +1830,6 @@
         });
       }
 
-      // ✅ CRITICAL: Features panel toggle for small screens - features NEVER disappear
-      const featuresSidebar = document.querySelector('.features-sidebar');
-      const featuresToggleBtn = document.getElementById('featuresToggleBtn');
-      if (featuresSidebar && featuresToggleBtn) {
-        // Show toggle button on mobile, hide on desktop (done via CSS media queries)
-        const updateToggleVisibility = () => {
-          if (window.innerWidth <= 768) {
-            featuresToggleBtn.style.display = 'inline-flex';
-          } else {
-            featuresToggleBtn.style.display = 'none';
-            featuresSidebar.classList.remove('drawer-active'); // Close drawer on resize to desktop
-          }
-        };
-        
-        // Initial visibility
-        updateToggleVisibility();
-        window.addEventListener('resize', updateToggleVisibility);
-        
-        // Toggle drawer when button clicked
-        featuresToggleBtn.addEventListener('click', () => {
-          console.log('🎨 [discussion-room] Features drawer toggled');
-          featuresSidebar.classList.toggle('drawer-active');
-        });
-
-        // Close drawer when clicking outside (mobile only)
-        document.addEventListener('click', (e) => {
-          if (window.innerWidth <= 768 && featuresSidebar.classList.contains('drawer-active')) {
-            if (!featuresSidebar.contains(e.target) && !featuresToggleBtn.contains(e.target)) {
-              console.log('🎨 [discussion-room] Features drawer closed (outside click)');
-              featuresSidebar.classList.remove('drawer-active');
-            }
-          }
-        });
-      }
-
       // Session info button
       const recordBtn = document.getElementById('recordBtn');
       if (recordBtn) {
