@@ -1090,7 +1090,7 @@
       }
 
       .sidebar-toggle-btn {
-        display: inline-flex;
+        display: none;
         padding: 8px 12px;
         background: var(--accent-green);
         color: white;
@@ -1099,13 +1099,20 @@
         cursor: pointer;
         font-size: 14px;
         font-weight: 600;
-        margin-top: 8px;
+        margin-top: 12px;
         gap: 6px;
         align-items: center;
+        width: 100%;
       }
 
       .sidebar-toggle-btn:hover {
         opacity: 0.9;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar-toggle-btn {
+          display: inline-flex;
+        }
       }
 
       .room-controls {
@@ -1235,7 +1242,7 @@
       <div class="participants-list" id="participantsList"></div>
     </div>
 
-    <button class="sidebar-toggle-btn" id="participantsToggleBtn" style="display: none; width: 100%; margin-top: 12px;">
+    <button class="sidebar-toggle-btn" id="participantsToggleBtn">
       <i class="fas fa-chevron-up"></i>
       <span>Hide Participants</span>
     </button>
@@ -1269,7 +1276,7 @@
       </div>
     </div>
 
-    <button class="sidebar-toggle-btn" id="featuresToggleBtn2" style="display: none; width: 100%; margin-top: 12px;">
+    <button class="sidebar-toggle-btn" id="featuresToggleBtn2">
       <i class="fas fa-chevron-up"></i>
       <span>Hide Features</span>
     </button>
@@ -1773,56 +1780,34 @@
       }
 
       // Mobile sidebar toggle functionality
-      const isMobile = window.innerWidth <= 768;
-      if (isMobile) {
-        const sidebar = document.querySelector('.sidebar');
-        const featuresSidebar = document.querySelector('.features-sidebar');
-        const participantsToggleBtn = document.getElementById('participantsToggleBtn');
-        const featuresToggleBtn2 = document.getElementById('featuresToggleBtn2');
+      const sidebar = document.querySelector('.sidebar');
+      const featuresSidebar = document.querySelector('.features-sidebar');
+      const participantsToggleBtn = document.getElementById('participantsToggleBtn');
+      const featuresToggleBtn2 = document.getElementById('featuresToggleBtn2');
 
-        // Show toggle buttons on mobile
-        if (participantsToggleBtn) participantsToggleBtn.style.display = 'inline-flex';
-        if (featuresToggleBtn2) featuresToggleBtn2.style.display = 'inline-flex';
+      // Participants sidebar toggle
+      if (participantsToggleBtn && sidebar) {
+        participantsToggleBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          sidebar.classList.toggle('mobile-visible');
+          const isVisible = sidebar.classList.contains('mobile-visible');
+          participantsToggleBtn.innerHTML = isVisible
+            ? '<i class="fas fa-chevron-down"></i><span>Hide Participants</span>'
+            : '<i class="fas fa-chevron-up"></i><span>Show Participants</span>';
+        });
+      }
 
-        // Participants sidebar toggle
-        if (participantsToggleBtn && sidebar) {
-          participantsToggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('mobile-visible');
-            const isVisible = sidebar.classList.contains('mobile-visible');
-            participantsToggleBtn.innerHTML = isVisible
-              ? '<i class="fas fa-chevron-down"></i><span>Show Participants</span>'
-              : '<i class="fas fa-chevron-up"></i><span>Hide Participants</span>';
-          });
-        }
-
-        // Features sidebar toggle
-        if (featuresToggleBtn2 && featuresSidebar) {
-          featuresToggleBtn2.addEventListener('click', () => {
-            featuresSidebar.classList.toggle('mobile-visible');
-            const isVisible = featuresSidebar.classList.contains('mobile-visible');
-            featuresToggleBtn2.innerHTML = isVisible
-              ? '<i class="fas fa-chevron-down"></i><span>Show Features</span>'
-              : '<i class="fas fa-chevron-up"></i><span>Hide Features</span>';
-          });
-        }
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-          if (window.innerWidth > 768) {
-            // Show both sidebars on desktop
-            if (sidebar) sidebar.classList.add('mobile-visible');
-            if (featuresSidebar) featuresSidebar.classList.add('mobile-visible');
-            // Hide toggle buttons
-            if (participantsToggleBtn) participantsToggleBtn.style.display = 'none';
-            if (featuresToggleBtn2) featuresToggleBtn2.style.display = 'none';
-          } else {
-            // Reset toggles on mobile
-            if (sidebar) sidebar.classList.remove('mobile-visible');
-            if (featuresSidebar) featuresSidebar.classList.remove('mobile-visible');
-            // Show toggle buttons
-            if (participantsToggleBtn) participantsToggleBtn.style.display = 'inline-flex';
-            if (featuresToggleBtn2) featuresToggleBtn2.style.display = 'inline-flex';
-          }
+      // Features sidebar toggle
+      if (featuresToggleBtn2 && featuresSidebar) {
+        featuresToggleBtn2.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          featuresSidebar.classList.toggle('mobile-visible');
+          const isVisible = featuresSidebar.classList.contains('mobile-visible');
+          featuresToggleBtn2.innerHTML = isVisible
+            ? '<i class="fas fa-chevron-down"></i><span>Hide Features</span>'
+            : '<i class="fas fa-chevron-up"></i><span>Show Features</span>';
         });
       }
 
