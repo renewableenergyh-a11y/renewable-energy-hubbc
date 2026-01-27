@@ -11,6 +11,12 @@ const roles = require('../utils/roles');
 // Note: use roles.normalizeAuthUser(req.user) in verifyAuth to ensure superadmin and other special identities are normalized
 
 module.exports = function(db, discussionSessionService, participantService, io = null) {
+  // Email validation regex
+  const isValidEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   // Middleware to verify authentication (assumes auth token in headers)
   const verifyAuth = (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
@@ -28,11 +34,19 @@ module.exports = function(db, discussionSessionService, participantService, io =
     // Extract user info from headers (these should be passed from frontend)
     // Use fallback to 'student' if role is missing
     if (userId) {
+      // Validate userId format: only email is allowed, except for admins
       const role = userRole || 'student';
+      const isAdmin = roles.hasAtLeastRole({ role }, 'admin');
+      
+      if (!isValidEmail(userId) && !isAdmin) {
+        console.warn('⚠️ [verifyAuth] Non-email userId not allowed for regular users:', { userId, role });
+        return res.status(401).json({ error: 'Unauthorized - userId must be an email address' });
+      }
+
       req.user = { id: userId, role: role };
       // Normalize into canonical authUser shape (ensures superadmin predefined credentials are normalized)
       req.user = roles.normalizeAuthUser(req.user);
-      console.log('✅ [verifyAuth] User authenticated:', { id: req.user.id, role: req.user.role, roleSource: userRole ? 'header' : 'fallback' });
+      console.log('✅ [verifyAuth] User authenticated:', { id: req.user.id, role: req.user.role, roleSource: userRole ? 'header' : 'fallback', isEmailValidated: isValidEmail(req.user.id) || isAdmin });
       next();
     } else {
       console.warn('⚠️ [verifyAuth] Missing user ID in headers');

@@ -153,6 +153,12 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       console.log('🔌 [socket] join-session event received:', { sessionId, socketId: socket.id, userId, userRole });
 
       try {
+        // Email validation helper
+        const isValidEmail = (email) => {
+          const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+          return emailRegex.test(email);
+        };
+
         // Verify authentication
         // Try token verification first (strict)
         let user = verifyUserToken(token);
@@ -167,6 +173,13 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         if (!user) {
           const error = 'Authentication failed';
           console.warn(`❌ [socket] ${error} for socket ${socket.id}`);
+          return callback({ success: false, error });
+        }
+
+        // Validate userId format: only email allowed for regular users, admins are exceptional
+        if (!isValidEmail(user.id) && !roles.hasAtLeastRole(user, 'admin')) {
+          const error = `UserId must be an email address for regular users (got: ${user.id})`;
+          console.warn(`❌ [socket] ${error}`);
           return callback({ success: false, error });
         }
 
