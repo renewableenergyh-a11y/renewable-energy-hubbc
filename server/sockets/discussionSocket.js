@@ -319,15 +319,21 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       const { sessionId } = data;
       const userId = socket.userId;
 
+      console.log(`👋 [socket] User ${userId} leaving session ${sessionId}`);
+
       try {
         if (!userId || !sessionId) {
           return callback({ success: false, error: 'Missing userId or sessionId' });
         }
 
-        console.log(`👋 User ${userId} leaving session ${sessionId}`);
-
         // Remove participant from database
-        await participantService.removeParticipant(sessionId, userId);
+        try {
+          await participantService.removeParticipant(sessionId, userId);
+          console.log(`✅ [socket] Participant removed from DB: ${userId}`);
+        } catch (dbErr) {
+          console.error('❌ [socket] DB error removing participant:', dbErr.message);
+          // Don't fail the leave operation, just log it
+        }
 
         // Remove socket from room
         socket.leave(`discussion-session:${sessionId}`);
@@ -344,23 +350,31 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         userSocketMap.delete(userId);
 
         // Update participant count
-        const participantCount = await participantService.getActiveParticipantCount(sessionId);
-        await discussionSessionService.updateParticipantCount(sessionId, participantCount);
+        try {
+          const participantCount = await participantService.getActiveParticipantCount(sessionId);
+          await discussionSessionService.updateParticipantCount(sessionId, participantCount);
+        } catch (countErr) {
+          console.warn('⚠️ [socket] Failed to update participant count:', countErr.message);
+        }
 
         // Broadcast updated participant list
-        await broadcastParticipantList(sessionId);
+        try {
+          await broadcastParticipantList(sessionId);
+        } catch (broadcastErr) {
+          console.warn('⚠️ [socket] Broadcast error:', broadcastErr.message);
+        }
 
         // Notify others
         socket.to(`discussion-session:${sessionId}`).emit('participant-left', {
           userId: userId,
           userName: socket.userName,
-          participantCount: participantCount
+          participantCount: 0
         });
 
         callback({ success: true });
-        console.log(`✅ User ${userId} left session ${sessionId}`);
+        console.log(`✅ [socket] User ${userId} left session ${sessionId}`);
       } catch (error) {
-        console.error('Error leaving session:', error);
+        console.error('❌ [socket] Error leaving session:', error);
         callback({ success: false, error: error.message });
       }
     });
@@ -518,6 +532,8 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     socket.on('admin-remove-participant', async (data, callback) => {
       const { sessionId, targetUserId, token, userId, userRole } = data;
 
+      console.log('🔒 [socket] admin-remove-participant request:', { sessionId, targetUserId, userId });
+
       try {
         // Prefer explicit user info from data, fallback to token verification
         let user = null;
@@ -529,12 +545,14 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         }
         
         if (!user || !roles.hasAtLeastRole(user, 'instructor')) {
+          console.warn('❌ [socket] Unauthorized remove attempt');
           return callback({ success: false, error: 'Unauthorized' });
         }
 
         // Fetch session to check ownership
         const session = await discussionSessionService.getSessionById(sessionId);
         if (!session) {
+          console.warn('❌ [socket] Session not found:', sessionId);
           return callback({ success: false, error: 'Session not found' });
         }
 
@@ -544,32 +562,54 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           return callback({ success: false, error: 'You do not have permission to manage this session' });
         }
 
+        console.log('🗑️ [socket] Removing participant:', targetUserId);
+
         // Remove participant from DB
-        await participantService.removeParticipant(sessionId, targetUserId);
-
-        // Update session participant count
-        const participantCount = await participantService.getActiveParticipantCount(sessionId);
-        await discussionSessionService.updateParticipantCount(sessionId, participantCount);
-
-        // Broadcast updated participant list and status
-        await broadcastParticipantList(sessionId);
-        await broadcastSessionStatus(sessionId);
-
-        // Notify removed participant sockets (if any)
-        const room = sessionRooms.get(sessionId);
-        if (room) {
-          room.forEach(socketId => {
-            const clientSocket = io.sockets.sockets.get(socketId);
-            if (clientSocket && clientSocket.userId === targetUserId) {
-              clientSocket.emit('force-disconnect', { reason: 'Removed by moderator' });
-              clientSocket.leave(`discussion-session:${sessionId}`);
-            }
-          });
+        try {
+          await participantService.removeParticipant(sessionId, targetUserId);
+          console.log('✅ [socket] Participant removed from database:', targetUserId);
+        } catch (dbErr) {
+          console.error('❌ [socket] Database error removing participant:', dbErr.message);
+          return callback({ success: false, error: 'Failed to remove participant: ' + dbErr.message });
         }
 
+        // Update session participant count
+        try {
+          const participantCount = await participantService.getActiveParticipantCount(sessionId);
+          await discussionSessionService.updateParticipantCount(sessionId, participantCount);
+        } catch (countErr) {
+          console.warn('⚠️ [socket] Failed to update participant count:', countErr.message);
+        }
+
+        // Broadcast updated participant list and status
+        try {
+          await broadcastParticipantList(sessionId);
+          await broadcastSessionStatus(sessionId);
+        } catch (broadcastErr) {
+          console.warn('⚠️ [socket] Broadcast error:', broadcastErr.message);
+        }
+
+        // Notify removed participant sockets (if any)
+        try {
+          const room = sessionRooms.get(sessionId);
+          if (room) {
+            room.forEach(socketId => {
+              const clientSocket = io.sockets.sockets.get(socketId);
+              if (clientSocket && clientSocket.userId === targetUserId) {
+                console.log('📢 [socket] Sending force-disconnect to removed participant');
+                clientSocket.emit('force-disconnect', { reason: 'Removed by moderator' });
+                clientSocket.leave(`discussion-session:${sessionId}`);
+              }
+            });
+          }
+        } catch (disconnectErr) {
+          console.warn('⚠️ [socket] Error disconnecting participant:', disconnectErr.message);
+        }
+
+        console.log('✅ [socket] Remove participant completed successfully');
         callback({ success: true });
       } catch (err) {
-        console.error('Error in admin-remove-participant:', err);
+        console.error('❌ Error in admin-remove-participant:', err);
         callback({ success: false, error: err.message });
       }
     });
