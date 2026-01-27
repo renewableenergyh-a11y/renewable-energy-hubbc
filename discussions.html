@@ -986,55 +986,88 @@
 
     function handleViewDetails(sessionId) {
       const session = allSessions.find(s => s.sessionId === sessionId);
-      if (session) {
-        const startTime = new Date(session.startTime).toLocaleString();
-        const endTime = new Date(session.endTime).toLocaleString();
-        const detailsHtml = `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div>
-              <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Session ID</div>
-              <div style="color: #333; font-size: 13px; word-break: break-all;">${escapeHtml(session.sessionId)}</div>
-            </div>
-            <div>
-              <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Status</div>
-              <div style="color: #333; font-size: 13px;"><span style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: ${session.status === 'active' ? '#dcfce7' : session.status === 'upcoming' ? '#fff3e0' : '#fce4ec'}; color: ${session.status === 'active' ? '#166534' : session.status === 'upcoming' ? '#e65100' : '#c2185b'}; font-weight: 600; font-size: 12px;">${session.status}</span></div>
-            </div>
-            <div>
-              <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Type</div>
-              <div style="color: #333; font-size: 13px;">${session.sessionType === 'instructor' ? 'Instructor-Led' : 'Peer Discussion'}</div>
-            </div>
-            <div>
-              <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Participants</div>
-              <div style="color: #333; font-size: 13px;">${session.participantCount || 0}</div>
-            </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Subject</div>
-              <div style="color: #333; font-size: 13px;">${escapeHtml(session.subject)}</div>
-            </div>
-            ${session.description ? `
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Description</div>
-              <div style="color: #666; font-size: 13px; line-height: 1.5;">${escapeHtml(session.description)}</div>
-            </div>
-            ` : ''}
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Start Time</div>
-              <div style="color: #333; font-size: 13px;">${startTime}</div>
-            </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">End Time</div>
-              <div style="color: #333; font-size: 13px;">${endTime}</div>
-            </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Duration</div>
-              <div style="color: #333; font-size: 13px;">${Math.round((new Date(session.endTime) - new Date(session.startTime)) / 60000)} minutes</div>
-            </div>
-          </div>
-        `;
-        showModal('Session Details', detailsHtml, [
+      
+      // DEFENSIVE CHECK: Ensure session exists and has required fields
+      if (!session) {
+        showModal('Session Not Found', 'Could not find session details.', [
           { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
         ]);
+        console.error('❌ [handleViewDetails] Session not found:', sessionId);
+        return;
       }
+      
+      console.log('✅ [handleViewDetails] Found session:', session);
+      
+      // Safe date parsing with fallback
+      let startTime = 'Not available';
+      let endTime = 'Not available';
+      let durationMinutes = 'N/A';
+      
+      try {
+        if (session.startTime) {
+          const startDate = new Date(session.startTime);
+          startTime = isNaN(startDate.getTime()) ? 'Invalid date' : startDate.toLocaleString();
+        }
+        if (session.endTime) {
+          const endDate = new Date(session.endTime);
+          endTime = isNaN(endDate.getTime()) ? 'Invalid date' : endDate.toLocaleString();
+        }
+        if (session.startTime && session.endTime) {
+          const start = new Date(session.startTime);
+          const end = new Date(session.endTime);
+          if (!isNaN(start.getTime()) && !isNaN(end.getTime())) {
+            durationMinutes = Math.round((end - start) / 60000);
+          }
+        }
+      } catch (error) {
+        console.error('⚠️ [handleViewDetails] Error parsing dates:', error);
+      }
+      
+      const detailsHtml = `
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+          <div>
+            <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Session ID</div>
+            <div style="color: #333; font-size: 13px; word-break: break-all;">${escapeHtml(session.sessionId || 'N/A')}</div>
+          </div>
+          <div>
+            <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Status</div>
+            <div style="color: #333; font-size: 13px;"><span style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: ${session.status === 'active' ? '#dcfce7' : session.status === 'upcoming' ? '#fff3e0' : '#fce4ec'}; color: ${session.status === 'active' ? '#166534' : session.status === 'upcoming' ? '#e65100' : '#c2185b'}; font-weight: 600; font-size: 12px;">${session.status || 'Unknown'}</span></div>
+          </div>
+          <div>
+            <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Type</div>
+            <div style="color: #333; font-size: 13px;">${session.sessionType === 'instructor' ? 'Instructor-Led' : session.sessionType === 'peer' ? 'Peer Discussion' : 'Unknown'}</div>
+          </div>
+          <div>
+            <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Participants</div>
+            <div style="color: #333; font-size: 13px;">${session.participantCount || 0}</div>
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Subject</div>
+            <div style="color: #333; font-size: 13px;">${escapeHtml(session.subject || 'Not provided')}</div>
+          </div>
+          ${session.description ? `
+          <div style="grid-column: 1 / -1;">
+            <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Description</div>
+            <div style="color: #666; font-size: 13px; line-height: 1.5;">${escapeHtml(session.description)}</div>
+          </div>
+          ` : ''}
+          <div style="grid-column: 1 / -1;">
+            <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Start Time</div>
+            <div style="color: #333; font-size: 13px;">${startTime}</div>
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">End Time</div>
+            <div style="color: #333; font-size: 13px;">${endTime}</div>
+          </div>
+          <div style="grid-column: 1 / -1;">
+            <div style="font-weight: 600; color: #0b6fb7; font-size: 12px; text-transform: uppercase; margin-bottom: 4px;">Duration</div>
+            <div style="color: #333; font-size: 13px;">${durationMinutes === 'N/A' ? 'N/A' : durationMinutes + ' minutes'}</div>
+          </div>
+        </div>
+      `;
+      showModal('Session Details', detailsHtml, [
+        { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
+      ]);
     }
 
     function setupListeners() {
