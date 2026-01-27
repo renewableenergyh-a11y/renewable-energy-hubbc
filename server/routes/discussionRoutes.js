@@ -471,17 +471,23 @@ module.exports = function(db, discussionSessionService, participantService, io =
       // Validate session exists and is accessible
       const session = await discussionSessionService.getSessionById(sessionId);
       if (!session) {
+        console.error('❌ [REST/participants/join] Session not found:', sessionId);
         return res.status(404).json({ error: 'Session not found' });
       }
 
       // Validate session state (active or upcoming)
       if (session.status === 'closed') {
+        console.error('❌ [REST/participants/join] Session is closed:', sessionId);
         return res.status(403).json({ error: 'Session is closed' });
       }
 
       // ATOMIC operation: Use findOneAndUpdate with upsert to prevent race condition duplicates
       // This ensures only ONE document per (sessionId, userId) pair, whether via REST or socket
       const now = new Date();
+      const participantId = `participant_${sessionId}_${req.user.id}_${Date.now()}`;
+      
+      console.log('📝 [REST/participants/join] Generated participantId:', participantId);
+      
       const participant = await db.models.Participant.findOneAndUpdate(
         { sessionId, userId: req.user.id },
         {
@@ -494,7 +500,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
             updatedAt: now
           },
           $setOnInsert: {
-            participantId: `participant_${sessionId}_${req.user.id}_${Date.now()}`,
+            participantId,
             sessionId,
             userId: req.user.id,
             role: req.user.role,
@@ -507,7 +513,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
             createdAt: now
           }
         },
-        { upsert: true, new: true, runValidators: true }
+        { upsert: true, new: true }
       );
 
       console.log('✅ [REST/participants/join] Participant created/reactivated via atomic upsert', {
@@ -531,8 +537,17 @@ module.exports = function(db, discussionSessionService, participantService, io =
         }
       });
     } catch (error) {
-      console.error('❌ [REST/participants/join] Error registering participant:', error.message);
-      res.status(400).json({ error: error.message });
+      console.error('❌ [REST/participants/join] Error registering participant:', {
+        message: error.message,
+        code: error.code,
+        name: error.name,
+        details: error.errors || error
+      });
+      res.status(400).json({ 
+        error: error.message,
+        code: error.code,
+        name: error.name
+      });
     }
   });
 
