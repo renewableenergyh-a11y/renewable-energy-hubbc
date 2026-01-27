@@ -479,33 +479,43 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(403).json({ error: 'Session is closed' });
       }
 
-      // Check if participant already exists
-      let participant = await participantService.getParticipant(sessionId, req.user.id);
-      
-      if (participant && participant.active) {
-        // Already active - just return
-        console.log('🔄 [REST/participants/join] Participant already active, returning', {
-          participantId: participant._id,
-          sessionId
-        });
-      } else {
-        // Either new or previously inactive - create/reactivate through service
-        console.log('📝 [REST/participants/join] Creating or reactivating participant');
-        participant = await participantService.addOrRejoinParticipant(
-          sessionId,
-          req.user.id,
-          req.user.role,
-          userName
-        );
+      // ATOMIC operation: Use findOneAndUpdate with upsert to prevent race condition duplicates
+      // This ensures only ONE document per (sessionId, userId) pair, whether via REST or socket
+      const now = new Date();
+      const participant = await db.models.Participant.findOneAndUpdate(
+        { sessionId, userId: req.user.id },
+        {
+          $set: {
+            active: true,
+            joinTime: now,
+            lastLeaveTime: null,
+            role: req.user.role,
+            userName: userName,
+            updatedAt: now
+          },
+          $setOnInsert: {
+            participantId: `participant_${sessionId}_${req.user.id}_${Date.now()}`,
+            sessionId,
+            userId: req.user.id,
+            role: req.user.role,
+            userName: userName,
+            joinTime: now,
+            totalDurationMs: 0,
+            audioEnabled: false,
+            videoEnabled: false,
+            disconnectCount: 0,
+            createdAt: now
+          }
+        },
+        { upsert: true, new: true, runValidators: true }
+      );
 
-        console.log('✅ [REST/participants/join] Participant created/reactivated in database', {
-          participantId: participant._id,
-          sessionId,
-          userId: req.user.id,
-          role: participant.role,
-          active: participant.active
-        });
-      }
+      console.log('✅ [REST/participants/join] Participant created/reactivated via atomic upsert', {
+        participantId: participant.participantId,
+        sessionId,
+        userId: req.user.id,
+        active: participant.active
+      });
 
       // Return participant object
       res.status(201).json({
@@ -517,7 +527,7 @@ module.exports = function(db, discussionSessionService, participantService, io =
           userId: participant.userId,
           userName: participant.userName || req.user.name || req.user.email,
           role: participant.role,
-          joinedAt: participant.joinedAt
+          joinedAt: participant.joinTime
         }
       });
     } catch (error) {

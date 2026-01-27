@@ -212,18 +212,42 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           }
         }
 
-        // CRITICAL: Ensure participant exists and is active in database
-        // This handles both new joins and rejoin after leaving/disconnect
-        // If participant was inactive, this re-activates them
-        const participant = await participantService.addOrRejoinParticipant(
-          sessionId,
-          user.id,
-          user.role,
-          user.name || user.email
+        // CRITICAL: Ensure participant is active
+        // Use atomic findOneAndUpdate to prevent race conditions from duplicate insertions
+        // This is the authoritative source for ensuring participant state
+        const now = new Date();
+        const participant = await participantService.db.models.Participant.findOneAndUpdate(
+          { sessionId, userId: user.id },
+          {
+            $set: {
+              active: true,
+              joinTime: now,
+              lastLeaveTime: null,
+              role: user.role,
+              userName: user.name || user.email,
+              updatedAt: now
+            },
+            $setOnInsert: {
+              participantId: `participant_${sessionId}_${user.id}_${Date.now()}`,
+              sessionId,
+              userId: user.id,
+              role: user.role,
+              userName: user.name || user.email,
+              joinTime: now,
+              totalDurationMs: 0,
+              audioEnabled: false,
+              videoEnabled: false,
+              disconnectCount: 0,
+              createdAt: now
+            }
+          },
+          { upsert: true, new: true, runValidators: true }
         );
-        console.log(`✅ [socket] Participant ensured in database:`, { 
+
+        console.log(`✅ [socket] Participant state ensured (atomic upsert):`, { 
           participantId: participant.participantId, 
-          active: participant.active 
+          active: participant.active,
+          userId: participant.userId
         });
 
         // Add socket to session room
