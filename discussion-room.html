@@ -1845,10 +1845,10 @@
             floatingReaction.className = 'floating-reaction';
             floatingReaction.textContent = reaction;
             
-            // Get button position
-            const btnRect = btn.getBoundingClientRect();
-            const startX = btnRect.left + btnRect.width / 2;
-            const startY = btnRect.top + btnRect.height / 2;
+            // Get the reaction button position
+            const reactBtnRect = reactionBtn.getBoundingClientRect();
+            const startX = reactBtnRect.left + reactBtnRect.width / 2;
+            const startY = reactBtnRect.top + reactBtnRect.height / 2;
             
             // Random horizontal drift (larger range for better wave effect)
             const randomDrift = (Math.random() - 0.5) * 150;
