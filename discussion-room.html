@@ -2195,7 +2195,7 @@
           // Emit socket event to notify all users about hand raise/lower
           const currentUser = getLocalCurrentUser();
           if (discussionSocket && sessionData) {
-            discussionSocket.emitRaiseHand(sessionData.sessionId, isRaised, currentUser?.id || currentUser?._id);
+            discussionSocket.emitRaiseHand(sessionData.sessionId, isRaised, currentUser?.email);
           }
         });
         
@@ -2259,12 +2259,12 @@
             
             // Send reaction via socket.io
             const currentUser = getLocalCurrentUser();
-            if (currentUser && currentUser.id) {
-              console.log('📤 [reaction-emit] Emitting with valid user:', { sessionData: sessionData?.sessionId, reaction, userId: currentUser.id, userName: currentUser.name, role: currentUser.role });
+            if (currentUser && currentUser.email) {
+              console.log('📤 [reaction-emit] Emitting with valid user:', { sessionData: sessionData?.sessionId, reaction, userId: currentUser.email, userName: currentUser.name, role: currentUser.role });
               const success = discussionSocket.emitReaction(
                 sessionData.sessionId,
                 reaction,
-                currentUser.id,
+                currentUser.email,
                 currentUser.name || 'Anonymous',
                 currentUser.role || 'student'
               );
