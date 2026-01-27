@@ -6405,6 +6405,42 @@ async function startServer() {
     await storage.init();
   } catch (e) { console.warn('storage.init warning', e); }
   
+  // CLEANUP MIGRATION: Remove all orphaned UUID-based participant records
+  // Keep only email-based userIds for regular users (admins are the exception)
+  try {
+    console.log('🧹 [Startup] Running participant records migration...');
+    const Participant = db.models?.Participant;
+    if (Participant) {
+      // Check for UUID-based userIds (not email format)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      
+      const allParticipants = await Participant.find({}).lean();
+      console.log(`📊 [Startup] Found ${allParticipants.length} total participant records`);
+      
+      // Identify orphaned UUID records
+      const uuidRecords = allParticipants.filter(p => !emailRegex.test(p.userId));
+      console.log(`🔍 [Startup] Found ${uuidRecords.length} UUID-based records to remove`);
+      
+      if (uuidRecords.length > 0) {
+        // Delete all UUID-based records
+        const result = await Participant.deleteMany({
+          userId: {
+            $regex: /^(?!.*@.*\.)/, // Regex for non-email (no @ and domain pattern)
+            $options: 'i'
+          }
+        });
+        console.log(`✅ [Startup] Deleted ${result.deletedCount} orphaned UUID-based participant records`);
+        
+        // Log the cleanup details
+        uuidRecords.forEach(record => {
+          console.log(`  - Removed: ${record.userId} (${record.userName}) from session ${record.sessionId}`);
+        });
+      }
+    }
+  } catch (err) {
+    console.warn(`⚠️ [Startup] Participant migration failed (non-critical):`, err.message);
+  }
+  
   // Initialize discussion system services after MongoDB is ready (without io yet)
   initializeDiscussionServices();
   

@@ -550,6 +550,17 @@ module.exports = function(db, discussionSessionService, participantService, io =
         if (inactiveRemoved.deletedCount > 0) {
           console.log(`🗑️ [REST/participants/join] Purged ${inactiveRemoved.deletedCount} inactive duplicate records from this session`);
         }
+
+        // Fourth cleanup: Remove ANY UUID-based records from this session (orphaned from migration)
+        // Email regex pattern for validation
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        const uuidRemoved = await db.models.Participant.deleteMany({
+          sessionId: sessionId,
+          userId: { $regex: /^(?!.*@)/ } // Match anything that doesn't look like email
+        });
+        if (uuidRemoved.deletedCount > 0) {
+          console.log(`🗑️ [REST/participants/join] Purged ${uuidRemoved.deletedCount} UUID-based orphaned records from session ${sessionId}`);
+        }
       } catch (cleanupErr) {
         console.warn(`⚠️ [REST/participants/join] Cleanup failed: ${cleanupErr.message}`);
         // Don't fail the join operation if cleanup fails
