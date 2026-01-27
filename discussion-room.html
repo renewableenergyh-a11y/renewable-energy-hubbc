@@ -1087,6 +1087,8 @@
         margin-bottom: 12px;
         transition: all 0.2s ease;
         font-family: 'Poppins', sans-serif;
+        position: relative;
+        z-index: 999;
       }
 
       .sidebar-toggle-btn:hover {
@@ -1790,27 +1792,46 @@
       const participantsToggleBtn = document.getElementById('participantsToggleBtn');
       const featuresToggleBtn = document.getElementById('featuresToggleBtn');
 
+      console.log('Toggle Debug:', {
+        sidebar: !!sidebar,
+        featuresSidebar: !!featuresSidebar,
+        participantsToggleBtn: !!participantsToggleBtn,
+        featuresToggleBtn: !!featuresToggleBtn
+      });
+
       // Participants sidebar toggle
-      if (participantsToggleBtn && sidebar) {
-        participantsToggleBtn.addEventListener('click', () => {
+      if (participantsToggleBtn) {
+        participantsToggleBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Participants toggle clicked');
           // Close features if open
           if (featuresSidebar && featuresSidebar.classList.contains('mobile-visible')) {
             featuresSidebar.classList.remove('mobile-visible');
           }
           // Toggle participants
-          sidebar.classList.toggle('mobile-visible');
+          if (sidebar) {
+            sidebar.classList.toggle('mobile-visible');
+            console.log('Sidebar mobile-visible:', sidebar.classList.contains('mobile-visible'));
+          }
         });
       }
 
       // Features sidebar toggle
-      if (featuresToggleBtn && featuresSidebar) {
-        featuresToggleBtn.addEventListener('click', () => {
+      if (featuresToggleBtn) {
+        featuresToggleBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log('Features toggle clicked');
           // Close participants if open
           if (sidebar && sidebar.classList.contains('mobile-visible')) {
             sidebar.classList.remove('mobile-visible');
           }
           // Toggle features
-          featuresSidebar.classList.toggle('mobile-visible');
+          if (featuresSidebar) {
+            featuresSidebar.classList.toggle('mobile-visible');
+            console.log('FeaturesSidebar mobile-visible:', featuresSidebar.classList.contains('mobile-visible'));
+          }
         });
       }
 
