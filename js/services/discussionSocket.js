@@ -290,19 +290,28 @@ export class DiscussionSocketService {
    * @param {String} reaction - Reaction emoji
    * @param {String} userId - Current user ID
    * @param {String} userName - Current user name
+   * @param {String} userRole - Current user role
    */
-  emitReaction(sessionId, reaction, userId, userName) {
+  emitReaction(sessionId, reaction, userId, userName, userRole) {
     if (!this.socket || !this.socket.connected) {
-      console.warn('Socket not connected');
+      console.warn('⚠️ [emitReaction] Socket not connected');
       return;
     }
 
-    console.log('🎉 [emitReaction] Sending reaction:', { sessionId, reaction, userId, userName });
+    // CRITICAL: Validate userId exists - reactions require valid identity
+    if (!userId) {
+      console.error('❌ [emitReaction] BLOCKING: userId is undefined/null. Cannot emit reaction without valid user identity.');
+      console.error('   userName:', userName, 'userRole:', userRole);
+      return;
+    }
+
+    console.log('🎉 [emitReaction] Sending reaction with valid userId:', { sessionId, reaction, userId, userName, userRole });
     this.socket.emit('reaction', {
       sessionId,
       reaction,
       userId,
-      userName
+      userName,
+      userRole: userRole || 'student'
     });
   }
 

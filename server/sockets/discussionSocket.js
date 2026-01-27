@@ -619,37 +619,41 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
     /**
      * Event: reaction
-     * Broadcast reaction from user to all participants
+     * Broadcast reaction from ANY participant to all participants in the session
+     * Reactions are role-agnostic: admins, instructors, and students all use the same broadcast logic
      */
     socket.on('reaction', async (data) => {
-      console.log('🎉🎉🎉 [REACTION HANDLER TRIGGERED] 🎉🎉🎉 Socket ID:', socket.id, 'Data:', data);
-      const { sessionId, reaction, userId, userName } = data;
+      console.log('🎉🎉🎉 [REACTION HANDLER TRIGGERED] Socket ID:', socket.id, 'Data:', data);
+      const { sessionId, reaction, userId, userName, userRole } = data;
 
-      console.log('🎉 [reaction] Received reaction event:', { sessionId, reaction, userId, userName, senderRole: socket.userRole });
+      console.log('🎉 [reaction] Received reaction event:', { sessionId, reaction, userId, userName, userRole, senderRole: socket.userRole });
 
+      // Validate required fields
       if (!sessionId || !reaction || !userId) {
-        console.warn('Invalid reaction data', data);
+        console.warn('⚠️ [reaction] Invalid reaction data - missing required fields:', { sessionId: !!sessionId, reaction: !!reaction, userId: !!userId });
         return;
       }
 
       try {
-        // Broadcast reaction to all users in the session
-        console.log(`📢 [reaction] Broadcasting to room: discussion-session:${sessionId}`);
+        // Broadcast reaction to ALL users in the session room
+        // NOTE: No role-based filtering - reactions are role-agnostic
+        // Any participant can send reactions, all participants receive them
         const room = io.sockets.adapter.rooms.get(`discussion-session:${sessionId}`);
         const roomSize = room ? room.size : 0;
-        console.log(`📊 [reaction] Room has ${roomSize} connected sockets`);
+        console.log(`📊 [reaction] Broadcasting to ${roomSize} connected sockets in room: discussion-session:${sessionId}`);
         
         io.to(`discussion-session:${sessionId}`).emit('user-reaction', {
           sessionId,
           reaction,
           userId,
           userName,
+          userRole: userRole || socket.userRole || 'student',
           timestamp: Date.now()
         });
 
-        console.log(`✅ User ${userId} (${userName}, role: ${socket.userRole}) sent reaction ${reaction} in session ${sessionId}`);
+        console.log(`✅ [reaction] Broadcast complete: ${userId} (role: ${userRole || socket.userRole}) sent ${reaction} in session ${sessionId}`);
       } catch (error) {
-        console.error('Error handling reaction:', error);
+        console.error('❌ [reaction] Error handling reaction:', error);
       }
     });
 

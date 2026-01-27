@@ -1765,15 +1765,17 @@
       discussionSocket.on('user-reaction', (data) => {
         console.log('🎉 [user-reaction listener] Reaction event fired for listener:', data);
         console.log('🎉 [user-reaction] Received reaction from server:', data);
-        const { reaction, userName, userId } = data;
+        const { reaction, userName, userId, userRole } = data;
         
         // Skip if it's our own reaction (we already displayed it)
         const currentUser = getLocalCurrentUser();
-        console.log('👤 [user-reaction] Current user:', currentUser?.id, 'Reaction from:', userId);
+        console.log('👤 [user-reaction] Current user:', currentUser?.id, 'Reaction from:', userId, 'Role:', userRole);
         if (userId === currentUser?.id) {
-          console.log('⏭️ [user-reaction] Skipping own reaction');
+          console.log('⏭️ [user-reaction] Skipping own reaction (already displayed locally)');
           return;
         }
+        
+        console.log(`📨 [user-reaction] Processing reaction from ${userName} (${userRole})`);
         
         // Create floating reaction animation for other user's reaction
         const floatingReaction = document.createElement('div');
@@ -1800,7 +1802,7 @@
           floatingReaction.remove();
         }, 3500);
         
-        console.log(`✅ ${userName} sent reaction: ${reaction}`);
+        console.log(`✅ [user-reaction] Displayed reaction from ${userName}: ${reaction}`);
       });
 
       // Button events
@@ -1908,16 +1910,17 @@
             
             // Send reaction via socket.io
             const currentUser = getLocalCurrentUser();
-            if (currentUser) {
-              console.log('📤 [reaction-emit] About to emit reaction:', { sessionData: sessionData?.sessionId, reaction, currentUser: currentUser?.id });
+            if (currentUser && currentUser.id) {
+              console.log('📤 [reaction-emit] Emitting with valid user:', { sessionData: sessionData?.sessionId, reaction, userId: currentUser.id, userName: currentUser.name, role: currentUser.role });
               discussionSocket.emitReaction(
                 sessionData.sessionId,
                 reaction,
                 currentUser.id,
-                currentUser.name || 'Anonymous'
+                currentUser.name || 'Anonymous',
+                currentUser.role || 'student'
               );
             } else {
-              console.warn('⚠️ [reaction-emit] currentUser is null/undefined');
+              console.error('❌ [reaction-emit] Cannot emit: currentUser is null or missing id. Current:', currentUser);
             }
           });
         });
@@ -2130,11 +2133,61 @@
 
     function getLocalCurrentUser() {
       try {
-        const s = localStorage.getItem('currentUser');
-        console.log('🔍 [getLocalCurrentUser] Retrieved from localStorage:', s ? JSON.parse(s) : null);
-        return s ? JSON.parse(s) : null;
+        // Check multiple possible storage locations for user identity (role-agnostic)
+        let user = null;
+        
+        // Try admin user first
+        const adminStr = localStorage.getItem('adminUser');
+        if (adminStr) {
+          user = JSON.parse(adminStr);
+          console.log('🔍 [getLocalCurrentUser] Found adminUser:', user);
+        }
+        
+        // Try instructor user
+        if (!user) {
+          const instructorStr = localStorage.getItem('instructorUser');
+          if (instructorStr) {
+            user = JSON.parse(instructorStr);
+            console.log('🔍 [getLocalCurrentUser] Found instructorUser:', user);
+          }
+        }
+        
+        // Try regular user (most common case for students)
+        if (!user) {
+          const userStr = localStorage.getItem('currentUser');
+          if (userStr) {
+            user = JSON.parse(userStr);
+            console.log('🔍 [getLocalCurrentUser] Found currentUser:', user);
+          }
+        }
+        
+        // Try generic user key as fallback
+        if (!user) {
+          const genericStr = localStorage.getItem('user');
+          if (genericStr) {
+            user = JSON.parse(genericStr);
+            console.log('🔍 [getLocalCurrentUser] Found generic user:', user);
+          }
+        }
+        
+        // Normalize: ensure user object has all required fields (id, name, email, role)
+        if (user) {
+          const normalized = {
+            id: user.id || user._id || user.email,
+            name: user.name || user.fullName || (user.email ? user.email.split('@')[0] : 'Anonymous'),
+            email: user.email,
+            role: user.role || 'student',
+            token: user.token,
+            hasPremium: user.hasPremium
+          };
+          console.log('✅ [getLocalCurrentUser] Normalized user object:', normalized);
+          return normalized;
+        }
+        
+        console.warn('⚠️ [getLocalCurrentUser] No user found in any storage location');
+        return null;
       } catch (e) { 
-        console.error('❌ [getLocalCurrentUser] Error parsing:', e);
+        console.error('❌ [getLocalCurrentUser] Error parsing localStorage:', e);
         return null; 
       }
     }
