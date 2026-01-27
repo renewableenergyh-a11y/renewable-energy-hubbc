@@ -378,7 +378,47 @@
       gap: 8px;
     }
 
-    .mic-control-btn,
+    .mic-control-btn {
+      background: var(--accent-green);
+      border: none;
+      cursor: pointer;
+      padding: 8px 16px;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      color: white;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 12px;
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .mic-control-btn i {
+      font-size: 14px;
+    }
+
+    .mic-control-btn:hover {
+      background: var(--accent-dark);
+      box-shadow: 0 2px 8px rgba(0, 121, 107, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .mic-control-btn.muted {
+      background: var(--bg-secondary);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-color);
+    }
+
+    .mic-control-btn.muted:hover {
+      background: var(--bg-tertiary);
+      border-color: var(--text-secondary);
+      transform: translateY(-1px);
+    }
+
     .remove-participant-btn {
       background: transparent;
       border: none;
@@ -387,21 +427,13 @@
       padding: 4px;
       border-radius: 4px;
       transition: all 0.2s ease;
-      color: var(--text-secondary);
-    }
-
-    .mic-control-btn:hover {
-      background: rgba(0, 121, 107, 0.1);
-      color: var(--accent-green);
-    }
-
-    .mic-control-btn.muted {
       color: #d32f2f;
     }
 
     .remove-participant-btn:hover {
       background: rgba(211, 47, 47, 0.1);
       color: #d32f2f;
+    }
     }
 
     /* Zoom-like features sidebar */
@@ -1718,7 +1750,7 @@
           const currentUserIsAdmin = isModerator;
           
           const micBtn = (showRemoveBtn && isStudent && currentUserIsAdmin)
-            ? `<button class="mic-control-btn" data-userid="${escapeHtml(p.userId)}" title="Mute/Unmute participant" style="color:var(--text-secondary)">🔇</button>`
+            ? `<button class="mic-control-btn" data-userid="${escapeHtml(p.userId)}" title="Mute/Unmute participant"><i class="fas fa-microphone-slash"></i>MUTE</button>`
             : '';
           
           const removeBtn = showRemoveBtn
@@ -1780,7 +1812,20 @@
               
               // Toggle mic state
               btn.classList.toggle('muted');
-              btn.title = isMuted ? 'Mute participant' : 'Unmute participant';
+              const icon = btn.querySelector('i');
+              if (isMuted) {
+                // Switching to unmuted - show mute button
+                btn.textContent = '';
+                icon.className = 'fas fa-microphone-slash';
+                btn.innerHTML = '<i class="fas fa-microphone-slash"></i>MUTE';
+                btn.title = 'Mute participant';
+              } else {
+                // Switching to muted - show unmute button
+                btn.textContent = '';
+                icon.className = 'fas fa-microphone';
+                btn.innerHTML = '<i class="fas fa-microphone"></i>UNMUTE';
+                btn.title = 'Unmute participant';
+              }
               
               // TODO: Emit socket event to mute/unmute participant when WebRTC is implemented
               // await discussionSocket.toggleParticipantMic(sessionData.sessionId, targetUserId, !isMuted, token, userId, userRole);
