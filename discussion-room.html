@@ -372,6 +372,38 @@
       font-size: 14px;
     }
 
+    .participant-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mic-control-btn,
+    .remove-participant-btn {
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px;
+      border-radius: 4px;
+      transition: all 0.2s ease;
+      color: var(--text-secondary);
+    }
+
+    .mic-control-btn:hover {
+      background: rgba(0, 121, 107, 0.1);
+      color: var(--accent-green);
+    }
+
+    .mic-control-btn.muted {
+      color: #d32f2f;
+    }
+
+    .remove-participant-btn:hover {
+      background: rgba(211, 47, 47, 0.1);
+      color: #d32f2f;
+    }
+
     /* Zoom-like features sidebar */
     .features-sidebar {
       background: var(--bg-primary);
@@ -620,7 +652,7 @@
     }
 
     .modal-content {
-      background: white;
+      background: var(--bg-primary);
       border-radius: 16px;
       box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
       max-width: 520px;
@@ -634,14 +666,14 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 20px;
-      border-bottom: 2px solid rgba(0, 121, 107, 0.08);
+      border-bottom: 2px solid var(--border-color);
       padding-bottom: 16px;
     }
 
     .modal-header h3 {
       font-size: 20px;
       font-weight: 700;
-      color: #1a1a1a;
+      color: var(--text-primary);
       margin: 0;
       letter-spacing: -0.3px;
     }
@@ -651,7 +683,7 @@
       border: none;
       font-size: 24px;
       cursor: pointer;
-      color: #999;
+      color: var(--text-muted);
       transition: all 0.3s ease;
       padding: 0;
       width: 32px;
@@ -663,13 +695,17 @@
     }
 
     .modal-close-btn:hover {
-      color: #333;
+      color: var(--text-primary);
       background: rgba(0, 0, 0, 0.05);
+    }
+
+    html[data-theme="dark"] .modal-close-btn:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
 
     .modal-body {
       margin-bottom: 24px;
-      color: #666;
+      color: var(--text-secondary);
       line-height: 1.6;
       font-size: 14px;
     }
@@ -694,24 +730,25 @@
     }
 
     .modal-btn-primary {
-      background: linear-gradient(135deg, #007979, #005a4f);
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-dark));
       color: white;
       box-shadow: 0 4px 12px rgba(0, 121, 107, 0.25);
     }
 
     .modal-btn-primary:hover {
-      background: linear-gradient(135deg, #005a4f, #004d42);
+      background: linear-gradient(135deg, var(--accent-dark), #003a32);
       box-shadow: 0 6px 16px rgba(0, 121, 107, 0.35);
       transform: translateY(-2px);
     }
 
     .modal-btn-secondary {
-      background: rgba(0, 0, 0, 0.05);
-      color: #333;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
     }
 
     .modal-btn-secondary:hover {
-      background: rgba(0, 0, 0, 0.1);
+      background: var(--bg-tertiary);
       transform: translateY(-2px);
     }
 
@@ -1677,8 +1714,15 @@
           // ❌ Remove button shows ONLY for students when moderator is viewing
           // NEVER show remove button next to admins, instructors, or superadmins
           const showRemoveBtn = isModerator && currentUser && (p.userId !== currentUser.id) && p.role === 'student';
+          const isStudent = p.role.toLowerCase() === 'student';
+          const currentUserIsAdmin = userData?.role?.toLowerCase() === 'admin';
+          
+          const micBtn = (showRemoveBtn && isStudent && currentUserIsAdmin)
+            ? `<button class="mic-control-btn" data-userid="${escapeHtml(p.userId)}" title="Mute/Unmute participant" style="color:var(--text-secondary)">🎤</button>`
+            : '';
+          
           const removeBtn = showRemoveBtn
-            ? `<button class="remove-participant-btn" data-userid="${escapeHtml(p.userId)}" title="Remove participant" style="background:transparent;border:none;color:#d32f2f;cursor:pointer;font-size:14px;margin-left:8px">✖</button>`
+            ? `<button class="remove-participant-btn" data-userid="${escapeHtml(p.userId)}" title="Remove participant" style="color:#d32f2f">✖</button>`
             : '';
 
           return `
@@ -1690,8 +1734,9 @@
                   <div class="participant-role">${p.role.toUpperCase()}</div>
                 </div>
               </div>
-              <div style="display:flex;align-items:center">
+              <div class="participant-controls">
                 <div class="participant-status" style="margin-right:6px">${p.active ? '🟢 Active' : '⚫ Away'}</div>
+                ${micBtn}
                 ${removeBtn}
               </div>
             </div>
@@ -1717,6 +1762,33 @@
               showModal('Error', 'Failed to remove participant: ' + (err.message || err), [
                 { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
               ]);
+            }
+          });
+        });
+
+        // Mic control handlers for admins
+        participantsList.querySelectorAll('.mic-control-btn').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const targetUserId = btn.dataset.userid;
+            const isMuted = btn.classList.contains('muted');
+            try {
+              const token = localStorage.getItem('authToken');
+              const currentUser = getLocalCurrentUser();
+              const userId = currentUser?.id || currentUser?._id;
+              const userRole = currentUser?.role || 'student';
+              
+              // Toggle mic state
+              btn.classList.toggle('muted');
+              btn.title = isMuted ? 'Mute participant' : 'Unmute participant';
+              
+              // TODO: Emit socket event to mute/unmute participant when WebRTC is implemented
+              // await discussionSocket.toggleParticipantMic(sessionData.sessionId, targetUserId, !isMuted, token, userId, userRole);
+              
+              console.log(`Participant ${targetUserId} mic toggled to: ${!isMuted ? 'muted' : 'unmuted'}`);
+            } catch (err) {
+              console.error('Failed to toggle participant mic:', err);
+              btn.classList.toggle('muted'); // Revert toggle on error
             }
           });
         });
