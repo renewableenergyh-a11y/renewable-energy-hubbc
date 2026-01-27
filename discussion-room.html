@@ -89,6 +89,8 @@
       background: var(--bg-primary);
       border-color: var(--border-color);
     }
+
+    .room-header {
       padding: 24px;
       border-bottom: 2px solid var(--border-color);
       display: flex;
@@ -225,11 +227,33 @@
     }
 
     #themeToggleBtn {
-      margin-top: 20px;
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      padding: 8px 10px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      transition: all 0.3s;
+      font-size: 18px;
+      color: var(--text-primary);
+      z-index: 100;
     }
 
     body.dark #themeToggleBtn {
       color: var(--text-primary);
+    }
+
+    @media (max-width: 768px) {
+      #themeToggleBtn {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 999;
+        margin-top: 0;
+      }
     }
 
     .btn-control:hover {
@@ -969,6 +993,24 @@
       display: none;
     }
 
+    /* Large screens - room header with theme toggle */
+    @media (min-width: 1025px) {
+      .room-header {
+        position: relative;
+        padding: 28px 24px;
+      }
+
+      .room-title {
+        padding-right: 60px;
+      }
+
+      #themeToggleBtn {
+        position: absolute;
+        top: 28px;
+        right: 24px;
+      }
+    }
+
     @media (max-width: 1024px) {
       .room-container {
         grid-template-columns: 1fr;
@@ -1156,7 +1198,7 @@
   </style>
 </head>
 <body>
-  <button class="btn-control" id="themeToggleBtn" title="Toggle dark mode" style="position: fixed; top: 20px; right: 20px; z-index: 999; padding: 8px 10px; background: transparent; border: none; cursor: pointer; font-family: 'Poppins', sans-serif; font-weight: 600; transition: all 0.3s; font-size: 18px; color: var(--text-primary);">
+  <button class="btn-control" id="themeToggleBtn" title="Toggle dark mode">
     <i class="fas fa-moon"></i>
   </button>
 
