@@ -442,13 +442,13 @@
     }
 
     .mic-control-btn {
-      background: var(--accent-green);
-      border: none;
+      background: transparent;
+      border: 1px solid var(--border-color);
       cursor: pointer;
       padding: 6px 8px;
       border-radius: 6px;
       transition: all 0.2s ease;
-      color: white;
+      color: var(--text-secondary);
       font-weight: 600;
       font-family: 'Poppins', sans-serif;
       white-space: nowrap;
@@ -460,13 +460,23 @@
       flex-shrink: 0;
     }
 
+    .mic-control-btn:hover {
+      background: rgba(0, 121, 107, 0.1);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+    }
+
     body.dark .mic-control-btn {
-      background: var(--accent-green);
-      box-shadow: 0 2px 6px rgba(0, 179, 138, 0.3);
+      background: transparent;
+      border-color: var(--border-color);
+      color: var(--text-secondary);
     }
 
     body.dark .mic-control-btn:hover {
-      box-shadow: 0 4px 10px rgba(0, 179, 138, 0.4);
+      background: rgba(0, 255, 200, 0.1);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
+      box-shadow: 0 2px 6px rgba(0, 179, 138, 0.2);
     }
 
     .mic-control-btn i {
@@ -1023,11 +1033,43 @@
         height: auto;
         min-height: 100vh;
         padding: 16px;
-        gap: 16px;
+        gap: 12px;
       }
 
       .room-main {
-        min-height: 50vh;
+        grid-column: 1;
+        grid-row: 2;
+        min-height: 60vh;
+      }
+
+      .sidebar {
+        grid-column: 1;
+        grid-row: 3;
+        width: 100%;
+        max-width: none;
+        max-height: 45vh;
+        position: relative;
+        margin: 0;
+        display: none;
+      }
+
+      .sidebar.mobile-visible {
+        display: flex;
+      }
+
+      .features-sidebar {
+        grid-column: 1;
+        grid-row: 4;
+        width: 100%;
+        max-width: none;
+        max-height: 45vh;
+        position: relative;
+        margin: 0;
+        display: none;
+      }
+
+      .features-sidebar.mobile-visible {
+        display: flex;
       }
 
       .room-header {
@@ -1047,46 +1089,23 @@
         width: 100%;
       }
 
-      .sidebar, .features-sidebar {
-        width: 100%;
-        max-width: none;
-        max-height: 50vh;
-        position: static;
-        margin-top: 0;
-        grid-column: 1;
-        border-radius: 12px;
-      }
-
-      .features-sidebar {
-        display: flex;
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        width: 100%;
-        height: 50%;
-        max-height: 60%;
-        transform: translateY(100%);
-        transition: transform 0.28s ease;
-        border-radius: 16px 16px 0 0;
-        z-index: 1500;
-        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.2);
-      }
-
-      .features-sidebar.drawer-active {
-        transform: translateY(0);
-      }
-
-      .room-container {
-        gap: 0;
-      }
-
-      .room-header {
-        flex-wrap: wrap;
-      }
-
-      .features-toggle-btn {
+      .sidebar-toggle-btn {
         display: inline-flex;
+        padding: 8px 12px;
+        background: var(--accent-green);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 8px;
+        gap: 6px;
+        align-items: center;
+      }
+
+      .sidebar-toggle-btn:hover {
+        opacity: 0.9;
       }
 
       .room-controls {
@@ -1216,6 +1235,11 @@
       <div class="participants-list" id="participantsList"></div>
     </div>
 
+    <button class="sidebar-toggle-btn" id="participantsToggleBtn" style="display: none; width: 100%; margin-top: 12px;">
+      <i class="fas fa-chevron-up"></i>
+      <span>Hide Participants</span>
+    </button>
+
     <div class="features-sidebar">
       <div class="features-title">Features</div>
       <div class="features-list">
@@ -1244,6 +1268,11 @@
         </button>
       </div>
     </div>
+
+    <button class="sidebar-toggle-btn" id="featuresToggleBtn2" style="display: none; width: 100%; margin-top: 12px;">
+      <i class="fas fa-chevron-up"></i>
+      <span>Hide Features</span>
+    </button>
   </div>
 
   <div class="session-closed-overlay" id="sessionClosedOverlay">
@@ -1740,6 +1769,60 @@
           showModal('Screen Share', 'Screen sharing feature will be available in the next update with WebRTC implementation.', [
             { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
           ]);
+        });
+      }
+
+      // Mobile sidebar toggle functionality
+      const isMobile = window.innerWidth <= 768;
+      if (isMobile) {
+        const sidebar = document.querySelector('.sidebar');
+        const featuresSidebar = document.querySelector('.features-sidebar');
+        const participantsToggleBtn = document.getElementById('participantsToggleBtn');
+        const featuresToggleBtn2 = document.getElementById('featuresToggleBtn2');
+
+        // Show toggle buttons on mobile
+        if (participantsToggleBtn) participantsToggleBtn.style.display = 'inline-flex';
+        if (featuresToggleBtn2) featuresToggleBtn2.style.display = 'inline-flex';
+
+        // Participants sidebar toggle
+        if (participantsToggleBtn && sidebar) {
+          participantsToggleBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('mobile-visible');
+            const isVisible = sidebar.classList.contains('mobile-visible');
+            participantsToggleBtn.innerHTML = isVisible
+              ? '<i class="fas fa-chevron-down"></i><span>Show Participants</span>'
+              : '<i class="fas fa-chevron-up"></i><span>Hide Participants</span>';
+          });
+        }
+
+        // Features sidebar toggle
+        if (featuresToggleBtn2 && featuresSidebar) {
+          featuresToggleBtn2.addEventListener('click', () => {
+            featuresSidebar.classList.toggle('mobile-visible');
+            const isVisible = featuresSidebar.classList.contains('mobile-visible');
+            featuresToggleBtn2.innerHTML = isVisible
+              ? '<i class="fas fa-chevron-down"></i><span>Show Features</span>'
+              : '<i class="fas fa-chevron-up"></i><span>Hide Features</span>';
+          });
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+          if (window.innerWidth > 768) {
+            // Show both sidebars on desktop
+            if (sidebar) sidebar.classList.add('mobile-visible');
+            if (featuresSidebar) featuresSidebar.classList.add('mobile-visible');
+            // Hide toggle buttons
+            if (participantsToggleBtn) participantsToggleBtn.style.display = 'none';
+            if (featuresToggleBtn2) featuresToggleBtn2.style.display = 'none';
+          } else {
+            // Reset toggles on mobile
+            if (sidebar) sidebar.classList.remove('mobile-visible');
+            if (featuresSidebar) featuresSidebar.classList.remove('mobile-visible');
+            // Show toggle buttons
+            if (participantsToggleBtn) participantsToggleBtn.style.display = 'inline-flex';
+            if (featuresToggleBtn2) featuresToggleBtn2.style.display = 'inline-flex';
+          }
         });
       }
 
