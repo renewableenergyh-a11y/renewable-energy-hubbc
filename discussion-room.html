@@ -227,9 +227,6 @@
     }
 
     #themeToggleBtn {
-      position: absolute;
-      top: 24px;
-      right: 24px;
       padding: 8px 10px;
       background: transparent;
       border: none;
@@ -239,7 +236,6 @@
       transition: all 0.3s;
       font-size: 18px;
       color: var(--text-primary);
-      z-index: 100;
     }
 
     body.dark #themeToggleBtn {
@@ -252,7 +248,6 @@
         top: 20px;
         right: 20px;
         z-index: 999;
-        margin-top: 0;
       }
     }
 
@@ -1003,12 +998,6 @@
       .room-title {
         padding-right: 60px;
       }
-
-      #themeToggleBtn {
-        position: absolute;
-        top: 28px;
-        right: 24px;
-      }
     }
 
     @media (max-width: 1024px) {
@@ -1198,10 +1187,6 @@
   </style>
 </head>
 <body>
-  <button class="btn-control" id="themeToggleBtn" title="Toggle dark mode">
-    <i class="fas fa-moon"></i>
-  </button>
-
   <div class="room-container">
     <div class="room-main">
       <div class="room-header">
@@ -1215,6 +1200,9 @@
             <div id="timeInfo">Ends in --:--</div>
           </div>
         </div>
+        <button class="btn-control" id="themeToggleBtn" title="Toggle dark mode">
+          <i class="fas fa-moon"></i>
+        </button>
       </div>
 
       <div class="room-content">
