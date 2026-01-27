@@ -861,17 +861,26 @@
 
         console.log('🔄 Loading sessions for course:', currentCourse);
 
+        // Get current user and verify token exists
         const user = await authService.getCurrentUser();
+        if (!user || !user.token) {
+          console.error('❌ [loadSessions] No user or token found');
+          throw new Error('Authentication required - no valid token found');
+        }
+
+        console.log('🔐 [loadSessions] Using token for authentication');
+
         const response = await fetch(`/api/discussions/sessions/course/${currentCourse}`, {
           headers: {
-            'Authorization': 'Bearer ' + user.token,
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${user.token}`,
             'x-user-id': user.id || user._id,
             'x-user-role': user.role || 'student'
           }
         });
         
         if (!response.ok) {
-          throw new Error('Failed to load sessions: ' + response.status);
+          throw new Error(`Failed to load sessions: ${response.status}`);
         }
 
         const data = await response.json();
