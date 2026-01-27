@@ -101,6 +101,7 @@ export class DiscussionSocketService {
           });
 
           this.socket.on('user-reaction', (data) => {
+            console.log('📥 [socket.io] Received user-reaction event:', data);
             this._emit('user-reaction', data);
           });
         };
@@ -296,6 +297,7 @@ export class DiscussionSocketService {
       return;
     }
 
+    console.log('🎉 [emitReaction] Sending reaction:', { sessionId, reaction, userId, userName });
     this.socket.emit('reaction', {
       sessionId,
       reaction,

@@ -623,6 +623,8 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     socket.on('reaction', async (data) => {
       const { sessionId, reaction, userId, userName } = data;
 
+      console.log('🎉 [reaction] Received reaction event:', { sessionId, reaction, userId, userName });
+
       if (!sessionId || !reaction || !userId) {
         console.warn('Invalid reaction data', data);
         return;
@@ -630,6 +632,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
       try {
         // Broadcast reaction to all users in the session
+        console.log(`📢 [reaction] Broadcasting to room: discussion-session:${sessionId}`);
         io.to(`discussion-session:${sessionId}`).emit('user-reaction', {
           sessionId,
           reaction,
@@ -638,7 +641,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           timestamp: Date.now()
         });
 
-        console.log(`User ${userId} (${userName}) sent reaction ${reaction} in session ${sessionId}`);
+        console.log(`✅ User ${userId} (${userName}) sent reaction ${reaction} in session ${sessionId}`);
       } catch (error) {
         console.error('Error handling reaction:', error);
       }

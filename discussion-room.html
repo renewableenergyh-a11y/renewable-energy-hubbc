@@ -1762,11 +1762,14 @@
       });
 
       discussionSocket.on('user-reaction', (data) => {
+        console.log('🎉 [user-reaction] Received reaction from server:', data);
         const { reaction, userName, userId } = data;
         
         // Skip if it's our own reaction (we already displayed it)
         const currentUser = window.currentUser || {};
+        console.log('👤 [user-reaction] Current user:', currentUser.id, 'Reaction from:', userId);
         if (userId === currentUser.id) {
+          console.log('⏭️ [user-reaction] Skipping own reaction');
           return;
         }
         
@@ -1795,7 +1798,7 @@
           floatingReaction.remove();
         }, 3500);
         
-        console.log(`${userName} sent reaction: ${reaction}`);
+        console.log(`✅ ${userName} sent reaction: ${reaction}`);
       });
 
       // Button events
