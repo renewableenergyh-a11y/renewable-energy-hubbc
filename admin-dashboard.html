@@ -1086,6 +1086,10 @@
               <span>Live Chat</span>
               <span id="live-chat-badge" style="display: none; margin-left: auto; background: #d32f2f; color: white; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: bold; min-width: 24px; text-align: center;">0</span>
             </a>
+            <a href="#" class="sidebar-link" data-tab="discussions">
+              <i class="fas fa-video"></i>
+              <span>Discussions</span>
+            </a>
           </div>
 
           <div class="sidebar-section">
@@ -1586,6 +1590,80 @@
                   <div id="admin-notice" class="form-notice" style="margin:0;display:none;font-size:11px;padding:6px;border-radius:6px;"></div>
                 </form>
               </section>
+            </div>
+          </div>
+
+          <!-- DISCUSSIONS TAB -->
+          <div class="tab-panel" id="discussions-panel">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Create and manage live discussion sessions for courses. Sessions can be scheduled for future dates or started immediately.</p>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+              <!-- CREATE NEW SESSION -->
+              <div class="card" style="padding: 20px;">
+                <h3 style="margin-top: 0; margin-bottom: 20px; font-size: 18px; color: var(--text-main);">
+                  <i class="fas fa-plus-circle" style="margin-right: 8px; color: var(--green-main);"></i>Create New Session
+                </h3>
+                <form id="create-discussion-form" style="display: flex; flex-direction: column; gap: 14px;">
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">Course *</label>
+                    <select id="disc-course-select" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main);">
+                      <option value="">-- Select a course --</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">Session Subject *</label>
+                    <input id="disc-subject" type="text" placeholder="e.g., Q&A Discussion, Module Review" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box;" />
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">Description</label>
+                    <textarea id="disc-description" placeholder="Optional: Describe the discussion topic" rows="3" style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit;"></textarea>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">Session Type *</label>
+                    <select id="disc-type" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main);">
+                      <option value="peer">Peer Discussion</option>
+                      <option value="instructor">Instructor-Led</option>
+                    </select>
+                  </div>
+
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                    <div>
+                      <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">Start Time *</label>
+                      <input id="disc-start-time" type="datetime-local" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box;" />
+                    </div>
+                    <div>
+                      <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">End Time *</label>
+                      <input id="disc-end-time" type="datetime-local" required style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box;" />
+                    </div>
+                  </div>
+
+                  <div style="display: flex; gap: 12px; margin-top: 8px;">
+                    <button id="disc-create-btn" class="btn-primary" type="submit" style="flex: 1; padding: 12px; font-weight: 600;">
+                      <i class="fas fa-plus" style="margin-right: 6px;"></i>Create Session
+                    </button>
+                    <button id="disc-clear-btn" class="btn" type="reset" style="padding: 12px;">Clear</button>
+                  </div>
+
+                  <div id="disc-form-notice" style="padding: 10px; border-radius: 6px; font-size: 13px; display: none; margin-top: 8px;"></div>
+                </form>
+              </div>
+
+              <!-- ACTIVE & UPCOMING SESSIONS -->
+              <div class="card" style="padding: 20px;">
+                <h3 style="margin-top: 0; margin-bottom: 12px; font-size: 18px; color: var(--text-main);">
+                  <i class="fas fa-list" style="margin-right: 8px; color: var(--green-main);"></i>Active & Upcoming Sessions
+                </h3>
+                <p style="margin: 0 0 16px 0; font-size: 13px; color: var(--text-muted);">Recent sessions from all courses</p>
+                <div id="disc-sessions-list" style="max-height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+                  <div style="padding: 24px; text-align: center; color: var(--text-muted);">
+                    <i class="fas fa-inbox" style="font-size: 32px; opacity: 0.3; display: block; margin-bottom: 8px;"></i>
+                    <p style="margin: 0;">No sessions yet</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2090,6 +2168,7 @@
         'settings': 'settings-panel',
         'inbox': 'inbox-panel',
         'live-chat': 'live-chat-panel',
+        'discussions': 'discussions-panel',
         'modules': 'modules-panel',
         'content': 'content-panel',
         'documents': 'documents-panel'
@@ -2105,6 +2184,7 @@
         'settings': 'Settings',
         'inbox': 'Inbox',
         'live-chat': 'Live Chat',
+        'discussions': 'Discussions',
         'modules': 'Modules',
         'content': 'Content',
         'documents': 'Documents'
@@ -2766,6 +2846,210 @@
         localStorage.setItem('courses_cache_timestamp', new Date().toISOString());
         render(courses);
       } catch (err) { listEl.innerHTML = '<div style="color:var(--text-muted)">Unable to load courses.</div>'; console.error(err); }
+    }
+
+    // ============================================================
+    // DISCUSSIONS MANAGEMENT
+    // ============================================================
+
+    async function loadDiscussionsUI() {
+      const courseSelect = document.getElementById('disc-course-select');
+      const sessionsList = document.getElementById('disc-sessions-list');
+
+      // Load courses for the dropdown
+      try {
+        const coursesResp = await fetch('/api/courses', { headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('appToken') || localStorage.getItem('token') || '') } });
+        if (coursesResp.ok) {
+          const courses = await coursesResp.json();
+          courseSelect.innerHTML = '<option value="">-- Select a course --</option>';
+          courses.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            courseSelect.appendChild(opt);
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load courses for discussions:', err);
+      }
+
+      // Load active and upcoming sessions
+      await refreshDiscussionSessions(sessionsList);
+
+      // Form submission
+      const form = document.getElementById('create-discussion-form');
+      if (form) {
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const notice = document.getElementById('disc-form-notice');
+          try {
+            const courseId = document.getElementById('disc-course-select').value;
+            const subject = document.getElementById('disc-subject').value.trim();
+            const description = document.getElementById('disc-description').value.trim();
+            const sessionType = document.getElementById('disc-type').value;
+            const startTime = document.getElementById('disc-start-time').value;
+            const endTime = document.getElementById('disc-end-time').value;
+
+            if (!courseId || !subject || !startTime || !endTime) {
+              notice.textContent = 'Please fill in all required fields';
+              notice.style.background = '#f8d7da';
+              notice.style.color = '#721c24';
+              notice.style.display = 'block';
+              return;
+            }
+
+            const response = await fetch('/api/discussions/sessions', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + (localStorage.getItem('appToken') || localStorage.getItem('token') || '') },
+              body: JSON.stringify({
+                courseId,
+                subject,
+                description,
+                sessionType,
+                startTime: new Date(startTime).toISOString(),
+                endTime: new Date(endTime).toISOString()
+              })
+            });
+
+            if (!response.ok) {
+              throw new Error('Failed to create discussion session');
+            }
+
+            notice.textContent = 'Discussion session created successfully!';
+            notice.style.background = '#d4edda';
+            notice.style.color = '#155724';
+            notice.style.display = 'block';
+            form.reset();
+
+            await refreshDiscussionSessions(sessionsList);
+          } catch (error) {
+            notice.textContent = 'Error: ' + error.message;
+            notice.style.background = '#f8d7da';
+            notice.style.color = '#721c24';
+            notice.style.display = 'block';
+          }
+        };
+      }
+    }
+
+    async function refreshDiscussionSessions(container) {
+      try {
+        const response = await fetch('/api/discussions/sessions', {
+          headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('appToken') || localStorage.getItem('token') || '') }
+        });
+        if (!response.ok) throw new Error('Failed to load sessions');
+        const sessions = await response.json();
+
+        container.innerHTML = '';
+        
+        if (!sessions || sessions.length === 0) {
+          container.innerHTML = '<div style="padding: 24px; text-align: center; color: var(--text-muted);"><i class="fas fa-inbox" style="font-size: 32px; opacity: 0.3; display: block; margin-bottom: 8px;"></i><p style="margin: 0;">No sessions yet</p></div>';
+          return;
+        }
+
+        sessions.sort((a, b) => new Date(b.startTime) - new Date(a.startTime));
+
+        sessions.forEach(session => {
+          const sessionCard = document.createElement('div');
+          sessionCard.style.cssText = 'border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; background: var(--bg-secondary);';
+          
+          const startDate = new Date(session.startTime).toLocaleString();
+          const endDate = new Date(session.endTime).toLocaleString();
+          const statusBadge = session.status === 'closed' ? '<span style="background: #d32f2f; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;">Closed</span>' : '<span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;">Active</span>';
+          
+          sessionCard.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+              <div>
+                <div style="font-weight: 600; color: var(--text-main); margin-bottom: 2px;">${escapeHtml(session.subject)}</div>
+                <div style="font-size: 12px; color: var(--text-muted);">${startDate} to ${endDate}</div>
+                ${session.description ? `<div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">${escapeHtml(session.description)}</div>` : ''}
+              </div>
+              ${statusBadge}
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+              ${session.status !== 'closed' ? `
+                <button style="padding: 6px 12px; background: var(--green-main); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="joinDiscussionSession('${session.sessionId}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                  <i class="fas fa-sign-in-alt" style="margin-right: 4px;"></i>Join Session
+                </button>
+              ` : ''}
+              ${session.status !== 'closed' ? `
+                <button style="padding: 6px 12px; background: #f97316; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="endDiscussionSession('${session.sessionId}', '${escapeHtml(session.subject)}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                  <i class="fas fa-stop-circle" style="margin-right: 4px;"></i>End Session
+                </button>
+              ` : ''}
+              <button style="padding: 6px 12px; background: #d32f2f; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="deleteDiscussionSession('${session.sessionId}', '${escapeHtml(session.subject)}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
+                <i class="fas fa-trash" style="margin-right: 4px;"></i>Delete
+              </button>
+            </div>
+          `;
+          container.appendChild(sessionCard);
+        });
+      } catch (error) {
+        console.error('refreshDiscussionSessions error:', error);
+        container.innerHTML = '<div style="color: var(--text-muted);">Failed to load sessions</div>';
+      }
+    }
+
+    async function joinDiscussionSession(sessionId) {
+      try {
+        console.log('[admin-dashboard] joinDiscussionSession called with sessionId:', sessionId);
+        
+        // Preserve admin authentication and promote to app auth
+        const adminToken = localStorage.getItem('adminToken');
+        const appToken = localStorage.getItem('appToken') || localStorage.getItem('token');
+        if (adminToken) localStorage.setItem('appToken', adminToken);
+
+        // Redirect into the discussion room using standard session URL
+        const targetUrl = `/discussion-room.html?sessionId=${sessionId}`;
+        window.location.href = targetUrl;
+      } catch (error) {
+        console.error('joinDiscussionSession error:', error);
+        alert('Failed to join discussion session');
+      }
+    }
+
+    async function deleteDiscussionSession(sessionId, subject) {
+      const confirmed = await showConfirm('Delete Session', `Are you sure you want to delete the session "${subject}"? This action cannot be undone.`);
+      if (!confirmed) return;
+
+      try {
+        const response = await fetch(`/api/discussions/sessions/${sessionId}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('appToken') || localStorage.getItem('token') || '') }
+        });
+        if (!response.ok) throw new Error('Failed to delete session');
+        
+        const sessionsList = document.getElementById('disc-sessions-list');
+        if (sessionsList) {
+          await refreshDiscussionSessions(sessionsList);
+        }
+        showAlert('Success', `Session "${subject}" has been deleted.`, 'success');
+      } catch (error) {
+        console.error('deleteDiscussionSession error:', error);
+        showAlert('Error', 'Failed to delete session: ' + error.message, 'error');
+      }
+    }
+
+    async function endDiscussionSession(sessionId, subject) {
+      const confirmed = await showConfirm('End Session', `End the session "${subject}"? All participants will be notified and redirected.`);
+      if (!confirmed) return;
+
+      try {
+        const response = await fetch(`/api/discussions/sessions/${sessionId}/close`, {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + (localStorage.getItem('appToken') || localStorage.getItem('token') || '') }
+        });
+        if (!response.ok) throw new Error('Failed to end session');
+        
+        const sessionsList = document.getElementById('disc-sessions-list');
+        if (sessionsList) {
+          await refreshDiscussionSessions(sessionsList);
+        }
+        showAlert('Success', `Session "${subject}" has been ended.`, 'success');
+      } catch (error) {
+        console.error('endDiscussionSession error:', error);
+        showAlert('Error', 'Failed to end session: ' + error.message, 'error');
+      }
     }
 
     // ----- Pending Documents UI (extracted for global access) -----
@@ -4487,6 +4771,7 @@
       else if (name === 'analytics') loadAnalyticsUI();
       else if (name === 'settings') loadSettingsUI();
       else if (name === 'inbox') loadInboxUI();
+      else if (name === 'discussions') loadDiscussionsUI();
       else if (name === 'modules') loadModuleManagementUI();
       else if (name === 'content') loadContentManagementUI();
       else if (name === 'documents') loadDocumentsUI();
