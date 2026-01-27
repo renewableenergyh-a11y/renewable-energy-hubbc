@@ -49,7 +49,8 @@
 
     .room-container {
       display: grid;
-      grid-template-columns: 1fr 380px 420px;
+      grid-template-columns: 1fr 400px;
+      grid-template-rows: 1fr auto auto;
       gap: 20px;
       height: 100vh;
       padding: 20px;
@@ -274,9 +275,12 @@
       padding: 24px;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
       border: 1px solid var(--border-color);
+      max-height: calc(50vh - 20px);
+      grid-column: 2;
     }
 
     body.dark .sidebar {
@@ -314,6 +318,7 @@
     .participants-list {
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
       gap: 10px;
@@ -474,15 +479,28 @@
     }
 
     .mic-control-btn.muted {
-      background: var(--bg-secondary);
+      background: transparent;
       color: var(--text-secondary);
       border: 1px solid var(--border-color);
     }
 
+    body.dark .mic-control-btn.muted {
+      background: transparent;
+      border-color: var(--border-color);
+      color: var(--text-secondary);
+    }
+
     .mic-control-btn.muted:hover {
-      background: var(--bg-tertiary);
-      border-color: var(--text-secondary);
+      background: rgba(0, 121, 107, 0.1);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
       transform: translateY(-1px);
+    }
+
+    body.dark .mic-control-btn.muted:hover {
+      background: rgba(0, 255, 200, 0.1);
+      border-color: var(--accent-green);
+      color: var(--accent-green);
     }
 
     .remove-participant-btn {
@@ -524,9 +542,12 @@
       padding: 24px;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
       border: 1px solid var(--border-color);
+      max-height: calc(50vh - 20px);
+      grid-column: 2;
     }
 
     body.dark .features-sidebar {
@@ -553,6 +574,7 @@
       gap: 10px;
       flex: 1;
       overflow-y: auto;
+      overflow-x: hidden;
     }
 
     .feature-btn {
@@ -982,17 +1004,18 @@
 
     @media (max-width: 1024px) {
       .room-container {
-        grid-template-columns: 1fr 220px;
+        grid-template-columns: 1fr 350px;
       }
 
-      .features-sidebar {
-        display: none;
+      .sidebar, .features-sidebar {
+        max-height: calc(45vh - 20px);
       }
     }
 
     @media (max-width: 768px) {
       .room-container {
         grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto auto;
         height: auto;
         min-height: 100vh;
         padding: 16px;
@@ -1000,7 +1023,7 @@
       }
 
       .room-main {
-        min-height: 60vh;
+        min-height: 50vh;
       }
 
       .room-header {
@@ -1020,13 +1043,13 @@
         width: 100%;
       }
 
-      .sidebar {
+      .sidebar, .features-sidebar {
         width: 100%;
         max-width: none;
-        height: auto;
-        min-height: 280px;
+        max-height: 50vh;
         position: static;
         margin-top: 0;
+        grid-column: 1;
         border-radius: 12px;
       }
 
@@ -1868,7 +1891,7 @@
           const currentUserIsAdmin = isModerator;
           
           const micBtn = (showRemoveBtn && isStudent && currentUserIsAdmin)
-            ? `<button class="mic-control-btn muted" data-userid="${escapeHtml(p.userId)}" title="Unmute participant"><i class="fas fa-microphone"></i></button>`
+            ? `<button class="mic-control-btn muted" data-userid="${escapeHtml(p.userId)}" title="Unmute participant"><i class="fas fa-microphone-slash"></i></button>`
             : '';
           
           const removeBtn = showRemoveBtn
@@ -1946,12 +1969,12 @@
               btn.classList.toggle('muted');
               const icon = btn.querySelector('i');
               if (isMuted) {
-                // Was muted, now unmuting - show slash icon
-                icon.className = 'fas fa-microphone-slash';
+                // Was muted, now unmuting - show normal microphone icon
+                icon.className = 'fas fa-microphone';
                 btn.title = 'Mute participant';
               } else {
-                // Was unmuted, now muting - show normal microphone icon
-                icon.className = 'fas fa-microphone';
+                // Was unmuted, now muting - show slash icon
+                icon.className = 'fas fa-microphone-slash';
                 btn.title = 'Unmute participant';
               }
               
