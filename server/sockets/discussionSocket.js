@@ -321,6 +321,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         // Notify others
         socket.to(`discussion-session:${sessionId}`).emit('participant-left', {
           userId: userId,
+          userName: socket.userName,
           participantCount: participantCount
         });
 
@@ -373,6 +374,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           // Notify others of disconnection
           io.to(`discussion-session:${sessionId}`).emit('participant-left', {
             userId: userId,
+            userName: socket.userName,
             participantCount: participantCount
           });
 

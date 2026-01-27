@@ -1023,6 +1023,84 @@
       }
     }
 
+    /* Notification banner styles */
+    .participant-notification {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 14px 24px;
+      font-size: 14px;
+      color: var(--text-primary);
+      z-index: 9999;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      animation: notificationSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      max-width: 90vw;
+      font-weight: 500;
+      letter-spacing: -0.2px;
+      backdrop-filter: blur(10px);
+    }
+
+    body.dark .participant-notification {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .participant-notification.joined {
+      border-left: 4px solid #4caf50;
+    }
+
+    .participant-notification.left {
+      border-left: 4px solid #ff9800;
+    }
+
+    .participant-notification.joined::before {
+      content: "✓";
+      color: #4caf50;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .participant-notification.left::before {
+      content: "↓";
+      color: #ff9800;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    @keyframes notificationSlideIn {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @keyframes notificationSlideOut {
+      from {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-30px);
+      }
+    }
+
+    .participant-notification.hiding {
+      animation: notificationSlideOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
     .sidebar-toggle-btn {
       display: none;
     }
@@ -1228,6 +1306,9 @@
 <body>
   <div class="room-container">
     <div class="room-main">
+      <!-- Participant Notification Banner -->
+      <div id="participantNotificationContainer" style="position: relative; height: 0;"></div>
+
       <div class="room-header">
         <div>
           <div class="room-title" id="roomTitle">Loading...</div>
@@ -1718,6 +1799,31 @@
       }
     }
 
+    // Helper function to show participant notification banner
+    function showParticipantNotification(userName, type) {
+      const container = document.getElementById('participantNotificationContainer');
+      if (!container) return;
+
+      const message = type === 'joined' 
+        ? `${escapeHtml(userName)} has joined the discussion`
+        : `${escapeHtml(userName)} has left the room`;
+
+      const notification = document.createElement('div');
+      notification.className = `participant-notification ${type}`;
+      notification.textContent = message;
+      notification.style.margin = '0 auto';
+
+      container.appendChild(notification);
+
+      // Auto-remove after 4 seconds
+      setTimeout(() => {
+        notification.classList.add('hiding');
+        setTimeout(() => {
+          notification.remove();
+        }, 300);
+      }, 4000);
+    }
+
     function setupListeners() {
       console.log('🎧 [setupListeners] Setting up all socket event listeners');
       // Socket events
@@ -1728,10 +1834,15 @@
 
       discussionSocket.on('participant-joined', (data) => {
         console.log(`👤 [discussion-room] ${data.name} joined the discussion`);
+        showParticipantNotification(data.name, 'joined');
       });
 
       discussionSocket.on('participant-left', (data) => {
-        console.log(`👋 [discussion-room] Participant left (${data.participantCount} remaining)`);
+        console.log(`👋 [discussion-room] ${data.userName} left (${data.participantCount} remaining)`);
+        // Show notification for participant leaving
+        if (data.userName) {
+          showParticipantNotification(data.userName, 'left');
+        }
         // The participant-list-updated event will be broadcasted by the server to update the UI
         // This event is just for logging; the actual UI update happens via participant-list-updated
       });
