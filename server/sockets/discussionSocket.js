@@ -154,6 +154,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
    */
   io.on('connection', (socket) => {
     console.log(`📡 Socket connected: ${socket.id}`);
+    console.log('✅ Socket.IO handlers registered: join-session, leave-session, raise-hand, reaction, ping, admin-remove-participant, close-session, check-session-status');
 
     /**
      * Event: join-session
@@ -621,6 +622,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
      * Broadcast reaction from user to all participants
      */
     socket.on('reaction', async (data) => {
+      console.log('🎉🎉🎉 [REACTION HANDLER TRIGGERED] 🎉🎉🎉 Socket ID:', socket.id, 'Data:', data);
       const { sessionId, reaction, userId, userName } = data;
 
       console.log('🎉 [reaction] Received reaction event:', { sessionId, reaction, userId, userName, senderRole: socket.userRole });

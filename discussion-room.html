@@ -1909,12 +1909,15 @@
             // Send reaction via socket.io
             const currentUser = getLocalCurrentUser();
             if (currentUser) {
+              console.log('📤 [reaction-emit] About to emit reaction:', { sessionData: sessionData?.sessionId, reaction, currentUser: currentUser?.id });
               discussionSocket.emitReaction(
                 sessionData.sessionId,
                 reaction,
                 currentUser.id,
                 currentUser.name || 'Anonymous'
               );
+            } else {
+              console.warn('⚠️ [reaction-emit] currentUser is null/undefined');
             }
           });
         });
