@@ -89,18 +89,25 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       const stats = await participantService.getSessionParticipantStats(sessionId);
       const sessionHandRaised = handRaisedMap.get(sessionId) || {};
       
+      const broadcastData = participants.map(p => ({
+        participantId: p.participantId,
+        userId: p.userId,
+        userName: p.userName || 'Participant', // Fallback if userName is empty
+        role: p.role,
+        active: p.active,
+        joinTime: p.joinTime,
+        audioEnabled: p.audioEnabled,
+        videoEnabled: p.videoEnabled,
+        handRaised: sessionHandRaised[p.userId] || false
+      }));
+
+      // Log what we're broadcasting for debugging
+      console.log(`📡 [broadcastParticipantList] Broadcasting ${broadcastData.length} participants to session ${sessionId}:`, 
+        broadcastData.map(p => ({ userId: p.userId, userName: p.userName }))
+      );
+      
       io.to(`discussion-session:${sessionId}`).emit('participant-list-updated', {
-        participants: participants.map(p => ({
-          participantId: p.participantId,
-          userId: p.userId,
-          userName: p.userName,
-          role: p.role,
-          active: p.active,
-          joinTime: p.joinTime,
-          audioEnabled: p.audioEnabled,
-          videoEnabled: p.videoEnabled,
-          handRaised: sessionHandRaised[p.userId] || false
-        })),
+        participants: broadcastData,
         stats: {
           activeCount: stats.activeCount,
           totalCount: stats.totalCount,
