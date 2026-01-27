@@ -657,7 +657,7 @@
       font-size: 32px;
       pointer-events: none;
       z-index: 9998;
-      animation: reactionFloat 2s ease-out forwards;
+      animation: reactionFloat 3.5s ease-out forwards;
     }
 
     @keyframes reactionFloat {
@@ -667,7 +667,7 @@
       }
       100% {
         opacity: 0;
-        transform: translateY(-150px) translateX(var(--tx, 0px)) scale(0.5);
+        transform: translateY(-200px) translateX(var(--tx, 0px)) scale(0.6);
       }
     }
 
@@ -1850,8 +1850,8 @@
             const startX = btnRect.left + btnRect.width / 2;
             const startY = btnRect.top + btnRect.height / 2;
             
-            // Random horizontal drift
-            const randomDrift = (Math.random() - 0.5) * 100;
+            // Random horizontal drift (larger range for better wave effect)
+            const randomDrift = (Math.random() - 0.5) * 150;
             
             floatingReaction.style.left = startX + 'px';
             floatingReaction.style.top = startY + 'px';
@@ -1862,7 +1862,7 @@
             // Remove element after animation completes
             setTimeout(() => {
               floatingReaction.remove();
-            }, 2000);
+            }, 3500);
             
             // TODO: Send reaction via socket.io
           });
