@@ -2103,8 +2103,8 @@
         
         // Skip if it's our own reaction (we already displayed it)
         const currentUser = getLocalCurrentUser();
-        console.log('👤 [user-reaction] Current user:', currentUser?.id, 'Reaction from:', userId, 'Role:', userRole);
-        if (userId === currentUser?.id) {
+        console.log('👤 [user-reaction] Current user:', currentUser?.email, 'Reaction from:', userId, 'Role:', userRole);
+        if (userId === currentUser?.email) {
           console.log('⏭️ [user-reaction] Skipping own reaction (already displayed locally)');
           return;
         }
@@ -2352,7 +2352,7 @@
       participantCount.textContent = stats.activeCount;
 
       const currentUser = getLocalCurrentUser();
-      const currentUserId = currentUser?.id || currentUser?._id;
+      const currentUserId = currentUser?.email;
       const userRole = currentUser?.role || 'student';
       const isModerator = ['superadmin', 'admin', 'instructor'].includes(userRole);
 
@@ -2387,7 +2387,7 @@
 
           // ❌ Remove button shows ONLY for students when moderator is viewing
           // NEVER show remove button next to admins, instructors, or superadmins
-          const showRemoveBtn = isModerator && currentUser && (p.userId !== currentUser.id) && p.role === 'student';
+          const showRemoveBtn = isModerator && currentUser && (p.userId !== currentUser.email) && p.role === 'student';
           const isStudent = p.role.toLowerCase() === 'student';
           const currentUserIsAdmin = isModerator;
           
@@ -2443,7 +2443,7 @@
                   try {
                     const token = localStorage.getItem('authToken');
                     const currentUser = getLocalCurrentUser();
-                    const userId = currentUser?.id || currentUser?._id;
+                    const userId = currentUser?.email;
                     const userRole = currentUser?.role || 'student';
                     await discussionSocket.removeParticipantByAdmin(sessionData.sessionId, targetUserId, token, userId, userRole);
                     closeModal();
@@ -2476,7 +2476,7 @@
             try {
               const token = localStorage.getItem('authToken');
               const currentUser = getLocalCurrentUser();
-              const userId = currentUser?.id || currentUser?._id;
+              const userId = currentUser?.email;
               const userRole = currentUser?.role || 'student';
               
               // Toggle mic state
