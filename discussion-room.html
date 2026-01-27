@@ -1839,12 +1839,24 @@
 
       if (raiseHandBtn) {
         let isRaised = false;
+        
+        // Function to update the button appearance
+        const updateRaiseHandBtn = () => {
+          raiseHandBtn.classList.toggle('active', isRaised);
+          if (isRaised) {
+            // Hand raised: show slashed hand icon
+            raiseHandBtn.innerHTML = '<i class="fas fa-hand" style="opacity: 0.6; filter: brightness(0.7);"></i><i class="fas fa-slash" style="position: relative; left: -0.7em; color: #d32f2f; font-size: 0.8em;"></i><span>Lower Hand</span>';
+            raiseHandBtn.title = 'Click to lower your hand';
+          } else {
+            // Hand lowered: show normal raised hand icon
+            raiseHandBtn.innerHTML = '<i class="fas fa-hand-paper"></i><span>Raise Hand</span>';
+            raiseHandBtn.title = 'Click to raise your hand';
+          }
+        };
+        
         raiseHandBtn.addEventListener('click', () => {
           isRaised = !isRaised;
-          raiseHandBtn.classList.toggle('active', isRaised);
-          raiseHandBtn.innerHTML = isRaised
-            ? '<i class="fas fa-hand-paper"></i><span>Lower Hand</span>'
-            : '<i class="fas fa-hand-paper"></i><span>Raise Hand</span>';
+          updateRaiseHandBtn();
           
           // Emit socket event to notify all users about hand raise/lower
           const currentUser = getLocalCurrentUser();
@@ -1852,6 +1864,9 @@
             discussionSocket.emitRaiseHand(sessionData.sessionId, isRaised, currentUser?.id || currentUser?._id);
           }
         });
+        
+        // Initialize button appearance
+        updateRaiseHandBtn();
       }
 
       if (chatBtn) {
