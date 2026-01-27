@@ -49,7 +49,7 @@
 
     .room-container {
       display: grid;
-      grid-template-columns: 1fr 320px 380px;
+      grid-template-columns: 1fr 380px 420px;
       gap: 20px;
       height: 100vh;
       padding: 20px;
@@ -333,6 +333,12 @@
       min-width: 0;
     }
 
+    body.dark .participant-item {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-secondary);
+    }
+
     .participant-item:hover {
       background: var(--bg-tertiary);
       border-color: rgba(0, 121, 107, 0.15);
@@ -341,7 +347,8 @@
 
     body.dark .participant-item:hover {
       border-color: rgba(0, 255, 200, 0.2);
-      background: rgba(0, 255, 200, 0.05);
+      background: var(--bg-tertiary);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     }
 
     .participant-avatar {
@@ -358,12 +365,21 @@
       flex-shrink: 0;
     }
 
+    body.dark .participant-avatar {
+      background: linear-gradient(135deg, var(--accent-green), var(--accent-dark));
+      box-shadow: 0 2px 8px rgba(0, 179, 138, 0.3);
+    }
+
     .participant-info {
       flex: 1;
       min-width: 0;
       display: flex;
       flex-direction: column;
       gap: 2px;
+    }
+
+    body.dark .participant-info {
+      color: var(--text-secondary);
     }
 
     .participant-name {
@@ -404,6 +420,10 @@
       padding: 40px 20px;
       color: var(--text-muted);
       font-size: 14px;
+    }
+
+    body.dark .empty-participants {
+      color: var(--text-muted);
     }
 
     .participant-controls {
