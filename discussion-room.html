@@ -652,6 +652,25 @@
       border-color: var(--accent-green);
     }
 
+    .floating-reaction {
+      position: fixed;
+      font-size: 32px;
+      pointer-events: none;
+      z-index: 9998;
+      animation: reactionFloat 2s ease-out forwards;
+    }
+
+    @keyframes reactionFloat {
+      0% {
+        opacity: 1;
+        transform: translateY(0) translateX(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-150px) translateX(var(--tx, 0px)) scale(0.5);
+      }
+    }
+
     .chat-preview {
       padding: 12px;
       background: var(--bg-secondary);
@@ -1819,11 +1838,33 @@
           btn.addEventListener('click', (e) => {
             const reaction = btn.dataset.reaction;
             console.log('Reaction sent:', reaction);
-            // TODO: Send reaction via socket.io
             reactionPicker.classList.remove('active');
-            showModal('Reaction Sent', `Sent ${reaction} reaction to all participants`, [
-              { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
-            ]);
+            
+            // Create floating reaction animation
+            const floatingReaction = document.createElement('div');
+            floatingReaction.className = 'floating-reaction';
+            floatingReaction.textContent = reaction;
+            
+            // Get button position
+            const btnRect = btn.getBoundingClientRect();
+            const startX = btnRect.left + btnRect.width / 2;
+            const startY = btnRect.top + btnRect.height / 2;
+            
+            // Random horizontal drift
+            const randomDrift = (Math.random() - 0.5) * 100;
+            
+            floatingReaction.style.left = startX + 'px';
+            floatingReaction.style.top = startY + 'px';
+            floatingReaction.style.setProperty('--tx', randomDrift + 'px');
+            
+            document.body.appendChild(floatingReaction);
+            
+            // Remove element after animation completes
+            setTimeout(() => {
+              floatingReaction.remove();
+            }, 2000);
+            
+            // TODO: Send reaction via socket.io
           });
         });
       }
