@@ -1884,7 +1884,7 @@
               'Authorization': `Bearer ${user.token}`,
               'x-user-id': user.id || user._id,
               'x-user-role': userRole,
-              'x-user-name': user.fullName || user.name || '',
+              'x-user-name': participantFullName,
               'Content-Type': 'application/json'
             }
           });
