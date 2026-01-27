@@ -452,6 +452,17 @@
       white-space: nowrap;
     }
 
+    .raised-hand-indicator {
+      font-size: 16px;
+      margin-right: 8px;
+      animation: wave 1s ease-in-out infinite;
+    }
+
+    @keyframes wave {
+      0%, 100% { transform: rotate(0deg); }
+      50% { transform: rotate(20deg); }
+    }
+
     .participant-status {
       font-size: 9px;
       color: #4caf50;
@@ -1715,6 +1726,13 @@
         ]);
       });
 
+      discussionSocket.on('hand-raised-updated', (data) => {
+        // Re-render participants when hand raise status changes
+        if (data.participants) {
+          renderParticipants(data.participants, data.stats);
+        }
+      });
+
       // Button events
       leaveBtn.addEventListener('click', handleLeave);
 
@@ -1755,6 +1773,12 @@
           raiseHandBtn.innerHTML = isRaised
             ? '<i class="fas fa-hand-paper"></i><span>Lower Hand</span>'
             : '<i class="fas fa-hand-paper"></i><span>Raise Hand</span>';
+          
+          // Emit socket event to notify all users about hand raise/lower
+          const currentUser = getLocalCurrentUser();
+          if (discussionSocket && sessionData) {
+            discussionSocket.emitRaiseHand(sessionData.sessionId, isRaised, currentUser?.id || currentUser?._id);
+          }
         });
       }
 
@@ -1869,6 +1893,7 @@
       participantCount.textContent = stats.activeCount;
 
       const currentUser = getLocalCurrentUser();
+      const currentUserId = currentUser?.id || currentUser?._id;
       const userRole = currentUser?.role || 'student';
       const isModerator = ['superadmin', 'admin', 'instructor'].includes(userRole);
 
@@ -1883,6 +1908,8 @@
           // Display user name if available, otherwise email (if present), otherwise placeholder
           const displayName = p.userName || p.email || 'Participant';
           const avatarText = (displayName || 'U').charAt(0).toUpperCase();
+          const isCurrentUser = p.userId === currentUserId;
+          const nameWithYou = isCurrentUser ? `${escapeHtml(displayName)} (you)` : escapeHtml(displayName);
 
           // ❌ Remove button shows ONLY for students when moderator is viewing
           // NEVER show remove button next to admins, instructors, or superadmins
@@ -1898,16 +1925,22 @@
             ? `<button class="remove-participant-btn" data-userid="${escapeHtml(p.userId)}" title="Remove participant">✖</button>`
             : '';
 
+          // Show raised hand indicator only to admins
+          const raisedHandIndicator = isModerator && p.handRaised
+            ? `<span class="raised-hand-indicator" title="Hand raised">✋</span>`
+            : '';
+
           return `
             <div class="participant-item">
               <div style="display:flex;align-items:center;gap:10px;flex:1">
                 <div class="participant-avatar">${escapeHtml(avatarText)}</div>
                 <div class="participant-info">
-                  <div class="participant-name">${escapeHtml(displayName)}</div>
+                  <div class="participant-name">${nameWithYou}</div>
                   <div class="participant-role">${p.role.toUpperCase()}</div>
                 </div>
               </div>
               <div class="participant-controls">
+                ${raisedHandIndicator}
                 <div class="participant-status" style="margin-right:6px">${p.active ? '🟢 Active' : '⚫ Away'}</div>
                 ${micBtn}
                 ${removeBtn}

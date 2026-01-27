@@ -261,6 +261,25 @@ export class DiscussionSocketService {
   }
 
   /**
+   * Emit raise hand event
+   * @param {String} sessionId - Session ID
+   * @param {Boolean} isRaised - Whether hand is raised
+   * @param {String} userId - Current user ID
+   */
+  emitRaiseHand(sessionId, isRaised, userId) {
+    if (!this.socket || !this.socket.connected) {
+      console.warn('Socket not connected');
+      return;
+    }
+
+    this.socket.emit('raise-hand', {
+      sessionId,
+      isRaised,
+      userId
+    });
+  }
+
+  /**
    * Register event listener
    * @param {String} event - Event name
    * @param {Function} callback - Callback function

@@ -576,6 +576,46 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     });
 
     /**
+     * Event: raise-hand
+     * Emit when user raises or lowers their hand
+     */
+    socket.on('raise-hand', async (data) => {
+      const { sessionId, isRaised, userId } = data;
+      
+      if (!sessionId || !userId) {
+        console.warn('Invalid raise-hand data', data);
+        return;
+      }
+
+      try {
+        // Get updated participant list with hand raise status
+        const participants = await participantService.getSessionParticipants(sessionId);
+        
+        // Update the handRaised flag for the user
+        const updatedParticipants = participants.map(p => ({
+          ...p,
+          handRaised: p.userId === userId ? isRaised : (p.handRaised || false)
+        }));
+
+        // Emit to all users in the room
+        io.to(`discussion-session:${sessionId}`).emit('hand-raised-updated', {
+          sessionId,
+          participants: updatedParticipants,
+          stats: {
+            totalParticipants: updatedParticipants.length,
+            activeCount: updatedParticipants.filter(p => p.active).length
+          },
+          userId,
+          isRaised
+        });
+
+        console.log(`User ${userId} ${isRaised ? 'raised' : 'lowered'} hand in session ${sessionId}`);
+      } catch (error) {
+        console.error('Error handling raise-hand:', error);
+      }
+    });
+
+    /**
      * Event: ping (heartbeat)
      * Keep connection alive and detect client presence
      */
