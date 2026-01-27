@@ -1086,10 +1086,6 @@
               <span>Live Chat</span>
               <span id="live-chat-badge" style="display: none; margin-left: auto; background: #d32f2f; color: white; border-radius: 12px; padding: 2px 8px; font-size: 11px; font-weight: bold; min-width: 24px; text-align: center;">0</span>
             </a>
-            <a href="#" class="sidebar-link" data-tab="discussions">
-              <i class="fas fa-video"></i>
-              <span>Discussions</span>
-            </a>
           </div>
 
           <div class="sidebar-section">
@@ -1593,261 +1589,12 @@
             </div>
           </div>
 
-          <!-- DISCUSSIONS TAB -->
-          <div class="tab-panel" id="discussions-panel">
-            <div style="margin-bottom: 24px;">
-              <h2 style="margin: 0 0 8px 0; font-size: 24px; color: var(--text-main);">
-                <i class="fas fa-comments" style="margin-right: 10px; color: var(--green-main);"></i>Discussion Sessions
-              </h2>
-              <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Create and manage live discussion sessions. Schedule for future dates or start immediately.</p>
-            </div>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; margin-bottom: 24px; height: 70vh;">
-              <!-- CREATE NEW SESSION FORM -->
-              <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; overflow: hidden;">
-                <div style="display: flex; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
-                  <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--green-main), #00796b); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px; flex-shrink: 0;">
-                    <i class="fas fa-plus" style="color: white; font-size: 16px;"></i>
-                  </div>
-                  <h3 style="margin: 0; font-size: 16px; color: var(--text-main);">Create New Session</h3>
-                </div>
-                
-                <form id="create-discussion-form" style="display: flex; flex-direction: column; gap: 14px; flex: 1; overflow-y: auto; padding-right: 8px; min-width: 0; overflow-x: hidden;">
-                  <div>
-                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
-                      <i class="fas fa-book" style="margin-right: 4px; color: var(--green-main); font-size: 12px;"></i>Course *
-                    </label>
-                    <select id="disc-course-select" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-size: 12px; transition: all 0.3s; box-sizing: border-box;">
-                      <option value="">-- Select a course --</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
-                      <i class="fas fa-heading" style="margin-right: 4px; color: var(--green-main); font-size: 12px;"></i>Session Subject *
-                    </label>
-                    <input id="disc-subject" type="text" placeholder="e.g., Q&A Discussion" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px; transition: all 0.3s;" />
-                  </div>
-
-                  <div>
-                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
-                      <i class="fas fa-align-left" style="margin-right: 4px; color: var(--green-main); font-size: 12px;"></i>Description
-                    </label>
-                    <textarea id="disc-description" placeholder="Optional: Describe the topic" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical; transition: all 0.3s;"></textarea>
-                  </div>
-
-                  <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
-                    <div>
-                      <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
-                        <i class="fas fa-users" style="margin-right: 4px; color: var(--green-main); font-size: 12px;"></i>Type *
-                      </label>
-                      <select id="disc-type" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); font-size: 12px; box-sizing: border-box;">
-                        <option value="peer">Peer Discussion</option>
-                        <option value="instructor">Instructor-Led</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div style="border-top: 1px solid var(--border-color); padding-top: 12px;">
-                    <label style="display: block; font-size: 11px; font-weight: 700; color: var(--text-main); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.3px;">
-                      <i class="fas fa-clock" style="margin-right: 4px; color: var(--green-main); font-size: 11px;"></i>Schedule
-                    </label>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                      <div>
-                        <label style="display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">Start *</label>
-                        <input id="disc-start-time" type="datetime-local" required style="width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 11px;" />
-                      </div>
-                      <div>
-                        <label style="display: block; font-size: 11px; color: var(--text-muted); margin-bottom: 4px;">End *</label>
-                        <input id="disc-end-time" type="datetime-local" required style="width: 100%; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 11px;" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div id="disc-form-notice" style="padding: 10px 12px; border-radius: 6px; font-size: 12px; display: none; margin-top: 6px; border-left: 3px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
-
-                  <div style="display: flex; gap: 8px; margin-top: 10px;">
-                    <button id="disc-create-btn" class="btn-primary" type="submit" style="flex: 1; padding: 10px 12px; font-weight: 600; font-size: 12px; border-radius: 6px;">
-                      <i class="fas fa-check-circle" style="margin-right: 4px; font-size: 12px;"></i>Create
-                    </button>
-                    <button id="disc-clear-btn" class="btn" type="reset" style="padding: 10px 12px; font-size: 12px; border-radius: 6px;">Reset</button>
-                  </div>
-                </form>
-              </div>
-
-              <!-- SESSIONS OVERVIEW -->
-              <div class="card" style="padding: 24px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; overflow: hidden;">
-                <div style="display: flex; align-items: center; margin-bottom: 24px; flex-shrink: 0;">
-                  <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #0b6fb7, #0d47a1); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
-                    <i class="fas fa-calendar-check" style="color: white; font-size: 18px;"></i>
-                  </div>
-                  <h3 style="margin: 0; font-size: 18px; color: var(--text-main);">Active & Upcoming</h3>
-                </div>
-
-                <!-- Session Tabs -->
-                <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); overflow-x: auto; padding-bottom: 12px; flex-shrink: 0;">
-                  <button class="disc-tab-btn" data-tab="all" style="padding: 8px 16px; border: none; background: none; color: var(--text-muted); font-weight: 600; font-size: 13px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -12px; transition: all 0.3s; white-space: nowrap;">
-                    <i class="fas fa-th-list" style="margin-right: 6px;"></i>All Sessions
-                  </button>
-                  <button class="disc-tab-btn" data-tab="active" style="padding: 8px 16px; border: none; background: none; color: var(--text-muted); font-weight: 600; font-size: 13px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -12px; transition: all 0.3s; white-space: nowrap;">
-                    <i class="fas fa-circle" style="margin-right: 6px; color: #4caf50;"></i>Active
-                  </button>
-                  <button class="disc-tab-btn" data-tab="upcoming" style="padding: 8px 16px; border: none; background: none; color: var(--text-muted); font-weight: 600; font-size: 13px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -12px; transition: all 0.3s; white-space: nowrap;">
-                    <i class="fas fa-clock" style="margin-right: 6px; color: #ff9800;"></i>Upcoming
-                  </button>
-                </div>
-
-                <div id="disc-sessions-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; min-height: 0; padding-right: 8px;">
-                  <div style="padding: 40px 24px; text-align: center; color: var(--text-muted);">
-                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.2; display: block; margin-bottom: 12px;"></i>
-                    <p style="margin: 0; font-size: 14px;">No sessions yet</p>
-                    <p style="margin: 4px 0 0 0; font-size: 12px;">Create one using the form on the left</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <style>
-              .disc-tab-btn.active {
-                color: var(--green-main) !important;
-                border-bottom-color: var(--green-main) !important;
-              }
-              
-              .disc-session-card {
-                padding: 16px;
-                background: var(--bg-main);
-                border: 1px solid var(--border-color);
-                border-radius: 10px;
-                transition: all 0.3s ease;
-              }
-              
-              .disc-session-card:hover {
-                border-color: var(--green-main);
-                box-shadow: 0 4px 12px rgba(0, 121, 107, 0.12);
-              }
-
-              .disc-session-card-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 12px;
-              }
-
-              .disc-session-title {
-                font-weight: 600;
-                font-size: 14px;
-                color: var(--text-main);
-                margin-bottom: 4px;
-              }
-
-              .disc-session-course {
-                font-size: 12px;
-                color: var(--text-muted);
-              }
-
-              .disc-session-badge {
-                display: inline-block;
-                padding: 4px 10px;
-                border-radius: 20px;
-                font-size: 11px;
-                font-weight: 600;
-                text-transform: uppercase;
-                white-space: nowrap;
-              }
-
-              .disc-session-badge.active {
-                background: rgba(76, 175, 80, 0.2);
-                color: #4caf50;
-              }
-
-              .disc-session-badge.upcoming {
-                background: rgba(255, 152, 0, 0.2);
-                color: #ff9800;
-              }
-
-              .disc-session-badge.closed {
-                background: rgba(244, 67, 54, 0.2);
-                color: #f44336;
-              }
-
-              .disc-session-badge.peer {
-                background: rgba(33, 150, 243, 0.1);
-                color: #2196f3;
-                margin-right: 6px;
-              }
-
-              .disc-session-info {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 12px;
-                margin: 12px 0;
-                padding: 12px 0;
-                border-top: 1px solid var(--border-color);
-                border-bottom: 1px solid var(--border-color);
-                font-size: 12px;
-              }
-
-              .disc-session-meta {
-                display: flex;
-                align-items: center;
-                gap: 6px;
-                color: var(--text-muted);
-              }
-
-              .disc-session-meta i {
-                color: var(--green-main);
-                width: 14px;
-              }
-
-              .disc-session-actions {
-                display: flex;
-                gap: 8px;
-                margin-top: 12px;
-              }
-
-              .disc-session-btn {
-                flex: 1;
-                padding: 8px 12px;
-                border: none;
-                border-radius: 6px;
-                font-size: 12px;
-                font-weight: 600;
-                cursor: pointer;
-                transition: all 0.3s;
-              }
-
-              .disc-session-btn-primary {
-                background: var(--green-main);
-                color: white;
-              }
-
-              .disc-session-btn-primary:hover {
-                background: #005a4f;
-                box-shadow: 0 2px 8px rgba(0, 121, 107, 0.3);
-              }
-
-              .disc-session-btn-secondary {
-                background: var(--bg-secondary);
-                color: var(--text-main);
-                border: 1px solid var(--border-color);
-              }
-
-              .disc-session-btn-secondary:hover {
-                background: var(--border-color);
-              }
-
-              .disc-session-btn-danger {
-                background: rgba(244, 67, 54, 0.1);
-                color: #f44336;
-                border: 1px solid rgba(244, 67, 54, 0.2);
-              }
-
-              .disc-session-btn-danger:hover {
-                background: rgba(244, 67, 54, 0.2);
-              }
-            </style>
+          <div class="tab-panel" id="documents-panel">
+            <p style="color: var(--text-muted); margin-bottom: 20px;">Manage deployment and system files.</p>
+            <!-- Documents content goes here -->
           </div>
 
+          <!-- MODULES TAB PANEL -->
           <div class="tab-panel" id="modules-panel">
             <p style="color:var(--text-muted);margin-bottom:20px;">Select a course to manage its modules (add / delete).</p>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start;">
@@ -2343,7 +2090,6 @@
         'settings': 'settings-panel',
         'inbox': 'inbox-panel',
         'live-chat': 'live-chat-panel',
-        'discussions': 'discussions-panel',
         'modules': 'modules-panel',
         'content': 'content-panel',
         'documents': 'documents-panel'
@@ -2359,7 +2105,6 @@
         'settings': 'Settings',
         'inbox': 'Inbox',
         'live-chat': 'Live Chat',
-        'discussions': 'Discussions',
         'modules': 'Modules',
         'content': 'Content',
         'documents': 'Documents'
@@ -3527,7 +3272,6 @@
         type: 'info',
         title: `Preview: ${item.title || item.file}`,
         message: `<pre style="max-height:400px; overflow-y:auto; background:#f5f5f5; padding:10px; border-radius:4px; font-size:12px; font-family:monospace; white-space:pre-wrap; word-break:break-word;">${escapeHtml(content)}</pre>`,
-        messageHtml: true,
         onConfirm: () => {}
       });
     }
@@ -4737,487 +4481,6 @@
       enableEnterSubmit('setting-contactEmail', 'settings-form');
     }
 
-    // ============================================================
-    // DISCUSSIONS MANAGEMENT
-    // ============================================================
-
-    async function loadDiscussionsUI() {
-      const courseSelect = document.getElementById('disc-course-select');
-      const sessionsList = document.getElementById('disc-sessions-list');
-      const form = document.getElementById('create-discussion-form');
-
-      if (!courseSelect || !sessionsList || !form) return;
-
-      // Load courses for dropdown
-      try {
-        const res = await fetch('/api/courses');
-        const courses = await res.json();
-        courseSelect.innerHTML = '<option value="">-- Select a course --</option>';
-        courses.forEach(course => {
-          const option = document.createElement('option');
-          option.value = course.id;
-          option.textContent = course.title;
-          courseSelect.appendChild(option);
-        });
-      } catch (error) {
-        console.error('Error loading courses:', error);
-      }
-
-      // Load active and upcoming sessions
-      await refreshDiscussionSessions(sessionsList);
-
-      // Set first tab as active
-      setTimeout(() => {
-        const firstTab = document.querySelector('.disc-tab-btn[data-tab="all"]');
-        if (firstTab) firstTab.classList.add('active');
-      }, 100);
-
-      // Keep sessions list in sync (auto-refresh every 15 seconds)
-      setInterval(async () => {
-        try {
-          await refreshDiscussionSessions(sessionsList);
-        } catch (err) {
-          console.warn('Auto-refresh sessions failed:', err.message);
-        }
-      }, 15000);
-
-      // Form submission
-      form.onsubmit = async (e) => {
-        e.preventDefault();
-        const notice = document.getElementById('disc-form-notice');
-        const submitBtn = document.getElementById('disc-create-btn');
-
-        const courseId = document.getElementById('disc-course-select').value;
-        const subject = document.getElementById('disc-subject').value.trim();
-        const description = document.getElementById('disc-description').value.trim();
-        const sessionType = document.getElementById('disc-type').value;
-        const startTime = document.getElementById('disc-start-time').value;
-        const endTime = document.getElementById('disc-end-time').value;
-
-        if (!courseId || !subject || !startTime || !endTime) {
-          showNotice(notice, 'Please fill in all required fields', 'error');
-          return;
-        }
-
-        if (new Date(endTime) <= new Date(startTime)) {
-          showNotice(notice, 'End time must be after start time', 'error');
-          return;
-        }
-
-        submitBtn.disabled = true;
-        try {
-          const adminRole = localStorage.getItem('adminRole') || 'superadmin';
-          const adminEmail = localStorage.getItem('adminEmail') || '';
-          const response = await fetch('/api/discussions/sessions', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + localStorage.getItem('adminToken'),
-              'x-user-id': adminEmail,
-              'x-user-role': adminRole
-            },
-            body: JSON.stringify({
-              courseId,
-              subject,
-              description,
-              sessionType,
-              startTime: new Date(startTime).toISOString(),
-              endTime: new Date(endTime).toISOString()
-            })
-          });
-
-          if (!response.ok) {
-            const error = await response.json();
-            throw new Error(error.message || 'Failed to create session');
-          }
-
-          const session = await response.json();
-          showNotice(notice, 'Session created successfully!', 'success');
-          form.reset();
-          courseSelect.innerHTML = '<option value="">-- Select a course --</option>';
-          
-          // Reload courses and sessions
-          try {
-            const res = await fetch('/api/courses');
-            const courses = await res.json();
-            courseSelect.innerHTML = '<option value="">-- Select a course --</option>';
-            courses.forEach(course => {
-              const option = document.createElement('option');
-              option.value = course.id;
-              option.textContent = course.title;
-              courseSelect.appendChild(option);
-            });
-          } catch (e) {
-            console.error('Error reloading courses:', e);
-          }
-
-          await refreshDiscussionSessions(sessionsList);
-        } catch (error) {
-          showNotice(notice, 'Error: ' + error.message, 'error');
-        } finally {
-          submitBtn.disabled = false;
-        }
-      };
-    }
-
-    async function refreshDiscussionSessions(container) {
-      try {
-        const response = await fetch('/api/discussions/sessions', {
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('adminToken'),
-            'x-user-id': localStorage.getItem('adminEmail') || '',
-            'x-user-role': localStorage.getItem('adminRole') || 'superadmin'
-          }
-        });
-
-        if (!response.ok) throw new Error('Failed to fetch sessions');
-
-        const data = await response.json();
-        const sessions = Array.isArray(data) ? data : (data.sessions || []);
-        
-        console.log('📊 Admin fetched sessions:', sessions.length, 'total');
-        
-        // Filter to show active and upcoming only
-        const now = new Date();
-        const relevantSessions = sessions
-          .filter(s => {
-            const startTime = new Date(s.startTime);
-            const endTime = new Date(s.endTime);
-            return startTime < new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // Next 7 days
-          })
-          .sort((a, b) => new Date(a.startTime) - new Date(b.startTime))
-          .slice(0, 10); // Show last 10
-
-        if (!relevantSessions || relevantSessions.length === 0) {
-          container.innerHTML = '<div style="padding: 40px 24px; text-align: center; color: var(--text-muted);"><i class="fas fa-inbox" style="font-size: 40px; opacity: 0.2; display: block; margin-bottom: 12px;"></i><p style="margin: 0; font-size: 14px;">No sessions yet</p><p style="margin: 4px 0 0 0; font-size: 12px;">Create one to get started</p></div>';
-          return;
-        }
-
-        container.innerHTML = '';
-        relevantSessions.forEach(session => {
-          const status = getSessionStatus(session.status);
-          const startTime = new Date(session.startTime);
-          const endTime = new Date(session.endTime);
-          const typeClass = session.sessionType === 'peer' ? 'peer' : 'instructor';
-
-          const card = document.createElement('div');
-          card.className = 'disc-session-card';
-          card.innerHTML = `
-            <div class="disc-session-card-header">
-              <div>
-                <div class="disc-session-title">${escapeHtml(session.subject)}</div>
-                <div class="disc-session-course">${session.courseId || 'Course'}</div>
-              </div>
-              <div style="display: flex; gap: 6px; align-items: center;">
-                <span class="disc-session-badge ${typeClass}">${session.sessionType === 'peer' ? 'Peer' : 'Instructor'}</span>
-                <span class="disc-session-badge ${session.status}">${status.label}</span>
-              </div>
-            </div>
-
-            <div class="disc-session-info">
-              <div class="disc-session-meta">
-                <i class="fas fa-calendar-alt"></i>
-                <span>${startTime.toLocaleDateString()}</span>
-              </div>
-              <div class="disc-session-meta">
-                <i class="fas fa-clock"></i>
-                <span>${startTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} - ${endTime.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-              </div>
-              <div class="disc-session-meta">
-                <i class="fas fa-users"></i>
-                <span>${session.participantCount || 0} participants</span>
-              </div>
-              <div class="disc-session-meta">
-                <i class="fas fa-id-badge"></i>
-                <span style="font-family: monospace; font-size: 11px;">${(session.sessionId || 'N/A').substring(0, 12)}...</span>
-              </div>
-            </div>
-
-            <div class="disc-session-actions">
-              ${session.status !== 'closed' ? `
-                <button class="disc-session-btn disc-session-btn-primary" onclick="joinDiscussionSession('${session.sessionId}')">
-                  <i class="fas fa-sign-in-alt" style="margin-right: 4px;"></i>Join
-                </button>
-              ` : '<button class="disc-session-btn disc-session-btn-primary" style="opacity: 0.5; cursor: not-allowed;" disabled>Join</button>'}
-              <button class="disc-session-btn disc-session-btn-secondary" onclick="viewSessionDetails('${session.sessionId}')">
-                <i class="fas fa-info-circle" style="margin-right: 4px;"></i>Details
-              </button>
-              ${session.status !== 'closed' ? `
-                <button class="disc-session-btn disc-session-btn-danger" onclick="endDiscussionSession('${session.sessionId}', '${escapeHtml(session.subject)}')">
-                  <i class="fas fa-stop-circle" style="margin-right: 4px;"></i>End
-                </button>
-              ` : ''}
-              <button class="disc-session-btn disc-session-btn-danger" onclick="deleteDiscussionSession('${session.sessionId}', '${escapeHtml(session.subject)}')">
-                <i class="fas fa-trash" style="margin-right: 4px;"></i>Delete
-              </button>
-            </div>
-          `;
-          container.appendChild(card);
-        });
-
-        // Setup tab filters
-        document.querySelectorAll('.disc-tab-btn').forEach(btn => {
-          btn.removeEventListener('click', handleTabClick);
-          btn.addEventListener('click', handleTabClick);
-        });
-      } catch (error) {
-        console.error('Error loading sessions:', error);
-        container.innerHTML = '<div style="padding: 40px 24px; text-align: center; color: #dc2626;"><i class="fas fa-exclamation-triangle" style="font-size: 40px; display: block; margin-bottom: 12px;"></i><p style="margin: 0; font-size: 14px;">Error loading sessions</p><p style="margin: 4px 0 0 0; font-size: 12px;">Please try again</p></div>';
-      }
-    }
-
-    function handleTabClick(e) {
-      const tab = e.currentTarget.getAttribute('data-tab');
-      const container = document.getElementById('disc-sessions-list');
-      
-      // Update active button
-      document.querySelectorAll('.disc-tab-btn').forEach(btn => {
-        btn.classList.remove('active');
-      });
-      e.currentTarget.classList.add('active');
-
-      // Filter cards
-      const cards = container.querySelectorAll('.disc-session-card');
-      cards.forEach(card => {
-        const badges = card.querySelectorAll('.disc-session-badge');
-        let statusBadge = '';
-        badges.forEach(b => {
-          if (b.classList.contains('active') || b.classList.contains('upcoming') || b.classList.contains('closed')) {
-            statusBadge = b.textContent.trim();
-          }
-        });
-
-        if (tab === 'all') {
-          card.style.display = '';
-        } else if (tab === 'active' && statusBadge === 'Active Now') {
-          card.style.display = '';
-        } else if (tab === 'upcoming' && statusBadge === 'Upcoming') {
-          card.style.display = '';
-        } else {
-          card.style.display = 'none';
-        }
-      });
-    }
-
-    function getSessionStatus(status) {
-      const statusMap = {
-        'upcoming': { label: 'Upcoming', bg: '#dbeafe', color: '#0c4a6e' },
-        'active': { label: 'Active Now', bg: '#dcfce7', color: '#166534' },
-        'closed': { label: 'Closed', bg: '#f3f4f6', color: '#6b7280' }
-      };
-      return statusMap[status] || statusMap['upcoming'];
-    }
-
-    async function viewSessionDetails(sessionId) {
-      try {
-        const token = localStorage.getItem('adminToken');
-        const response = await fetch(`/api/discussions/sessions/${sessionId}`, {
-          headers: {
-            'Authorization': 'Bearer ' + token,
-            'x-user-id': localStorage.getItem('adminEmail') || '',
-            'x-user-role': localStorage.getItem('adminRole') || 'superadmin'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to load session details');
-        }
-
-        const session = await response.json();
-        
-        const startTime = new Date(session.startTime);
-        const endTime = new Date(session.endTime);
-        const duration = Math.round((endTime - startTime) / 60000);
-
-        const creatorName = session.creatorName || session.createdByName || (session.creator && (session.creator.name || session.creator.fullName)) || session.createdBy || 'Unknown';
-        const creatorRole = session.creatorRole || session.createdByRole || (session.creator && session.creator.role) || 'unknown';
-        const creatorRoleLabel = (creatorRole && typeof creatorRole === 'string') ? creatorRole.charAt(0).toUpperCase() + creatorRole.slice(1) : creatorRole;
-        
-        const detailsHtml = `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Session ID</div>
-              <div style="color: var(--text-main); font-size: 13px; word-break: break-all; font-family: monospace; background: var(--bg-secondary); padding: 8px; border-radius: 4px;">${session.sessionId || 'N/A'}</div>
-            </div>
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Status</div>
-              <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: ${session.status === 'active' ? '#dcfce7' : session.status === 'upcoming' ? '#dbeafe' : '#f3f4f6'}; color: ${session.status === 'active' ? '#166534' : session.status === 'upcoming' ? '#0c4a6e' : '#6b7280'}; font-weight: 600; font-size: 12px;">${session.status === 'active' ? 'Active Now' : session.status === 'upcoming' ? 'Upcoming' : 'Closed'}</div>
-            </div>
-
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Created By</div>
-              <div style="color: var(--text-main); font-size: 13px;">${escapeHtml(creatorName)}</div>
-            </div>
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Creator Role</div>
-              <div style="display: inline-block; padding: 4px 10px; border-radius: 16px; background: #f3f4f6; color: #374151; font-weight: 600; font-size: 12px;">${escapeHtml(creatorRoleLabel)}</div>
-            </div>
-
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Session Type</div>
-              <div style="color: var(--text-main); font-size: 13px;">${session.sessionType === 'peer' ? 'Peer Discussion' : 'Instructor-Led'}</div>
-            </div>
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Participants</div>
-              <div style="color: var(--text-main); font-size: 13px;">${session.participantCount || 0}</div>
-            </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Subject</div>
-              <div style="color: var(--text-main); font-size: 13px;">${escapeHtml(session.subject || 'N/A')}</div>
-            </div>
-            ${session.description ? `
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Description</div>
-              <div style="color: var(--text-main); font-size: 13px; line-height: 1.5;">${escapeHtml(session.description)}</div>
-            </div>
-            ` : ''}
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Start Time</div>
-              <div style="color: var(--text-main); font-size: 13px;">${startTime.toLocaleString()}</div>
-            </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">End Time</div>
-              <div style="color: var(--text-main); font-size: 13px;">${endTime.toLocaleString()}</div>
-            </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Duration</div>
-              <div style="color: var(--text-main); font-size: 13px;">${duration} minutes</div>
-            </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Course ID</div>
-              <div style="color: var(--text-main); font-size: 13px; font-family: monospace; background: var(--bg-secondary); padding: 8px; border-radius: 4px; word-break: break-all;">${session.courseId || 'N/A'}</div>
-            </div>
-          </div>
-        `;
-        
-        await showAlert('Session Details', detailsHtml, 'info', true);
-      } catch (error) {
-        console.error('Error loading session details:', error);
-        await showAlert('Error', 'Failed to load session details: ' + error.message, 'error');
-      }
-    }
-
-    async function joinDiscussionSession(sessionId) {
-      try {
-        console.log('🔗 [admin-dashboard] joinDiscussionSession called with sessionId:', sessionId);
-        
-        // Preserve admin authentication and promote to app auth
-        const adminToken = localStorage.getItem('adminToken');
-        const adminEmail = localStorage.getItem('adminEmail') || '';
-        const adminRole = localStorage.getItem('adminRole') || 'superadmin';
-        const adminName = localStorage.getItem('adminName') || 'Admin';
-        const adminId = localStorage.getItem('adminId') || adminEmail;
-
-        console.log('🔐 [admin-dashboard] Admin credentials:', { adminEmail, adminRole, token: !!adminToken });
-
-        if (adminToken) {
-          // Set standard auth token and currentUser so public pages recognize admin
-          localStorage.setItem('authToken', adminToken);
-          localStorage.setItem('currentUser', JSON.stringify({
-            id: adminId,
-            _id: adminId,
-            email: adminEmail,
-            name: adminName,
-            fullName: adminName,
-            username: adminName,
-            role: adminRole
-          }));
-          localStorage.setItem('isLoggedIn', 'true');
-          // Mark that this user came from the admin dashboard (for audits/UI)
-          localStorage.setItem('fromAdminDashboard', 'true');
-          
-          console.log('✅ [admin-dashboard] Auth tokens set. Redirecting to discussion room...');
-        } else {
-          throw new Error('No admin token found');
-        }
-
-        // Redirect into the discussion room using standard session URL
-        const targetUrl = `/discussion-room.html?sessionId=${sessionId}`;
-        console.log('🔗 [admin-dashboard] Redirecting to:', targetUrl);
-        window.location.href = targetUrl;
-      } catch (error) {
-        console.error('❌ [admin-dashboard] Error joining session:', error);
-        alert('Error joining session: ' + error.message);
-      }
-    }
-
-    async function deleteDiscussionSession(sessionId, subject) {
-      const confirmed = await showConfirm('Delete Session', `Are you sure you want to delete the session "${subject}"? This action cannot be undone.`);
-      if (!confirmed) {
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/discussions/sessions/${sessionId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('adminToken'),
-            'x-user-id': localStorage.getItem('adminEmail') || '',
-            'x-user-role': localStorage.getItem('adminRole') || 'superadmin'
-          }
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to delete session');
-        }
-
-        await showAlert('Success', 'Session deleted successfully.', 'success');
-        
-        // Reload sessions list
-        const sessionsList = document.getElementById('disc-sessions-list');
-        if (sessionsList) {
-          await refreshDiscussionSessions(sessionsList);
-        }
-      } catch (error) {
-        await showAlert('Error', 'Error deleting session: ' + error.message, 'error');
-      }
-    }
-
-    async function endDiscussionSession(sessionId, subject) {
-      const confirmed = await showConfirm('End Session', `End the session "${subject}"? All participants will be notified and redirected.`);
-      if (!confirmed) {
-        return;
-      }
-
-      try {
-        const response = await fetch(`/api/discussions/sessions/${sessionId}/close`, {
-          method: 'POST',
-          headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('adminToken'),
-            'x-user-id': localStorage.getItem('adminEmail') || '',
-            'x-user-role': localStorage.getItem('adminRole') || 'superadmin'
-          }
-        });
-
-        if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || 'Failed to end session');
-        }
-
-        await showAlert('Success', 'Session ended successfully.', 'success');
-        
-        // Reload sessions list
-        const sessionsList = document.getElementById('disc-sessions-list');
-        if (sessionsList) {
-          await refreshDiscussionSessions(sessionsList);
-        }
-      } catch (error) {
-        await showAlert('Error', 'Error ending session: ' + error.message, 'error');
-      }
-    }
-
-    function showNotice(element, message, type) {
-      element.textContent = message;
-      element.style.display = 'block';
-      element.style.backgroundColor = type === 'error' ? '#fee2e2' : '#dcfce7';
-      element.style.color = type === 'error' ? '#991b1b' : '#166534';
-      element.style.borderLeft = '4px solid ' + (type === 'error' ? '#dc2626' : '#22c55e');
-      setTimeout(() => {
-        element.style.display = 'none';
-      }, 5000);
-    }
-
     function onTabActivated(name) {
       if (name === 'users') loadUsersUI();
       else if (name === 'courses') loadCoursesUI();
@@ -5227,7 +4490,6 @@
       else if (name === 'modules') loadModuleManagementUI();
       else if (name === 'content') loadContentManagementUI();
       else if (name === 'documents') loadDocumentsUI();
-      else if (name === 'discussions') loadDiscussionsUI();
     }
 
     // Tab functionality (updated for new layout)
@@ -5917,7 +5179,7 @@
 
     // Styled Modal Dialogs
     function showModal(options) {
-      const { type = 'info', title, message, onConfirm, onCancel, messageHtml = false } = options;
+      const { type = 'info', title, message, onConfirm, onCancel } = options;
       const overlay = document.createElement('div');
       overlay.className = 'modal-overlay';
       
@@ -5940,7 +5202,7 @@
       content.innerHTML = `
         <div class="modal-icon ${iconColor[type]}">${icons[type]}</div>
         <h2 class="modal-title">${escapeHtml(title)}</h2>
-        ${messageHtml ? `<div class="modal-message">${message || ''}</div>` : `<p class="modal-message">${escapeHtml(message)}</p>`}
+        <p class="modal-message">${escapeHtml(message)}</p>
         <div class="modal-buttons">
           ${onCancel ? '<button class="modal-btn modal-btn-secondary" id="modal-cancel">Cancel</button>' : ''}
           ${onConfirm ? `<button class="modal-btn modal-btn-primary" id="modal-confirm">${onCancel ? 'Confirm' : 'OK'}</button>` : ''}
@@ -5973,13 +5235,12 @@
       if (confirmBtn) confirmBtn.focus();
     }
 
-    function showAlert(title, message, type = 'info', messageHtml = false) {
+    function showAlert(title, message, type = 'info') {
       return new Promise((resolve) => {
         showModal({
           type,
           title,
           message,
-          messageHtml,
           onConfirm: resolve
         });
       });
