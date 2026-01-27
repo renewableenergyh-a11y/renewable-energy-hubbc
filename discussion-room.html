@@ -50,13 +50,22 @@
     .room-container {
       display: grid;
       grid-template-columns: 1fr 400px;
-      grid-template-rows: 1fr auto auto;
+      grid-template-rows: auto 1fr;
       gap: 20px;
       height: 100vh;
       padding: 20px;
       overflow: hidden;
       background: linear-gradient(135deg, #f5f9f7 0%, #f9fbf8 100%);
       font-family: 'Poppins', sans-serif;
+    }
+
+    .sidebars-container {
+      grid-column: 2;
+      grid-row: 1 / 3;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      overflow: hidden;
     }
 
     body.dark .room-container {
@@ -73,6 +82,7 @@
       border: 1px solid var(--border-color);
       grid-column: 1;
       grid-row: 1 / 3;
+      min-height: 0;
     }
 
     body.dark .room-main {
@@ -281,9 +291,10 @@
       overflow-x: hidden;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
       border: 1px solid var(--border-color);
-      max-height: calc(50vh - 20px);
-      grid-column: 2;
-      grid-row: 1;
+      flex: 1;
+      min-height: 0;
+      grid-column: unset;
+      grid-row: unset;
     }
 
     body.dark .sidebar {
@@ -548,7 +559,7 @@
     }
     }
 
-    /* Zoom-like features sidebar */
+    /* Features sidebar - stacked below participants on desktop */
     .features-sidebar {
       background: var(--bg-primary);
       border-radius: 12px;
@@ -559,9 +570,10 @@
       overflow-x: hidden;
       box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
       border: 1px solid var(--border-color);
-      max-height: calc(50vh - 20px);
-      grid-column: 2;
-      grid-row: 2;
+      flex: 1;
+      min-height: 0;
+      grid-column: unset;
+      grid-row: unset;
     }
 
     body.dark .features-sidebar {
@@ -1016,62 +1028,73 @@
       }
     }
 
-    @media (max-width: 1024px) {
-      .room-container {
-        grid-template-columns: 1fr 350px;
-      }
-
-      .sidebar, .features-sidebar {
-        max-height: calc(45vh - 20px);
-      }
+    .sidebar-toggle-btn {
+      display: none;
     }
 
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       .room-container {
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto auto;
-        height: auto;
-        min-height: 100vh;
-        padding: 16px;
-        gap: 12px;
+        grid-template-rows: auto 1fr;
       }
 
-      .room-main {
-        grid-column: 1;
-        grid-row: 2;
-        min-height: 60vh;
-      }
-
-      .sidebar {
-        grid-column: 1;
-        grid-row: 3;
-        width: 100%;
-        max-width: none;
-        max-height: 45vh;
-        position: relative;
-        margin: 0;
+      .sidebars-container {
         display: none;
       }
 
-      .sidebar.mobile-visible {
-        display: flex;
-      }
-
+      .sidebar,
       .features-sidebar {
-        grid-column: 1;
-        grid-row: 4;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
         width: 100%;
-        max-width: none;
-        max-height: 45vh;
-        position: relative;
+        max-width: 100%;
+        height: auto;
+        max-height: 80vh;
         margin: 0;
+        border-radius: 16px 16px 0 0;
+        z-index: 1000;
         display: none;
+        flex: none;
+        grid-column: unset;
+        grid-row: unset;
       }
 
+      .sidebar.mobile-visible,
       .features-sidebar.mobile-visible {
         display: flex;
       }
 
+      .sidebar-toggle-btn {
+        display: block;
+        padding: 12px 16px;
+        background: var(--accent-green);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 12px;
+        transition: all 0.2s ease;
+        font-family: 'Poppins', sans-serif;
+      }
+
+      .sidebar-toggle-btn:hover {
+        opacity: 0.9;
+        box-shadow: 0 2px 8px rgba(0, 121, 107, 0.2);
+      }
+
+      body.dark .sidebar-toggle-btn {
+        background: var(--accent-green);
+      }
+    }
+
+    @media (max-width: 768px) {
       .room-header {
         padding: 16px;
         flex-direction: column;
@@ -1087,25 +1110,6 @@
         flex-direction: column;
         gap: 8px;
         width: 100%;
-      }
-
-      .sidebar-toggle-btn {
-        display: inline-flex;
-        padding: 8px 12px;
-        background: var(--accent-green);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 600;
-        margin-top: 8px;
-        gap: 6px;
-        align-items: center;
-      }
-
-      .sidebar-toggle-btn:hover {
-        opacity: 0.9;
       }
 
       .room-controls {
@@ -1227,51 +1231,54 @@
       </div>
     </div>
 
-    <div class="sidebar">
-      <div class="sidebar-title">
-        Participants
-        <span class="participant-count" id="participantCount">0</span>
+    <div class="sidebars-container">
+      <div class="sidebar">
+        <div class="sidebar-title">
+          Participants
+          <span class="participant-count" id="participantCount">0</span>
+        </div>
+        <div class="participants-list" id="participantsList"></div>
       </div>
-      <div class="participants-list" id="participantsList"></div>
+
+      <div class="features-sidebar">
+        <div class="features-title">Features</div>
+        <div class="features-list">
+          <button class="feature-btn" id="reactionBtn" title="Send reaction">
+            <span class="feature-icon">😊</span>
+            <span class="feature-label">Reactions</span>
+          </button>
+          <div class="reaction-picker" id="reactionPicker">
+            <button class="reaction-btn" data-reaction="👍">👍</button>
+            <button class="reaction-btn" data-reaction="❤️">❤️</button>
+            <button class="reaction-btn" data-reaction="😂">😂</button>
+            <button class="reaction-btn" data-reaction="🤔">🤔</button>
+            <button class="reaction-btn" data-reaction="😮">😮</button>
+            <button class="reaction-btn" data-reaction="🙌">🙌</button>
+          </div>
+          <button class="feature-btn" id="chatFeatureBtn" title="Open chat">
+            <span class="feature-icon">💬</span>
+            <span class="feature-label">Chat (Coming Soon)</span>
+          </button>
+          <div class="chat-preview">
+            Chat feature coming in next update
+          </div>
+          <button class="feature-btn" id="recordBtn" title="Record session" style="margin-top: auto;">
+            <span class="feature-icon">⏱️</span>
+            <span class="feature-label">Session Info</span>
+          </button>
+        </div>
+      </div>
     </div>
 
-    <button class="sidebar-toggle-btn" id="participantsToggleBtn" style="display: none; width: 100%; margin-top: 12px;">
-      <i class="fas fa-chevron-up"></i>
-      <span>Hide Participants</span>
+    <!-- Mobile toggle buttons -->
+    <button class="sidebar-toggle-btn" id="participantsToggleBtn">
+      <i class="fas fa-users"></i>
+      <span>Participants</span>
     </button>
 
-    <div class="features-sidebar">
-      <div class="features-title">Features</div>
-      <div class="features-list">
-        <button class="feature-btn" id="reactionBtn" title="Send reaction">
-          <span class="feature-icon">😊</span>
-          <span class="feature-label">Reactions</span>
-        </button>
-        <div class="reaction-picker" id="reactionPicker">
-          <button class="reaction-btn" data-reaction="👍">👍</button>
-          <button class="reaction-btn" data-reaction="❤️">❤️</button>
-          <button class="reaction-btn" data-reaction="😂">😂</button>
-          <button class="reaction-btn" data-reaction="🤔">🤔</button>
-          <button class="reaction-btn" data-reaction="😮">😮</button>
-          <button class="reaction-btn" data-reaction="🙌">🙌</button>
-        </div>
-        <button class="feature-btn" id="chatFeatureBtn" title="Open chat">
-          <span class="feature-icon">💬</span>
-          <span class="feature-label">Chat (Coming Soon)</span>
-        </button>
-        <div class="chat-preview">
-          Chat feature coming in next update
-        </div>
-        <button class="feature-btn" id="recordBtn" title="Record session" style="margin-top: auto;">
-          <span class="feature-icon">⏱️</span>
-          <span class="feature-label">Session Info</span>
-        </button>
-      </div>
-    </div>
-
-    <button class="sidebar-toggle-btn" id="featuresToggleBtn2" style="display: none; width: 100%; margin-top: 12px;">
-      <i class="fas fa-chevron-up"></i>
-      <span>Hide Features</span>
+    <button class="sidebar-toggle-btn" id="featuresToggleBtn">
+      <i class="fas fa-th-large"></i>
+      <span>Features</span>
     </button>
   </div>
 
@@ -1773,56 +1780,32 @@
       }
 
       // Mobile sidebar toggle functionality
-      const isMobile = window.innerWidth <= 768;
-      if (isMobile) {
-        const sidebar = document.querySelector('.sidebar');
-        const featuresSidebar = document.querySelector('.features-sidebar');
-        const participantsToggleBtn = document.getElementById('participantsToggleBtn');
-        const featuresToggleBtn2 = document.getElementById('featuresToggleBtn2');
+      const sidebar = document.querySelector('.sidebar');
+      const featuresSidebar = document.querySelector('.features-sidebar');
+      const participantsToggleBtn = document.getElementById('participantsToggleBtn');
+      const featuresToggleBtn = document.getElementById('featuresToggleBtn');
 
-        // Show toggle buttons on mobile
-        if (participantsToggleBtn) participantsToggleBtn.style.display = 'inline-flex';
-        if (featuresToggleBtn2) featuresToggleBtn2.style.display = 'inline-flex';
-
-        // Participants sidebar toggle
-        if (participantsToggleBtn && sidebar) {
-          participantsToggleBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('mobile-visible');
-            const isVisible = sidebar.classList.contains('mobile-visible');
-            participantsToggleBtn.innerHTML = isVisible
-              ? '<i class="fas fa-chevron-down"></i><span>Show Participants</span>'
-              : '<i class="fas fa-chevron-up"></i><span>Hide Participants</span>';
-          });
-        }
-
-        // Features sidebar toggle
-        if (featuresToggleBtn2 && featuresSidebar) {
-          featuresToggleBtn2.addEventListener('click', () => {
-            featuresSidebar.classList.toggle('mobile-visible');
-            const isVisible = featuresSidebar.classList.contains('mobile-visible');
-            featuresToggleBtn2.innerHTML = isVisible
-              ? '<i class="fas fa-chevron-down"></i><span>Show Features</span>'
-              : '<i class="fas fa-chevron-up"></i><span>Hide Features</span>';
-          });
-        }
-
-        // Handle window resize
-        window.addEventListener('resize', () => {
-          if (window.innerWidth > 768) {
-            // Show both sidebars on desktop
-            if (sidebar) sidebar.classList.add('mobile-visible');
-            if (featuresSidebar) featuresSidebar.classList.add('mobile-visible');
-            // Hide toggle buttons
-            if (participantsToggleBtn) participantsToggleBtn.style.display = 'none';
-            if (featuresToggleBtn2) featuresToggleBtn2.style.display = 'none';
-          } else {
-            // Reset toggles on mobile
-            if (sidebar) sidebar.classList.remove('mobile-visible');
-            if (featuresSidebar) featuresSidebar.classList.remove('mobile-visible');
-            // Show toggle buttons
-            if (participantsToggleBtn) participantsToggleBtn.style.display = 'inline-flex';
-            if (featuresToggleBtn2) featuresToggleBtn2.style.display = 'inline-flex';
+      // Participants sidebar toggle
+      if (participantsToggleBtn && sidebar) {
+        participantsToggleBtn.addEventListener('click', () => {
+          // Close features if open
+          if (featuresSidebar && featuresSidebar.classList.contains('mobile-visible')) {
+            featuresSidebar.classList.remove('mobile-visible');
           }
+          // Toggle participants
+          sidebar.classList.toggle('mobile-visible');
+        });
+      }
+
+      // Features sidebar toggle
+      if (featuresToggleBtn && featuresSidebar) {
+        featuresToggleBtn.addEventListener('click', () => {
+          // Close participants if open
+          if (sidebar && sidebar.classList.contains('mobile-visible')) {
+            sidebar.classList.remove('mobile-visible');
+          }
+          // Toggle features
+          featuresSidebar.classList.toggle('mobile-visible');
         });
       }
 
