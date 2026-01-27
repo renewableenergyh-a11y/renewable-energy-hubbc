@@ -502,7 +502,6 @@ module.exports = function(db, discussionSessionService, participantService, io =
             sessionId,
             userId: req.user.id,
             role: req.user.role,
-            userName: userName,
             joinTime: now,
             totalDurationMs: 0,
             audioEnabled: false,
