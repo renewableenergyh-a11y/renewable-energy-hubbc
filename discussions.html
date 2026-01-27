@@ -874,7 +874,7 @@
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${user.token}`,
-            'x-user-id': user.id || user._id,
+            'x-user-id': user.email,
             'x-user-role': user.role || 'student'
           }
         });

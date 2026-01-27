@@ -82,17 +82,6 @@
     ],
     "avatarUrl": "/data/avatars/obbanda067_gmail.com.jpg"
   },
-  "mkhulanaaubrey@gmail.com": {
-    "_id": "696b6f9b114dbc2f90d77b14",
-    "email": "mkhulanaaubrey@gmail.com",
-    "__v": 0,
-    "createdAt": "2026-01-17T11:16:43.643Z",
-    "name": "Aubrey Mkhulana",
-    "password": "d1ba6de4004c51bc2b4d80edfa0c5cb1d26802de6704300733b57d4214b44d65",
-    "pendingVerification": true,
-    "verificationCode": "754574",
-    "verificationExpiresAt": "2026-01-17T11:51:16.263Z"
-  },
   "biep21-abanda@mubas.ac.mw": {
     "_id": "696b9aba114dbc2f90d77b3e",
     "email": "biep21-abanda@mubas.ac.mw",
@@ -102,8 +91,8 @@
     "name": "Gift Mkhulana",
     "password": "d1ba6de4004c51bc2b4d80edfa0c5cb1d26802de6704300733b57d4214b44d65",
     "role": "student",
-    "token": "6e9ed5ca45757051bfcf5002e6e445a6a605dbaa3d4865f4ed71d26255e64162",
-    "lastLogin": "2026-01-20T01:27:13.141Z",
+    "token": "83d6a83a61c52e271a6905ad41963d2e331ff35ebf560f34c5ac364443dddc04",
+    "lastLogin": "2026-01-27T23:30:57.998Z",
     "pendingPayment": {
       "transactionId": "RET-1768872300187-N4ZX65B",
       "amount": 16000,
@@ -111,19 +100,6 @@
       "initiatedAt": "2026-01-20T01:25:00.486Z",
       "status": "pending"
     }
-  },
-  "Aubreymkhulanabanda@gmail.com": {
-    "_id": "696dc74f114dbc2f90d77c26",
-    "email": "Aubreymkhulanabanda@gmail.com",
-    "__v": 0,
-    "createdAt": "2026-01-19T05:55:27.680Z",
-    "hasPremium": false,
-    "name": "AubieOB",
-    "password": "b6abdfab1cba5690615114185ecad016f51782f6873101b7439db11283f35595",
-    "role": "admin",
-    "secret": "650c18f7920527613392ed7a09c3cb2241f94cf383b5dca047793cf4d53127a9",
-    "token": "dbd189b9fd08a72bc466611e7ea1cab0bd58feb5ae66665811bd2f922cf68ca8",
-    "lastLogin": "2026-01-19T05:56:30.617Z"
   },
   "benadettemakina@gmail.com": {
     "_id": "696ff8fdf73f7f43f1613687",
@@ -146,5 +122,46 @@
       "initiatedAt": "2026-01-22T04:30:37.183Z",
       "status": "pending"
     }
+  },
+  "aubreymkhulanabanda@gmail.com": {
+    "_id": "69773d263bd82d356413e3bb",
+    "email": "aubreymkhulanabanda@gmail.com",
+    "__v": 0,
+    "createdAt": "2026-01-26T17:34:19.138Z",
+    "hasPremium": false,
+    "name": "OB Banda",
+    "password": "d1ba6de4004c51bc2b4d80edfa0c5cb1d26802de6704300733b57d4214b44d65",
+    "role": "instructor",
+    "token": "268060a4c46357a8724b732c6a1186aca56974d00cd52e4bee4b8ba459b743f5",
+    "lastLogin": "2026-01-26T16:47:06.850Z",
+    "secret": "650c18f7920527613392ed7a09c3cb2241f94cf383b5dca047793cf4d53127a9"
+  },
+  "mkhulanaaubrey@gmail.com": {
+    "_id": "697874b23bd82d356413e5f1",
+    "email": "mkhulanaaubrey@gmail.com",
+    "__v": 0,
+    "createdAt": "2026-01-17T11:16:43.643Z",
+    "hasPremium": false,
+    "name": "Aubrey Mkhulana",
+    "password": "d1ba6de4004c51bc2b4d80edfa0c5cb1d26802de6704300733b57d4214b44d65",
+    "role": "instructor",
+    "token": "c231c19005021f45081c97fdbe040c438cf0acdff66943bdbc67f779e77fde85",
+    "lastLogin": "2026-01-27T08:21:35.472Z",
+    "pendingVerification": true,
+    "verificationCode": "754574",
+    "verificationExpiresAt": "2026-01-17T11:51:16.263Z"
+  },
+  "Aubreymkhulanabanda@gmail.com": {
+    "_id": "696dc74f114dbc2f90d77c26",
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "__v": 0,
+    "createdAt": "2026-01-19T05:55:27.680Z",
+    "hasPremium": false,
+    "lastLogin": "2026-01-19T05:56:30.617Z",
+    "name": "AubieOB",
+    "password": "b6abdfab1cba5690615114185ecad016f51782f6873101b7439db11283f35595",
+    "role": "admin",
+    "secret": "650c18f7920527613392ed7a09c3cb2241f94cf383b5dca047793cf4d53127a9",
+    "token": "dbd189b9fd08a72bc466611e7ea1cab0bd58feb5ae66665811bd2f922cf68ca8"
   }
 }

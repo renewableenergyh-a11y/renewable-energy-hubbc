@@ -1799,7 +1799,7 @@
         const response = await fetch(`/api/discussions/sessions/${sessionId}`, {
           headers: {
             'Authorization': `Bearer ${user.token}`,
-            'x-user-id': user.id,
+            'x-user-id': user.email,
             'x-user-role': user.role
           }
         });
@@ -1882,7 +1882,7 @@
             method: 'POST',
             headers: {
               'Authorization': `Bearer ${user.token}`,
-              'x-user-id': user.id || user._id,
+              'x-user-id': user.email,
               'x-user-role': userRole,
               'x-user-name': participantFullName,
               'Content-Type': 'application/json'
@@ -1910,7 +1910,7 @@
             const participantsResponse = await fetch(`/api/discussions/participants/${sessionId}`, {
               headers: {
                 'Authorization': `Bearer ${user.token}`,
-                'x-user-id': user.id || user._id,
+                'x-user-id': user.email,
                 'x-user-role': userRole
               }
             });

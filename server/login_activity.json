@@ -790,5 +790,13 @@
     "ip": "::1",
     "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
     "reason": null
+  },
+  {
+    "email": "biep21-abanda@mubas.ac.mw",
+    "success": true,
+    "timestamp": "2026-01-27T23:30:57.999Z",
+    "ip": "::1",
+    "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36",
+    "reason": null
   }
 ]
