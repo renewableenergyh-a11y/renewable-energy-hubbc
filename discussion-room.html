@@ -708,6 +708,27 @@
       }
     }
 
+    /* On large screens render modal as right-side panel (like participants sidebar) */
+    @media (min-width: 1024px) {
+      .modal-overlay.active {
+        align-items: stretch;
+        justify-content: flex-end;
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+
+      .modal-overlay.active .modal-content {
+        border-radius: 0 12px 12px 0;
+        width: 360px;
+        max-width: 360px;
+        height: 100vh;
+        max-height: 100vh;
+        padding: 20px;
+        box-shadow: -8px 0 24px rgba(0,0,0,0.25);
+        overflow-y: auto;
+      }
+    }
+
     .modal-header {
       display: flex;
       justify-content: space-between;
@@ -1765,7 +1786,7 @@
           const currentUserIsAdmin = isModerator;
           
           const micBtn = (showRemoveBtn && isStudent && currentUserIsAdmin)
-            ? `<button class="mic-control-btn muted" data-userid="${escapeHtml(p.userId)}" title="Unmute participant"><i class="fas fa-microphone"></i></button>`
+            ? `<button class="mic-control-btn muted" data-userid="${escapeHtml(p.userId)}" title="Unmute participant"><i class="fas fa-microphone-slash"></i></button>`
             : '';
           
           const removeBtn = showRemoveBtn
@@ -1843,12 +1864,12 @@
               btn.classList.toggle('muted');
               const icon = btn.querySelector('i');
               if (isMuted) {
-                // Was muted, now unmuting - show slash icon
-                icon.className = 'fas fa-microphone-slash';
+                // Was muted, now unmuting - show normal microphone icon (no slash)
+                icon.className = 'fas fa-microphone';
                 btn.title = 'Mute participant';
               } else {
-                // Was unmuted, now muting - show normal microphone icon
-                icon.className = 'fas fa-microphone';
+                // Was unmuted, now muting - show microphone-slash icon
+                icon.className = 'fas fa-microphone-slash';
                 btn.title = 'Unmute participant';
               }
               
