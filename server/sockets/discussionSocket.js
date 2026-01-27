@@ -75,8 +75,6 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       console.error('🔐 [verifyUserToken] Token verification error:', err.message);
       // CRITICAL: Reject on any error - don't allow fallback connections
       return null;
-        name: 'User'
-      };
     }
     
     return null;
