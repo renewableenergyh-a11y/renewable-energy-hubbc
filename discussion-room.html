@@ -279,6 +279,12 @@
       border: 1px solid var(--border-color);
     }
 
+    body.dark .sidebar {
+      background: var(--bg-primary);
+      border-color: var(--border-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
     .sidebar-title {
       font-size: 15px;
       font-weight: 700;
@@ -288,6 +294,10 @@
       justify-content: space-between;
       align-items: center;
       letter-spacing: -0.3px;
+    }
+
+    body.dark .sidebar-title {
+      color: var(--text-primary);
     }
 
     .participant-count {
@@ -499,12 +509,22 @@
       border: 1px solid var(--border-color);
     }
 
+    body.dark .features-sidebar {
+      background: var(--bg-primary);
+      border-color: var(--border-color);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    }
+
     .features-title {
       font-size: 15px;
       font-weight: 700;
       color: var(--text-primary);
       margin-bottom: 18px;
       letter-spacing: -0.3px;
+    }
+
+    body.dark .features-title {
+      color: var(--text-primary);
     }
 
     .features-list {

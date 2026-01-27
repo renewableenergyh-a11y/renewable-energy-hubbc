@@ -54,7 +54,7 @@
       align-items: center;
       margin-bottom: 8px;
       padding-bottom: 16px;
-      border-bottom: 2px solid rgba(0, 121, 107, 0.08);
+      border-bottom: 2px solid var(--border-color);
     }
 
     .section-header h2 {
@@ -1099,36 +1099,4 @@
 <button id="theme-toggle" class="theme-toggle">
   <span class="icon">🌙</span>
 </button>
-
-<!-- Theme Toggle Handler - synced with main site -->
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const themeToggle = document.getElementById('theme-toggle');
-    
-    // Load saved preference or default based on system preference
-    const savedTheme = localStorage.getItem('theme');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
-      document.body.classList.add('dark');
-      if (themeToggle) themeToggle.querySelector('.icon').textContent = '☀️';
-    }
-    
-    if (themeToggle) {
-      themeToggle.addEventListener('click', () => {
-        const isDark = document.body.classList.contains('dark');
-        
-        if (isDark) {
-          document.body.classList.remove('dark');
-          themeToggle.querySelector('.icon').textContent = '🌙';
-          localStorage.setItem('theme', 'light');
-        } else {
-          document.body.classList.add('dark');
-          themeToggle.querySelector('.icon').textContent = '☀️';
-          localStorage.setItem('theme', 'dark');
-        }
-      });
-    }
-  });
-</script>
 </html>
