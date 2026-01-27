@@ -21,8 +21,21 @@
       --shadow-light: rgba(0, 0, 0, 0.04);
     }
 
+    html[data-theme="dark"] {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #0f1f1d;
+      --bg-tertiary: #1a2725;
+      --text-primary: #e8e8e8;
+      --text-secondary: #b0b0b0;
+      --text-tertiary: #808080;
+      --border-color: rgba(0, 255, 200, 0.12);
+      --border-light: #2a3a38;
+      --accent-green: #00d4aa;
+      --shadow-light: rgba(0, 0, 0, 0.3);
+    }
+
     @media (prefers-color-scheme: dark) {
-      :root {
+      html:not([data-theme="light"]) {
         --bg-primary: #1a1a1a;
         --bg-secondary: #0f1f1d;
         --bg-tertiary: #1a2725;
@@ -1101,5 +1114,35 @@
   <span class="icon">🌙</span>
 </button>
 
-</body>
+<!-- Theme Toggle Handler -->
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const themeToggle = document.getElementById('theme-toggle');
+    const html = document.documentElement;
+    
+    // Load saved preference or default to light
+    const saved = localStorage.getItem('theme-preference') || 'light';
+    if (saved === 'dark') {
+      html.setAttribute('data-theme', 'dark');
+      if (themeToggle) themeToggle.querySelector('.icon').textContent = '☀️';
+    }
+    
+    if (themeToggle) {
+      themeToggle.addEventListener('click', () => {
+        const current = html.getAttribute('data-theme') || 'light';
+        const newTheme = current === 'dark' ? 'light' : 'dark';
+        
+        if (newTheme === 'dark') {
+          html.setAttribute('data-theme', 'dark');
+          themeToggle.querySelector('.icon').textContent = '☀️';
+          localStorage.setItem('theme-preference', 'dark');
+        } else {
+          html.removeAttribute('data-theme');
+          themeToggle.querySelector('.icon').textContent = '🌙';
+          localStorage.setItem('theme-preference', 'light');
+        }
+      });
+    }
+  });
+</script>
 </html>
