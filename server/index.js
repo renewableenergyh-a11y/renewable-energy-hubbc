@@ -3036,7 +3036,7 @@ app.post('/api/auth/register-verify', (req, res) => {
       }
     );
 
-    res.json({ success: true, token: user.token, user: { email: user.email, name: user.name, hasPremium: user.hasPremium } });
+    res.json({ success: true, token: user.token, user: { id: user.email, email: user.email, name: user.name, role: user.role || 'student', hasPremium: user.hasPremium } });
   } catch (err) {
     console.error('register-verify error:', err);
     res.status(500).json({ error: 'Verification failed' });
@@ -3224,8 +3224,10 @@ app.post('/api/auth/login', (req, res) => {
       token,
       sessionTimeoutMs: SESSION_TIMEOUT_MS,
       user: {
+        id: user.email,
         email: user.email,
         name: user.name,
+        role: user.role || 'student',
         hasPremium: user.hasPremium || false
       }
     });
