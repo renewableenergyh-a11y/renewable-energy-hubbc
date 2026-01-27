@@ -481,6 +481,31 @@ module.exports = function(db, discussionSessionService, participantService, io =
         return res.status(403).json({ error: 'Session is closed' });
       }
 
+      // CLEANUP: Remove user from ALL other sessions before joining this one
+      // This prevents users from appearing in multiple sessions simultaneously
+      console.log(`🧹 [REST/participants/join] Cleaning up user ${req.user.id} from other sessions`);
+      try {
+        const removedCount = await db.models.Participant.updateMany(
+          {
+            userId: req.user.id,
+            sessionId: { $ne: sessionId }, // Other sessions only
+            active: true
+          },
+          {
+            $set: {
+              active: false,
+              lastLeaveTime: new Date()
+            }
+          }
+        );
+        if (removedCount.modifiedCount > 0) {
+          console.log(`✅ [REST/participants/join] Deactivated ${removedCount.modifiedCount} participant records from other sessions`);
+        }
+      } catch (cleanupErr) {
+        console.warn(`⚠️ [REST/participants/join] Cleanup failed: ${cleanupErr.message}`);
+        // Don't fail the join operation if cleanup fails
+      }
+
       // ATOMIC operation: Use findOneAndUpdate with upsert to prevent race condition duplicates
       // This ensures only ONE document per (sessionId, userId) pair, whether via REST or socket
       const now = new Date();

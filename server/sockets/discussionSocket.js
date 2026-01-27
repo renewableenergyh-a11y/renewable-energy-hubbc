@@ -200,10 +200,22 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           const existing = userSocketMap.get(user.id);
           console.log(`🔄 [socket] User already has socket, checking if same session: existing=${existing.sessionId}, new=${sessionId}`);
           if (existing.sessionId !== sessionId) {
-            // User is joining a different session, disconnect from old one
+            // User is joining a different session, cleanup old session first
+            const oldSessionId = existing.sessionId;
+            console.log(`🧹 [socket] Cleaning up user from previous session ${oldSessionId}`);
+            
+            try {
+              // Deactivate participant in OLD session database
+              await participantService.removeParticipant(oldSessionId, user.id);
+              console.log(`✅ [socket] Removed participant from previous session ${oldSessionId}`);
+            } catch (cleanupErr) {
+              console.warn(`⚠️ [socket] Failed to cleanup previous session: ${cleanupErr.message}`);
+            }
+            
+            // Force disconnect the old socket
             const oldSocket = io.sockets.sockets.get(existing.socketId);
             if (oldSocket) {
-              console.log(`⚠️ [socket] Disconnecting user from previous session ${existing.sessionId}`);
+              console.log(`⚠️ [socket] Disconnecting user from previous session ${oldSessionId}`);
               oldSocket.emit('force-disconnect', { 
                 reason: 'Joined another session',
                 newSessionId: sessionId 
