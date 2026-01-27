@@ -1787,17 +1787,35 @@
           btn.addEventListener('click', async (e) => {
             e.stopPropagation();
             const targetUserId = btn.dataset.userid;
-            if (!confirm('Remove this participant from the session?')) return;
-            try {
-              const token = localStorage.getItem('authToken');
-              const currentUser = getLocalCurrentUser();
-              const userId = currentUser?.id || currentUser?._id;
-              const userRole = currentUser?.role || 'student';
-              await discussionSocket.removeParticipantByAdmin(sessionData.sessionId, targetUserId, token, userId, userRole);
-            } catch (err) {
-              console.error('Failed to remove participant:', err);
-              showModal('Error', 'Failed to remove participant: ' + (err.message || err), [
-                { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
+            showModal('Remove Participant', 'Are you sure you want to remove this participant from the session?', [
+              { 
+                text: 'CANCEL', 
+                class: 'modal-btn-secondary', 
+                callback: closeModal 
+              },
+              { 
+                text: 'REMOVE', 
+                class: 'modal-btn-primary', 
+                callback: async () => {
+                  try {
+                    const token = localStorage.getItem('authToken');
+                    const currentUser = getLocalCurrentUser();
+                    const userId = currentUser?.id || currentUser?._id;
+                    const userRole = currentUser?.role || 'student';
+                    await discussionSocket.removeParticipantByAdmin(sessionData.sessionId, targetUserId, token, userId, userRole);
+                    closeModal();
+                  } catch (err) {
+                    console.error('Failed to remove participant:', err);
+                    closeModal();
+                    showModal('Error', 'Failed to remove participant: ' + (err.message || err), [
+                      { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
+                    ]);
+                  }
+                }
+              }
+            ]);
+          });
+        });
               ]);
             }
           });
