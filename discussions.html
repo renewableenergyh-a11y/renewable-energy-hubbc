@@ -8,6 +8,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
+    /* Theme variables - synced with main site body.dark pattern */
     :root {
       --bg-primary: #ffffff;
       --bg-secondary: #f5f9f7;
@@ -21,32 +22,17 @@
       --shadow-light: rgba(0, 0, 0, 0.04);
     }
 
-    html[data-theme="dark"] {
-      --bg-primary: #1a1a1a;
-      --bg-secondary: #0f1f1d;
-      --bg-tertiary: #1a2725;
-      --text-primary: #e8e8e8;
-      --text-secondary: #b0b0b0;
-      --text-tertiary: #808080;
+    body.dark {
+      --bg-primary: #071014;
+      --bg-secondary: #1a2726;
+      --bg-tertiary: #212e2c;
+      --text-primary: #e6f7ef;
+      --text-secondary: #9fb6c6;
+      --text-tertiary: #6b8a98;
       --border-color: rgba(0, 255, 200, 0.12);
       --border-light: #2a3a38;
-      --accent-green: #00d4aa;
+      --accent-green: #00b38a;
       --shadow-light: rgba(0, 0, 0, 0.3);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      html:not([data-theme="light"]) {
-        --bg-primary: #1a1a1a;
-        --bg-secondary: #0f1f1d;
-        --bg-tertiary: #1a2725;
-        --text-primary: #e8e8e8;
-        --text-secondary: #b0b0b0;
-        --text-tertiary: #808080;
-        --border-color: rgba(0, 255, 200, 0.12);
-        --border-light: #2a3a38;
-        --accent-green: #00d4aa;
-        --shadow-light: rgba(0, 0, 0, 0.3);
-      }
     }
 
     .discussions-container {
@@ -1114,32 +1100,32 @@
   <span class="icon">🌙</span>
 </button>
 
-<!-- Theme Toggle Handler -->
+<!-- Theme Toggle Handler - synced with main site -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const themeToggle = document.getElementById('theme-toggle');
-    const html = document.documentElement;
     
-    // Load saved preference or default to light
-    const saved = localStorage.getItem('theme-preference') || 'light';
-    if (saved === 'dark') {
-      html.setAttribute('data-theme', 'dark');
+    // Load saved preference or default based on system preference
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    
+    if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
+      document.body.classList.add('dark');
       if (themeToggle) themeToggle.querySelector('.icon').textContent = '☀️';
     }
     
     if (themeToggle) {
       themeToggle.addEventListener('click', () => {
-        const current = html.getAttribute('data-theme') || 'light';
-        const newTheme = current === 'dark' ? 'light' : 'dark';
+        const isDark = document.body.classList.contains('dark');
         
-        if (newTheme === 'dark') {
-          html.setAttribute('data-theme', 'dark');
-          themeToggle.querySelector('.icon').textContent = '☀️';
-          localStorage.setItem('theme-preference', 'dark');
-        } else {
-          html.removeAttribute('data-theme');
+        if (isDark) {
+          document.body.classList.remove('dark');
           themeToggle.querySelector('.icon').textContent = '🌙';
-          localStorage.setItem('theme-preference', 'light');
+          localStorage.setItem('theme', 'light');
+        } else {
+          document.body.classList.add('dark');
+          themeToggle.querySelector('.icon').textContent = '☀️';
+          localStorage.setItem('theme', 'dark');
         }
       });
     }

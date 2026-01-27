@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <style>
+    /* Theme variables - synced with main site body.dark pattern */
     :root {
       --bg-primary: white;
       --bg-secondary: #f9f9f9;
@@ -21,26 +22,16 @@
       --accent-dark: #005a4f;
     }
 
-    html[data-theme="dark"] {
-      --bg-primary: #1a1a1a;
-      --bg-secondary: #2a2a2a;
-      --bg-tertiary: #333;
-      --text-primary: #e0e0e0;
-      --text-secondary: #b0b0b0;
-      --text-muted: #808080;
-      --border-color: rgba(0, 121, 107, 0.2);
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg-primary: #1a1a1a;
-        --bg-secondary: #2a2a2a;
-        --bg-tertiary: #333;
-        --text-primary: #e0e0e0;
-        --text-secondary: #b0b0b0;
-        --text-muted: #808080;
-        --border-color: rgba(0, 121, 107, 0.2);
-      }
+    body.dark {
+      --bg-primary: #071014;
+      --bg-secondary: #1a2726;
+      --bg-tertiary: #212e2c;
+      --text-primary: #e6f7ef;
+      --text-secondary: #9fb6c6;
+      --text-muted: #6b8a98;
+      --border-color: rgba(0, 255, 200, 0.12);
+      --accent-green: #00b38a;
+      --accent-dark: #008065;
     }
 
     * {
@@ -58,7 +49,7 @@
 
     .room-container {
       display: grid;
-      grid-template-columns: 1fr 260px 280px;
+      grid-template-columns: 1fr 320px 380px;
       gap: 20px;
       height: 100vh;
       padding: 20px;
@@ -67,7 +58,7 @@
       font-family: 'Poppins', sans-serif;
     }
 
-    html[data-theme="dark"] .room-container {
+    body.dark .room-container {
       background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
     }
 
@@ -81,7 +72,10 @@
       border: 1px solid var(--border-color);
     }
 
-    .room-header {
+    body.dark .room-main {
+      background: var(--bg-primary);
+      border-color: var(--border-color);
+    }
       padding: 24px;
       border-bottom: 2px solid var(--border-color);
       display: flex;
@@ -202,8 +196,20 @@
       letter-spacing: 0.3px;
     }
 
-    html[data-theme="dark"] .btn-control {
-      border-color: rgba(0, 121, 107, 0.3);
+    body.dark .btn-control {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(0, 255, 200, 0.2);
+      color: var(--text-primary);
+    }
+
+    body.dark .btn-control:hover {
+      background: rgba(0, 255, 200, 0.1);
+      border-color: rgba(0, 255, 200, 0.4);
+      color: var(--accent-green);
+    }
+
+    body.dark #themeToggleBtn {
+      color: var(--text-primary);
     }
 
     .btn-control:hover {
@@ -306,20 +312,26 @@
     .participant-item {
       display: flex;
       align-items: center;
-      gap: 14px;
-      padding: 14px;
+      gap: 12px;
+      padding: 14px 12px;
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: 8px;
       font-size: 12px;
       color: var(--text-secondary);
       transition: all 0.2s ease;
+      min-width: 0;
     }
 
     .participant-item:hover {
       background: var(--bg-tertiary);
       border-color: rgba(0, 121, 107, 0.15);
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    body.dark .participant-item:hover {
+      border-color: rgba(0, 255, 200, 0.2);
+      background: rgba(0, 255, 200, 0.05);
     }
 
     .participant-avatar {
@@ -339,14 +351,19 @@
     .participant-info {
       flex: 1;
       min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
     .participant-name {
       font-weight: 600;
       color: var(--text-primary);
       font-size: 12px;
-      word-break: break-word;
-      margin-bottom: 3px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-bottom: 0;
     }
 
     .participant-role {
@@ -354,6 +371,9 @@
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.5px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
     .participant-status {
@@ -363,6 +383,10 @@
       white-space: nowrap;
       text-transform: uppercase;
       letter-spacing: 0.3px;
+    }
+
+    body.dark .participant-status {
+      color: #10b981;
     }
 
     .empty-participants {
@@ -375,7 +399,8 @@
     .participant-controls {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
+      flex-shrink: 0;
     }
 
     .mic-control-btn {
@@ -394,10 +419,21 @@
       justify-content: center;
       width: 32px;
       height: 32px;
+      flex-shrink: 0;
+    }
+
+    body.dark .mic-control-btn {
+      background: var(--accent-green);
+      box-shadow: 0 2px 6px rgba(0, 179, 138, 0.3);
+    }
+
+    body.dark .mic-control-btn:hover {
+      box-shadow: 0 4px 10px rgba(0, 179, 138, 0.4);
     }
 
     .mic-control-btn i {
       font-size: 14px;
+    }
       margin: 0;
     }
 
@@ -433,11 +469,21 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      flex-shrink: 0;
     }
 
     .remove-participant-btn:hover {
       background: rgba(211, 47, 47, 0.1);
       color: #d32f2f;
+    }
+
+    body.dark .remove-participant-btn {
+      color: #ff6b6b;
+    }
+
+    body.dark .remove-participant-btn:hover {
+      background: rgba(255, 107, 107, 0.15);
+      color: #ff6b6b;
     }
     }
 
@@ -1184,40 +1230,57 @@
     const closedReason = document.getElementById('closedReason');
     const timeInfo = document.getElementById('timeInfo');
 
-    // Theme toggle functionality
+    // Theme toggle functionality - synced with main site
     function initThemeToggle() {
-      const themeToggleBtn = document.getElementById('themeToggleBtn');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       const savedTheme = localStorage.getItem('theme');
+      const themeToggleBtn = document.getElementById('themeToggleBtn');
       
-      // Set initial theme
-      if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-        updateThemeIcon(savedTheme);
+      // Set initial theme from localStorage
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+        if (themeToggleBtn && themeToggleBtn.querySelector('i')) {
+          themeToggleBtn.querySelector('i').classList.remove('fa-moon');
+          themeToggleBtn.querySelector('i').classList.add('fa-sun');
+        }
+      } else if (savedTheme === 'light') {
+        document.body.classList.remove('dark');
+        if (themeToggleBtn && themeToggleBtn.querySelector('i')) {
+          themeToggleBtn.querySelector('i').classList.add('fa-moon');
+          themeToggleBtn.querySelector('i').classList.remove('fa-sun');
+        }
       } else if (prefersDark) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        updateThemeIcon('dark');
+        // Use system preference if no saved theme
+        document.body.classList.add('dark');
+        if (themeToggleBtn && themeToggleBtn.querySelector('i')) {
+          themeToggleBtn.querySelector('i').classList.remove('fa-moon');
+          themeToggleBtn.querySelector('i').classList.add('fa-sun');
+        }
       }
       
-      // Theme toggle click handler
-      themeToggleBtn.addEventListener('click', () => {
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-        document.documentElement.setAttribute('data-theme', newTheme);
-        localStorage.setItem('theme', newTheme);
-        updateThemeIcon(newTheme);
-      });
-    }
-
-    function updateThemeIcon(theme) {
-      const themeToggleBtn = document.getElementById('themeToggleBtn');
-      const icon = themeToggleBtn.querySelector('i');
-      if (theme === 'dark') {
-        icon.classList.remove('fa-moon');
-        icon.classList.add('fa-sun');
-      } else {
-        icon.classList.remove('fa-sun');
-        icon.classList.add('fa-moon');
+      // Setup click handler for theme toggle button
+      if (themeToggleBtn) {
+        themeToggleBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          
+          const isDark = document.body.classList.contains('dark');
+          document.body.classList.toggle('dark');
+          
+          if (document.body.classList.contains('dark')) {
+            localStorage.setItem('theme', 'dark');
+            if (themeToggleBtn.querySelector('i')) {
+              themeToggleBtn.querySelector('i').classList.remove('fa-moon');
+              themeToggleBtn.querySelector('i').classList.add('fa-sun');
+            }
+          } else {
+            localStorage.setItem('theme', 'light');
+            if (themeToggleBtn.querySelector('i')) {
+              themeToggleBtn.querySelector('i').classList.add('fa-moon');
+              themeToggleBtn.querySelector('i').classList.remove('fa-sun');
+            }
+          }
+        });
       }
     }
 
