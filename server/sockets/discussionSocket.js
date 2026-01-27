@@ -623,7 +623,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     socket.on('reaction', async (data) => {
       const { sessionId, reaction, userId, userName } = data;
 
-      console.log('🎉 [reaction] Received reaction event:', { sessionId, reaction, userId, userName });
+      console.log('🎉 [reaction] Received reaction event:', { sessionId, reaction, userId, userName, senderRole: socket.userRole });
 
       if (!sessionId || !reaction || !userId) {
         console.warn('Invalid reaction data', data);
@@ -633,6 +633,10 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       try {
         // Broadcast reaction to all users in the session
         console.log(`📢 [reaction] Broadcasting to room: discussion-session:${sessionId}`);
+        const room = io.sockets.adapter.rooms.get(`discussion-session:${sessionId}`);
+        const roomSize = room ? room.size : 0;
+        console.log(`📊 [reaction] Room has ${roomSize} connected sockets`);
+        
         io.to(`discussion-session:${sessionId}`).emit('user-reaction', {
           sessionId,
           reaction,
@@ -641,7 +645,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           timestamp: Date.now()
         });
 
-        console.log(`✅ User ${userId} (${userName}) sent reaction ${reaction} in session ${sessionId}`);
+        console.log(`✅ User ${userId} (${userName}, role: ${socket.userRole}) sent reaction ${reaction} in session ${sessionId}`);
       } catch (error) {
         console.error('Error handling reaction:', error);
       }
