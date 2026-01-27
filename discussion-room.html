@@ -1766,9 +1766,9 @@
         const { reaction, userName, userId } = data;
         
         // Skip if it's our own reaction (we already displayed it)
-        const currentUser = window.currentUser || {};
-        console.log('👤 [user-reaction] Current user:', currentUser.id, 'Reaction from:', userId);
-        if (userId === currentUser.id) {
+        const currentUser = getLocalCurrentUser();
+        console.log('👤 [user-reaction] Current user:', currentUser?.id, 'Reaction from:', userId);
+        if (userId === currentUser?.id) {
           console.log('⏭️ [user-reaction] Skipping own reaction');
           return;
         }
@@ -1905,13 +1905,15 @@
             }, 3500);
             
             // Send reaction via socket.io
-            const currentUser = window.currentUser || {};
-            discussionSocket.emitReaction(
-              sessionData.id,
-              reaction,
-              currentUser.id,
-              currentUser.name || 'Anonymous'
-            );
+            const currentUser = getLocalCurrentUser();
+            if (currentUser) {
+              discussionSocket.emitReaction(
+                sessionData.id,
+                reaction,
+                currentUser.id,
+                currentUser.name || 'Anonymous'
+              );
+            }
           });
         });
       }
