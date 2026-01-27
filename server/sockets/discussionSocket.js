@@ -221,9 +221,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           {
             $set: {
               active: true,
-              joinTime: now,
               lastLeaveTime: null,
-              role: user.role,
               userName: user.name || user.email,
               updatedAt: now
             },
@@ -232,7 +230,6 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
               sessionId,
               userId: user.id,
               role: user.role,
-              userName: user.name || user.email,
               joinTime: now,
               totalDurationMs: 0,
               audioEnabled: false,
@@ -241,7 +238,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
               createdAt: now
             }
           },
-          { upsert: true, new: true, runValidators: true }
+          { upsert: true, new: true }
         );
 
         console.log(`✅ [socket] Participant state ensured (atomic upsert):`, { 
