@@ -69,6 +69,11 @@ export class DiscussionSocketService {
 
           this.socket.on('connect_error', (error) => {
             console.error('Socket.IO connection error:', error);
+            // Check if it's an authentication error
+            if (error.message && error.message.includes('auth')) {
+              console.error('🔐 Socket.IO authentication failed:', error.message);
+              this._emit('auth-error', { error: error.message });
+            }
             this._emit('connection-error', { error: error.message });
           });
 

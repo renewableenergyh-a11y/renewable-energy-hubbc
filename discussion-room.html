@@ -1619,6 +1619,37 @@
       modal.classList.remove('active');
     }
 
+    /**
+     * Handle authentication failures - redirect to login immediately
+     * Called when: token expires, user logs out, 401/403 responses, socket auth fails
+     */
+    function handleAuthFailure(reason = 'Your session has expired') {
+      console.warn('🔐 [auth-failure] Authentication lost:', reason);
+      
+      // Clear all auth data
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('currentUser');
+      localStorage.removeItem('adminUser');
+      localStorage.removeItem('instructorUser');
+      
+      // Disconnect socket if connected
+      if (discussionSocket && discussionSocket.socket) {
+        discussionSocket.socket.disconnect();
+      }
+      
+      // Show modal with reason
+      showModal('Session Expired', reason + '. Please log in again.', [
+        { 
+          text: 'Login', 
+          class: 'modal-btn-primary', 
+          callback: () => {
+            closeModal();
+            window.location.href = '/login.html';
+          }
+        }
+      ]);
+    }
+
     // Close modal when clicking overlay
     window.addEventListener('DOMContentLoaded', () => {
       const modal = document.getElementById('customModal');
@@ -1743,6 +1774,13 @@
         console.log('📡 [discussion-room] Session fetch response status:', response.status);
         const data = await response.json();
         
+        // Check for authentication errors
+        if (response.status === 401 || response.status === 403) {
+          console.error('❌ [discussion-room] Authentication error (status:', response.status + '):', data);
+          handleAuthFailure('Your authentication credentials are no longer valid.');
+          return;
+        }
+        
         if (!response.ok) {
           console.error('❌ [discussion-room] Session fetch failed:', data);
           showModal('Session Error', `Unable to load session: ${data.error}`, [
@@ -1821,6 +1859,13 @@
           const registerData = await registerResponse.json();
           console.log('📝 [discussion-room] Participant registration result:', registerResponse.status, registerData);
 
+          // Check for authentication errors on registration
+          if (registerResponse.status === 401 || registerResponse.status === 403) {
+            console.error('❌ [discussion-room] Auth error during registration (status:', registerResponse.status + '):', registerData);
+            handleAuthFailure('Your session has expired during registration.');
+            return;
+          }
+
           if (!registerResponse.ok) {
             console.warn('⚠️ [discussion-room] Participant registration failed:', registerData);
             // Don't block room access if registration fails
@@ -1836,6 +1881,13 @@
                 'x-user-role': userRole
               }
             });
+
+            // Check for auth errors on participant fetch
+            if (participantsResponse.status === 401 || participantsResponse.status === 403) {
+              console.error('❌ [discussion-room] Auth error fetching participants (status:', participantsResponse.status + ')');
+              handleAuthFailure('Your session has expired.');
+              return;
+            }
 
             if (participantsResponse.ok) {
               const participantsData = await participantsResponse.json();
@@ -1875,6 +1927,9 @@
 
         // Start time update
         startTimeUpdate();
+        
+        // Start periodic auth validation
+        startAuthValidation();
       } catch (error) {
         console.error('Failed to initialize room:', error);
         showModal('Failed to Load Room', `Error: ${error.message}`, [
@@ -1913,6 +1968,22 @@
 
     function setupListeners() {
       console.log('🎧 [setupListeners] Setting up all socket event listeners');
+      
+      // Handle socket authentication errors
+      discussionSocket.on('auth-error', (data) => {
+        console.error('🔐 [socket-auth-error] Authentication failed on socket:', data.error);
+        handleAuthFailure('Socket authentication failed. Please log in again.');
+      });
+
+      // Handle socket connection errors
+      discussionSocket.on('connection-error', (data) => {
+        console.error('⚠️ [socket-connection-error] Connection error:', data.error);
+        // Only redirect if it's an auth-related connection error
+        if (data.error && (data.error.includes('auth') || data.error.includes('401') || data.error.includes('403'))) {
+          handleAuthFailure('Connection authentication failed.');
+        }
+      });
+
       // Socket events
       discussionSocket.on('participant-list-updated', (data) => {
         console.log('📋 [discussion-room] Participant list updated from server:', data.participants.length);
@@ -2326,6 +2397,13 @@
                     await discussionSocket.removeParticipantByAdmin(sessionData.sessionId, targetUserId, token, userId, userRole);
                     closeModal();
                   } catch (err) {
+                    // Check if error is auth-related
+                    if (err.message && (err.message.includes('Unauthorized') || err.message.includes('permission'))) {
+                      console.warn('🔐 [remove-participant] Auth error:', err.message);
+                      handleAuthFailure('Your permissions have expired. Please log in again.');
+                      return;
+                    }
+                    
                     console.error('Failed to remove participant:', err);
                     closeModal();
                     showModal('Error', 'Failed to remove participant: ' + (err.message || err), [
@@ -2489,6 +2567,46 @@
           timeInfo.textContent = `Ends in ${seconds}s`;
         }
       }, 1000);
+    }
+
+    /**
+     * Periodically validate that user is still authenticated
+     * If auth fails (token expired, logged out, etc), redirect to login
+     */
+    function startAuthValidation() {
+      // Check auth every 30 seconds
+      setInterval(async () => {
+        try {
+          const user = await authService.getCurrentUser();
+          
+          if (!user || !user.token) {
+            console.warn('🔐 [auth-validation] No user or token found');
+            handleAuthFailure('Your session has expired. Please log in again.');
+            return;
+          }
+          
+          // Verify token is still valid with a lightweight endpoint
+          const response = await fetch('/api/user/me', {
+            headers: {
+              'Authorization': `Bearer ${user.token}`
+            }
+          });
+          
+          if (response.status === 401 || response.status === 403) {
+            console.warn('🔐 [auth-validation] Token validation failed (status:', response.status + ')');
+            handleAuthFailure('Your session has expired. Please log in again.');
+            return;
+          }
+          
+          if (!response.ok) {
+            console.warn('⚠️ [auth-validation] Auth check failed (status:', response.status + ')');
+            // Don't force logout on other errors
+          }
+        } catch (error) {
+          console.error('❌ [auth-validation] Error checking auth:', error.message);
+          // Don't force logout on network errors
+        }
+      }, 30000); // 30 seconds
     }
 
     function escapeHtml(text) {
