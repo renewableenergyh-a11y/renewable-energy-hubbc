@@ -788,6 +788,12 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       const activeSessions = await discussionSessionService.getAllActiveSessions();
       const now = new Date();
       for (const s of activeSessions) {
+        // Skip invalid sessions without required fields
+        if (!s || !s.sessionId || !s.creatorId) {
+          console.warn('⚠️ Skipping invalid session (missing sessionId or creatorId):', { sessionId: s?.sessionId, creatorId: s?.creatorId });
+          continue;
+        }
+
         if (s.endTime && new Date(s.endTime) <= now) {
           try {
             await discussionSessionService.closeSessionAutomatically(s.sessionId);
