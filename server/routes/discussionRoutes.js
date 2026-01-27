@@ -484,9 +484,10 @@ module.exports = function(db, discussionSessionService, participantService, io =
       // ATOMIC operation: Use findOneAndUpdate with upsert to prevent race condition duplicates
       // This ensures only ONE document per (sessionId, userId) pair, whether via REST or socket
       const now = new Date();
-      const participantId = `participant_${sessionId}_${req.user.id}_${Date.now()}`;
+      // Generate deterministic participantId - same for same user in same session
+      const participantId = `participant_${sessionId}_${req.user.id}`;
       
-      console.log('📝 [REST/participants/join] Generated participantId:', participantId);
+      console.log('📝 [REST/participants/join] Upserting participant with deterministic ID:', participantId);
       
       const participant = await db.models.Participant.findOneAndUpdate(
         { sessionId, userId: req.user.id },

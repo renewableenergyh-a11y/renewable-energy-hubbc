@@ -226,7 +226,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
               updatedAt: now
             },
             $setOnInsert: {
-              participantId: `participant_${sessionId}_${user.id}_${Date.now()}`,
+              participantId: `participant_${sessionId}_${user.id}`,
               sessionId,
               userId: user.id,
               role: user.role,

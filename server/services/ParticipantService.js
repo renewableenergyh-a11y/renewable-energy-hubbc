@@ -131,8 +131,9 @@ class ParticipantService {
 
   /**
    * Get all active participants in a session
+   * Deduplicates by userId to handle any edge cases with multiple records
    * @param {String} sessionId - Session ID
-   * @returns {Array} List of active participants
+   * @returns {Array} List of active participants (deduplicated by userId)
    */
   async getActiveParticipants(sessionId) {
     const Participant = this.db.models.Participant;
@@ -145,7 +146,15 @@ class ParticipantService {
       active: true
     }).lean();
 
-    return participants;
+    // Deduplicate by userId - keep only the most recently joined
+    const deduped = {};
+    participants.forEach(p => {
+      if (!deduped[p.userId] || new Date(p.joinTime) > new Date(deduped[p.userId].joinTime)) {
+        deduped[p.userId] = p;
+      }
+    });
+
+    return Object.values(deduped);
   }
 
   /**

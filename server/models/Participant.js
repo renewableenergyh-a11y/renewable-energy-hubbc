@@ -5,7 +5,6 @@ const ParticipantSchema = new mongoose.Schema(
     participantId: {
       type: String,
       required: true,
-      unique: true,
       index: true
     },
     sessionId: {
