@@ -3248,27 +3248,21 @@ app.post('/api/auth/me', (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    // Check session validity (timeout check)
-    if (!isSessionValid(token)) {
-      return res.status(401).json({ error: 'Session expired due to inactivity', sessionExpired: true });
-    }
-
     // Reject revoked tokens immediately
     try {
       const revoked = loadRevokedTokens();
       if (revoked && revoked.includes(token)) return res.status(401).json({ error: 'Invalid or expired token' });
     } catch (e) { console.warn('revoked tokens check failed', e); }
 
-    // Record activity for this session
-    recordSessionActivity(token);
-
     const users = loadUsers();
 
-    // Find user by token
+    // Find user by token FIRST (before checking session validity)
     let currentUser = null;
+    let userEmail = null;
     for (const [email, user] of Object.entries(users)) {
       if (user.token === token) {
         currentUser = { ...user };
+        userEmail = email;
         delete currentUser.password; // Never send password
         // Add avatar URL if it exists
         if (!currentUser.avatarUrl) {
@@ -3285,6 +3279,21 @@ app.post('/api/auth/me', (req, res) => {
     if (!currentUser) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
+
+    // NOW check session validity and ensure session is registered
+    if (!activeSessions.has(token)) {
+      // Session not in memory - create it (handles post-restart)
+      createSession(token, userEmail, req);
+      console.log(`📋 [/api/auth/me] Session registered for ${userEmail} (post-restart)`);
+    } else {
+      // Check session validity (timeout check)
+      if (!isSessionValid(token)) {
+        return res.status(401).json({ error: 'Session expired due to inactivity', sessionExpired: true });
+      }
+    }
+
+    // Record activity for this session
+    recordSessionActivity(token);
 
     res.json({
       success: true,
@@ -3306,27 +3315,21 @@ app.get('/api/user/me', (req, res) => {
       return res.status(401).json({ error: 'No token provided' });
     }
 
-    // Check session validity (timeout check)
-    if (!isSessionValid(token)) {
-      return res.status(401).json({ error: 'Session expired due to inactivity', sessionExpired: true });
-    }
-
     // Reject revoked tokens immediately
     try {
       const revoked = loadRevokedTokens();
       if (revoked && revoked.includes(token)) return res.status(401).json({ error: 'Invalid or expired token' });
     } catch (e) { console.warn('revoked tokens check failed', e); }
 
-    // Record activity for this session
-    recordSessionActivity(token);
-
     const users = loadUsers();
 
-    // Find user by token
+    // Find user by token FIRST (before checking session validity)
     let currentUser = null;
+    let userEmail = null;
     for (const [email, user] of Object.entries(users)) {
       if (user.token === token) {
         currentUser = { ...user };
+        userEmail = email;
         delete currentUser.password; // Never send password
         // Add avatar URL if it exists
         if (!currentUser.avatarUrl) {
@@ -3343,6 +3346,21 @@ app.get('/api/user/me', (req, res) => {
     if (!currentUser) {
       return res.status(401).json({ error: 'Invalid or expired token' });
     }
+
+    // NOW check session validity and ensure session is registered
+    if (!activeSessions.has(token)) {
+      // Session not in memory - create it (handles post-restart)
+      createSession(token, userEmail, req);
+      console.log(`📋 [/api/user/me] Session registered for ${userEmail} (post-restart)`);
+    } else {
+      // Check session validity (timeout check)
+      if (!isSessionValid(token)) {
+        return res.status(401).json({ error: 'Session expired due to inactivity', sessionExpired: true });
+      }
+    }
+
+    // Record activity for this session
+    recordSessionActivity(token);
 
     res.json({
       success: true,
