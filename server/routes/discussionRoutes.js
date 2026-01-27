@@ -482,14 +482,15 @@ module.exports = function(db, discussionSessionService, participantService, io =
       // Check if participant already exists
       let participant = await participantService.getParticipant(sessionId, req.user.id);
       
-      if (participant) {
-        console.log('🔄 [REST/participants/join] Participant already exists, returning existing', {
+      if (participant && participant.active) {
+        // Already active - just return
+        console.log('🔄 [REST/participants/join] Participant already active, returning', {
           participantId: participant._id,
           sessionId
         });
       } else {
-        // CREATE participant in database (upsert pattern)
-        console.log('📝 [REST/participants/join] Creating new participant');
+        // Either new or previously inactive - create/reactivate through service
+        console.log('📝 [REST/participants/join] Creating or reactivating participant');
         participant = await participantService.addOrRejoinParticipant(
           sessionId,
           req.user.id,
@@ -497,11 +498,12 @@ module.exports = function(db, discussionSessionService, participantService, io =
           userName
         );
 
-        console.log('✅ [REST/participants/join] Participant created in database', {
+        console.log('✅ [REST/participants/join] Participant created/reactivated in database', {
           participantId: participant._id,
           sessionId,
           userId: req.user.id,
-          role: participant.role
+          role: participant.role,
+          active: participant.active
         });
       }
 

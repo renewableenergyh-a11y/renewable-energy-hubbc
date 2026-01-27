@@ -86,6 +86,7 @@ class ParticipantService {
 
   /**
    * Remove (mark as inactive) a participant from a session
+   * Idempotent: safe to call multiple times, won't fail if already inactive
    * @param {String} sessionId - Session ID
    * @param {String} userId - User ID
    * @returns {Object} Updated participant
@@ -105,8 +106,9 @@ class ParticipantService {
       throw new Error('Participant not found in this session');
     }
 
+    // Idempotent: if already inactive, just return without error
     if (!participant.active) {
-      throw new Error('Participant is already inactive');
+      return participant.toObject();
     }
 
     const now = new Date();

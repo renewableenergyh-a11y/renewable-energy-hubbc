@@ -212,9 +212,19 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           }
         }
 
-        // NOTE: Participant creation happens ONLY in REST endpoint
-        // Just verify participant exists in database
-        console.log(`✅ [socket] Participant already registered via REST endpoint`);
+        // CRITICAL: Ensure participant exists and is active in database
+        // This handles both new joins and rejoin after leaving/disconnect
+        // If participant was inactive, this re-activates them
+        const participant = await participantService.addOrRejoinParticipant(
+          sessionId,
+          user.id,
+          user.role,
+          user.name || user.email
+        );
+        console.log(`✅ [socket] Participant ensured in database:`, { 
+          participantId: participant.participantId, 
+          active: participant.active 
+        });
 
         // Add socket to session room
         socket.join(`discussion-session:${sessionId}`);
@@ -251,11 +261,12 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         const participantCount = await participantService.getActiveParticipantCount(sessionId);
         await discussionSessionService.updateParticipantCount(sessionId, participantCount);
 
-        // Broadcast updated participant list
+        // Broadcast updated participant list to ALL in the room (including the joiner)
+        // This ensures everyone sees the complete, consistent state
         await broadcastParticipantList(sessionId);
         await broadcastSessionStatus(sessionId);
 
-        // Notify other participants
+        // Notify other participants (excluding self)
         socket.to(`discussion-session:${sessionId}`).emit('participant-joined', {
           userId: user.id,
           role: user.role,
