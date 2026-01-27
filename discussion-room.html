@@ -1059,6 +1059,9 @@
         z-index: 1000;
         display: none !important;
         flex: none;
+        flex-direction: column;
+        overflow-y: auto;
+        overflow-x: hidden;
         grid-column: unset;
         grid-row: unset;
         background: var(--bg-primary);
@@ -1073,6 +1076,10 @@
 
       .sidebar-toggle-btn {
         display: inline-flex;
+        position: fixed;
+        bottom: 90px;
+        left: 16px;
+        right: 16px;
         padding: 12px 16px;
         background: var(--accent-green);
         color: white;
@@ -1083,12 +1090,19 @@
         font-weight: 600;
         gap: 8px;
         align-items: center;
-        width: 100%;
-        margin-bottom: 12px;
+        margin: 0;
         transition: all 0.2s ease;
         font-family: 'Poppins', sans-serif;
         position: relative;
         z-index: 999;
+      }
+
+      #participantsToggleBtn {
+        bottom: 160px;
+      }
+
+      #featuresToggleBtn {
+        bottom: 90px;
       }
 
       .sidebar-toggle-btn:hover {
@@ -1277,20 +1291,16 @@
       </div>
     </div>
 
-    <!-- Mobile toggle buttons -->
-    <button class="sidebar-toggle-btn" id="participantsToggleBtn">
-      <i class="fas fa-users"></i>
-      <span>Participants</span>
-    </button>
+  <!-- Mobile toggle buttons - OUTSIDE room-container -->
+  <button class="sidebar-toggle-btn" id="participantsToggleBtn">
+    <i class="fas fa-users"></i>
+    <span>Participants</span>
+  </button>
 
-    <button class="sidebar-toggle-btn" id="featuresToggleBtn">
-      <i class="fas fa-th-large"></i>
-      <span>Features</span>
-    </button>
-  </div>
-
-  <div class="session-closed-overlay" id="sessionClosedOverlay">
-    <div class="session-closed-modal">
+  <button class="sidebar-toggle-btn" id="featuresToggleBtn">
+    <i class="fas fa-th-large"></i>
+    <span>Features</span>
+  </button>
       <h2>Session Closed</h2>
       <p id="closedReason">The session has been closed.</p>
       <button onclick="window.location.href='/discussions.html'">Return to Discussions</button>
