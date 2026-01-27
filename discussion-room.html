@@ -1727,7 +1727,7 @@
       });
 
       discussionSocket.on('participant-joined', (data) => {
-        console.log(`${data.name} joined`);
+        console.log(`👤 [discussion-room] ${data.name} joined the discussion`);
       });
 
       discussionSocket.on('participant-left', (data) => {
