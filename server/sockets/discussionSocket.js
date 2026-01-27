@@ -31,6 +31,10 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
   // sessionId -> Set of socketIds
   const sessionRooms = new Map();
 
+  // Hand raised tracking
+  // sessionId -> { userId -> isRaised }
+  const handRaisedMap = new Map();
+
   /**
    * Verify JWT token and extract user info
    * @param {String} token - JWT token from client
@@ -98,6 +102,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     try {
       const participants = await participantService.getActiveParticipants(sessionId);
       const stats = await participantService.getSessionParticipantStats(sessionId);
+      const sessionHandRaised = handRaisedMap.get(sessionId) || {};
       
       io.to(`discussion-session:${sessionId}`).emit('participant-list-updated', {
         participants: participants.map(p => ({
@@ -108,7 +113,8 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           active: p.active,
           joinTime: p.joinTime,
           audioEnabled: p.audioEnabled,
-          videoEnabled: p.videoEnabled
+          videoEnabled: p.videoEnabled,
+          handRaised: sessionHandRaised[p.userId] || false
         })),
         stats: {
           activeCount: stats.activeCount,
@@ -351,6 +357,11 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           // Remove from user socket map
           userSocketMap.delete(userId);
 
+          // Clean up hand raised data for this user
+          if (handRaisedMap.has(sessionId)) {
+            delete handRaisedMap.get(sessionId)[userId];
+          }
+
           // Update participant count
           const participantCount = await participantService.getActiveParticipantCount(sessionId);
           await discussionSessionService.updateParticipantCount(sessionId, participantCount);
@@ -588,26 +599,16 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       }
 
       try {
-        // Get updated participant list with hand raise status
-        const participants = await participantService.getSessionParticipants(sessionId);
+        // Update hand raised status in memory
+        if (!handRaisedMap.has(sessionId)) {
+          handRaisedMap.set(sessionId, {});
+        }
         
-        // Update the handRaised flag for the user
-        const updatedParticipants = participants.map(p => ({
-          ...p,
-          handRaised: p.userId === userId ? isRaised : (p.handRaised || false)
-        }));
+        const sessionHands = handRaisedMap.get(sessionId);
+        sessionHands[userId] = isRaised;
 
-        // Emit to all users in the room
-        io.to(`discussion-session:${sessionId}`).emit('hand-raised-updated', {
-          sessionId,
-          participants: updatedParticipants,
-          stats: {
-            totalParticipants: updatedParticipants.length,
-            activeCount: updatedParticipants.filter(p => p.active).length
-          },
-          userId,
-          isRaised
-        });
+        // Broadcast updated participant list with new hand state
+        await broadcastParticipantList(sessionId);
 
         console.log(`User ${userId} ${isRaised ? 'raised' : 'lowered'} hand in session ${sessionId}`);
       } catch (error) {

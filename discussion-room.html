@@ -242,12 +242,20 @@
       color: var(--text-primary);
     }
 
+    @media (max-width: 1024px) {
+      #themeToggleBtn {
+        position: static;
+        margin-left: auto;
+      }
+    }
+
     @media (max-width: 768px) {
       #themeToggleBtn {
         position: fixed;
         top: 20px;
         right: 20px;
         z-index: 999;
+        margin-left: 0;
       }
     }
 
