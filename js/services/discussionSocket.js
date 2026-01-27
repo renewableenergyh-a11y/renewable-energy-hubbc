@@ -294,25 +294,32 @@ export class DiscussionSocketService {
    */
   emitReaction(sessionId, reaction, userId, userName, userRole) {
     if (!this.socket || !this.socket.connected) {
-      console.warn('⚠️ [emitReaction] Socket not connected');
-      return;
+      console.warn('⚠️ [emitReaction] Socket not connected - cannot send reaction');
+      console.warn('   Socket state: connected=' + (this.socket?.connected || false) + ', exists=' + (!!this.socket));
+      return false;
     }
 
     // CRITICAL: Validate userId exists - reactions require valid identity
     if (!userId) {
       console.error('❌ [emitReaction] BLOCKING: userId is undefined/null. Cannot emit reaction without valid user identity.');
       console.error('   userName:', userName, 'userRole:', userRole);
-      return;
+      return false;
     }
 
-    console.log('🎉 [emitReaction] Sending reaction with valid userId:', { sessionId, reaction, userId, userName, userRole });
-    this.socket.emit('reaction', {
-      sessionId,
-      reaction,
-      userId,
-      userName,
-      userRole: userRole || 'student'
-    });
+    try {
+      console.log('🎉 [emitReaction] Sending reaction with valid userId:', { sessionId, reaction, userId, userName, userRole });
+      this.socket.emit('reaction', {
+        sessionId,
+        reaction,
+        userId,
+        userName,
+        userRole: userRole || 'student'
+      });
+      return true;
+    } catch (error) {
+      console.error('❌ [emitReaction] Error sending reaction:', error);
+      return false;
+    }
   }
 
   /**

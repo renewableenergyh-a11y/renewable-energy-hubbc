@@ -2041,13 +2041,16 @@
             const currentUser = getLocalCurrentUser();
             if (currentUser && currentUser.id) {
               console.log('📤 [reaction-emit] Emitting with valid user:', { sessionData: sessionData?.sessionId, reaction, userId: currentUser.id, userName: currentUser.name, role: currentUser.role });
-              discussionSocket.emitReaction(
+              const success = discussionSocket.emitReaction(
                 sessionData.sessionId,
                 reaction,
                 currentUser.id,
                 currentUser.name || 'Anonymous',
                 currentUser.role || 'student'
               );
+              if (!success) {
+                console.warn('⚠️ [reaction-emit] Reaction not sent - socket disconnected. User may have been removed from session.');
+              }
             } else {
               console.error('❌ [reaction-emit] Cannot emit: currentUser is null or missing id. Current:', currentUser);
             }
