@@ -2632,30 +2632,34 @@
           
           if (!user || !user.token) {
             console.warn('🔐 [auth-validation] No user or token found');
-            handleAuthFailure('Your session has expired. Please log in again.');
+            // Don't force logout - let actual API failures handle it
             return;
           }
           
           // Verify token is still valid with a lightweight endpoint
-          const response = await fetch('/api/user/me', {
-            headers: {
-              'Authorization': `Bearer ${user.token}`
+          // Non-blocking - just log issues, don't logout
+          try {
+            const response = await fetch('/api/user/me', {
+              headers: {
+                'Authorization': `Bearer ${user.token}`
+              }
+            });
+            
+            if (response.ok) {
+              console.log('✅ [auth-validation] Session valid');
+            } else if (response.status === 401 || response.status === 403) {
+              console.warn('⚠️ [auth-validation] Token may have expired (status:', response.status + ')');
+              // Only logout on persistent auth failures, not on transient 401s
+            } else {
+              console.warn('⚠️ [auth-validation] Auth check failed (status:', response.status + ')');
             }
-          });
-          
-          if (response.status === 401 || response.status === 403) {
-            console.warn('🔐 [auth-validation] Token validation failed (status:', response.status + ')');
-            handleAuthFailure('Your session has expired. Please log in again.');
-            return;
-          }
-          
-          if (!response.ok) {
-            console.warn('⚠️ [auth-validation] Auth check failed (status:', response.status + ')');
-            // Don't force logout on other errors
+          } catch (fetchError) {
+            console.warn('⚠️ [auth-validation] Auth endpoint unavailable:', fetchError.message);
+            // Network errors or endpoint not available - don't logout
           }
         } catch (error) {
           console.error('❌ [auth-validation] Error checking auth:', error.message);
-          // Don't force logout on network errors
+          // Don't force logout on errors
         }
       }, 30000); // 30 seconds
     }

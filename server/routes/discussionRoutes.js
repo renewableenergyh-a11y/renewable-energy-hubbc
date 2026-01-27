@@ -26,16 +26,16 @@ module.exports = function(db, discussionSessionService, participantService, io =
     console.log('🔐 [verifyAuth] Token present:', !!token);
     console.log('🔐 [verifyAuth] Headers:', { userId, userRole, authHeader: req.headers.authorization ? '***' : 'missing' });
 
-    if (!token) {
-      console.warn('⚠️ [verifyAuth] No authorization token');
-      return res.status(401).json({ error: 'Unauthorized - missing token' });
+    // Require EITHER a token OR (userId + userRole)
+    if (!token && (!userId || !userRole)) {
+      console.warn('⚠️ [verifyAuth] No authorization token or user headers');
+      return res.status(401).json({ error: 'Unauthorized - missing token and user info' });
     }
 
-    // Extract user info from headers (these should be passed from frontend)
-    // Use fallback to 'student' if role is missing
-    if (userId) {
+    // If we have userId and userRole (from headers), use those even without token
+    if (userId && userRole) {
       // Validate userId format: only email is allowed, except for admins
-      const role = userRole || 'student';
+      const role = userRole;
       const isAdmin = roles.hasAtLeastRole({ role }, 'admin');
       
       if (!isValidEmail(userId) && !isAdmin) {
@@ -46,11 +46,15 @@ module.exports = function(db, discussionSessionService, participantService, io =
       req.user = { id: userId, role: role };
       // Normalize into canonical authUser shape (ensures superadmin predefined credentials are normalized)
       req.user = roles.normalizeAuthUser(req.user);
-      console.log('✅ [verifyAuth] User authenticated:', { id: req.user.id, role: req.user.role, roleSource: userRole ? 'header' : 'fallback', isEmailValidated: isValidEmail(req.user.id) || isAdmin });
+      console.log('✅ [verifyAuth] User authenticated via headers:', { id: req.user.id, role: req.user.role, isEmailValidated: isValidEmail(req.user.id) || isAdmin });
       next();
+    } else if (token) {
+      // Fallback: accept token without user headers (shouldn't normally happen)
+      console.warn('⚠️ [verifyAuth] Token provided but no user headers - this should not happen in normal flow');
+      return res.status(401).json({ error: 'Unauthorized - missing user info headers' });
     } else {
-      console.warn('⚠️ [verifyAuth] Missing user ID in headers');
-      return res.status(401).json({ error: 'Unauthorized - missing user id' });
+      console.warn('⚠️ [verifyAuth] No valid auth combination found');
+      return res.status(401).json({ error: 'Unauthorized - invalid authentication' });
     }
   };
 
