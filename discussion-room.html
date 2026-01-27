@@ -1722,6 +1722,7 @@
       console.log('🎧 [setupListeners] Setting up all socket event listeners');
       // Socket events
       discussionSocket.on('participant-list-updated', (data) => {
+        console.log('📋 [discussion-room] Participant list updated:', data.participants.length);
         renderParticipants(data.participants, data.stats);
       });
 
@@ -1730,7 +1731,9 @@
       });
 
       discussionSocket.on('participant-left', (data) => {
-        console.log(`User left (${data.participantCount} remaining)`);
+        console.log(`👋 [discussion-room] Participant left (${data.participantCount} remaining)`);
+        // The participant-list-updated event will be broadcasted by the server to update the UI
+        // This event is just for logging; the actual UI update happens via participant-list-updated
       });
 
       discussionSocket.on('session-closed', (data) => {
