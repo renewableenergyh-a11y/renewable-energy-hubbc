@@ -1536,6 +1536,15 @@
         return null;
       },
       logout: async () => {
+        // Ensure socket disconnection on logout BEFORE clearing auth data
+        if (discussionSocket && discussionSocket.socket) {
+          try {
+            discussionSocket.disconnect();
+            console.log('🔌 [logout] Socket disconnected');
+          } catch (err) {
+            console.warn('⚠️ [logout] Error disconnecting socket:', err);
+          }
+        }
         logoutUser();
         window.location.href = '/login.html';
       }
@@ -1859,6 +1868,7 @@
 
     let sessionData = null;
     let isInstructor = false;
+    let currentSessionUserRole = null; // CRITICAL FIX: Track current session user's role to prevent role leakage
 
     /**
      * Frontend participant state management
@@ -2202,6 +2212,10 @@
 
         roomTitle.textContent = sessionData.subject;
 
+        // ✅ CRITICAL: Store current session user's role (fixes role leakage regression)
+        currentSessionUserRole = user.role;
+        console.log('🔐 [discussion-room] Current session user role set to:', currentSessionUserRole);
+
         // ✅ CRITICAL: Show close / end session button ONLY for moderators (superadmin/admin/instructor)
         // Students and regular users MUST NOT see this button
         const isModerator = ['superadmin', 'admin', 'instructor'].includes(user.role);
@@ -2267,12 +2281,12 @@
 
           if (!registerResponse.ok) {
             console.warn('⚠️ [discussion-room] Participant registration failed:', registerData);
-            // Don't block room access if registration fails
-          } else {
-            console.log('✅ [discussion-room] Participant created in database');
-            
-            // Step 2: Fetch initial participant list from REST API
-            console.log('📖 [discussion-room] Fetching initial participant list from REST API');
+            // Don't block room access if registration fails - continue to fetch participants and join socket
+          }
+          
+          // Step 2: Fetch initial participant list from REST API (ALWAYS, regardless of registration result)
+          console.log('📖 [discussion-room] Fetching initial participant list from REST API');
+          try {
             const participantsResponse = await fetch(`/api/discussions/participants/${sessionId}`, {
               headers: {
                 'Authorization': `Bearer ${user.token}`,
@@ -2302,46 +2316,48 @@
               // This is critical for page refresh - replaces any stale data
               participantState.replaceAll(participants);
               
-              // Initialize UI with deduplicated list from state
+              // Initialize UI with deduplicated list from state (CRITICAL FIX: shows participant list to ALL roles)
               renderParticipants(participantState.getAll(), stats);
             } else {
               console.warn('⚠️ [discussion-room] Failed to fetch initial participants');
             }
-            
-            // Step 3: ONLY AFTER REST succeeds, join socket to room
-            // This broadcasts the participant list (which was created by REST)
-            console.log('🔌 [discussion-room] Joining socket room (broadcasts presence)');
-            await discussionSocket.joinSession(sessionId, user.token, user.email, user.role);
-            console.log('✅ [discussion-room] Socket joined and participant list broadcasted');
-
-            // Step 4: Initialize WebRTC Phase 1
-            console.log('🎥 [discussion-room] Initializing WebRTC Phase 1...');
-            const localVideoElement = document.getElementById('localVideo');
-            
-            webrtcManager.initialize(user.email, sessionId, localVideoElement);
-            
-            // Attempt to capture local media
-            try {
-              await webrtcManager.captureLocalMedia();
-              console.log('✅ [discussion-room] Local media captured successfully');
-            } catch (mediaError) {
-              console.warn('⚠️ [discussion-room] Failed to capture local media:', mediaError.message);
-              // Continue anyway - user can still participate without video/audio
-            }
-
-            // Create peer connections for existing participants
-            const allParticipants = participantState.getAll();
-            if (allParticipants && allParticipants.length > 0) {
-              console.log(`🎥 [discussion-room] Creating peer connections for ${allParticipants.length} existing participants`);
-              allParticipants.forEach(participant => {
-                if (participant.userId !== user.email) {
-                  webrtcManager.handleNewParticipant(participant.userId);
-                }
-              });
-            }
-
-            console.log('✅ [discussion-room] WebRTC Phase 1 initialized:', webrtcManager.getStats());
+          } catch (participantsFetchError) {
+            console.warn('⚠️ [discussion-room] Error fetching participants:', participantsFetchError.message);
           }
+          
+          // Step 3: Join socket to room (ALWAYS, after participants are fetched)
+          // This broadcasts the participant list to all users
+          console.log('🔌 [discussion-room] Joining socket room (broadcasts presence)');
+          await discussionSocket.joinSession(sessionId, user.token, user.email, user.role);
+          console.log('✅ [discussion-room] Socket joined and participant list broadcasted');
+
+          // Step 4: Initialize WebRTC Phase 1
+          console.log('🎥 [discussion-room] Initializing WebRTC Phase 1...');
+          const localVideoElement = document.getElementById('localVideo');
+          
+          webrtcManager.initialize(user.email, sessionId, localVideoElement);
+          
+          // Attempt to capture local media
+          try {
+            await webrtcManager.captureLocalMedia();
+            console.log('✅ [discussion-room] Local media captured successfully');
+          } catch (mediaError) {
+            console.warn('⚠️ [discussion-room] Failed to capture local media:', mediaError.message);
+            // Continue anyway - user can still participate without video/audio
+          }
+
+          // Create peer connections for existing participants
+          const allParticipants = participantState.getAll();
+          if (allParticipants && allParticipants.length > 0) {
+            console.log(`🎥 [discussion-room] Creating peer connections for ${allParticipants.length} existing participants`);
+            allParticipants.forEach(participant => {
+              if (participant.userId !== user.email) {
+                webrtcManager.handleNewParticipant(participant.userId);
+              }
+            });
+          }
+
+          console.log('✅ [discussion-room] WebRTC Phase 1 initialized:', webrtcManager.getStats());
         } catch (error) {
           console.error('Failed to initialize room:', error);
           // Cleanup WebRTC on error
@@ -2797,7 +2813,9 @@
 
       const currentUser = getLocalCurrentUser();
       const currentUserId = currentUser?.email;
-      const userRole = currentUser?.role || 'student';
+      // CRITICAL FIX: Use currentSessionUserRole (set at init time), NOT cached role from getLocalCurrentUser
+      // This prevents role leakage when user logs out and logs in as different role
+      const userRole = currentSessionUserRole || currentUser?.role || 'student';
       const isModerator = ['superadmin', 'admin', 'instructor'].includes(userRole);
 
       if (!participants || participants.length === 0) {
@@ -2818,7 +2836,7 @@
       
       const finalParticipants = Array.from(deduped.values());
       
-      console.log(`🎨 [renderParticipants] Rendering ${finalParticipants.length} participants (input had ${participants.length})`);
+      console.log(`🎨 [renderParticipants] Rendering ${finalParticipants.length} participants (input had ${participants.length}) with role: ${userRole}`);
 
       // Display ALL participants - do NOT filter by role
       participantsList.innerHTML = finalParticipants

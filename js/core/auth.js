@@ -201,8 +201,14 @@ export async function verifyToken() {
 
 // Logout user
 export function logoutUser() {
+  // Clear ALL auth-related data including admin credentials (CRITICAL FIX: prevents role leakage)
   localStorage.removeItem('authToken');
   localStorage.removeItem('currentUser');
+  localStorage.removeItem('adminData');
+  localStorage.removeItem('adminToken');
+  localStorage.removeItem('adminRole');
+  localStorage.removeItem('instructorUser');
+  localStorage.removeItem('adminUser');
   localStorage.setItem("isLoggedIn", "false");
   localStorage.setItem("userEmail", "");
   localStorage.setItem("hasPremium", "false");
