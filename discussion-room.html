@@ -1343,8 +1343,14 @@
         grid-column: 1 !important;
         grid-row: 2 !important;
         position: static !important;
+        bottom: auto !important;
+        left: auto !important;
+        right: auto !important;
+        width: auto !important;
+        z-index: auto !important;
         margin-top: 12px;
         max-height: 40vh;
+        height: auto !important;
         overflow-y: auto;
         border-radius: 12px;
         border: 1px solid var(--border-color);
@@ -1465,7 +1471,7 @@
     </div>
 
     <!-- Participants sidebar - below media on mobile -->
-    <div class="sidebars-container">
+    <div class="sidebars-container" id="sidebarsContainer">
       <div class="sidebar">
         <div class="sidebar-title">
           <i class="fas fa-users"></i>
