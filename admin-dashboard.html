@@ -664,6 +664,26 @@
       color: var(--text-muted);
       line-height: 1.6;
       margin-bottom: 24px;
+      max-height: 60vh;
+      overflow-y: auto;
+      padding-right: 8px;
+    }
+
+    .modal-message::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .modal-message::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .modal-message::-webkit-scrollbar-thumb {
+      background: var(--green-main, #10b981);
+      border-radius: 3px;
+    }
+
+    .modal-message::-webkit-scrollbar-thumb:hover {
+      background: var(--green-dark, #059669);
     }
 
     .modal-buttons {
@@ -5385,7 +5405,7 @@
           </div>
         `;
         
-        await showAlert('Session Details', detailsHtml, 'info', true);
+        await showAlert('Session Details', detailsHtml, 'info', { isHtml: true });
       } catch (error) {
         console.error('Error loading session details:', error);
         await showAlert('Error', 'Failed to load session details: ' + error.message, 'error');
@@ -6212,7 +6232,7 @@
 
     // Styled Modal Dialogs
     function showModal(options) {
-      const { type = 'info', title, message, onConfirm, onCancel } = options;
+      const { type = 'info', title, message, onConfirm, onCancel, isHtml = false } = options;
       const overlay = document.createElement('div');
       overlay.className = 'modal-overlay';
       
@@ -6235,12 +6255,20 @@
       content.innerHTML = `
         <div class="modal-icon ${iconColor[type]}">${icons[type]}</div>
         <h2 class="modal-title">${escapeHtml(title)}</h2>
-        <p class="modal-message">${escapeHtml(message)}</p>
+        <div class="modal-message" ${isHtml ? '' : ''}></div>
         <div class="modal-buttons">
           ${onCancel ? '<button class="modal-btn modal-btn-secondary" id="modal-cancel">Cancel</button>' : ''}
           ${onConfirm ? `<button class="modal-btn modal-btn-primary" id="modal-confirm">${onCancel ? 'Confirm' : 'OK'}</button>` : ''}
         </div>
       `;
+      
+      // Handle message content - either as HTML or escaped text
+      const messageDiv = content.querySelector('.modal-message');
+      if (isHtml) {
+        messageDiv.innerHTML = message;
+      } else {
+        messageDiv.textContent = message;
+      }
       
       overlay.appendChild(content);
       document.body.appendChild(overlay);
@@ -6268,12 +6296,13 @@
       if (confirmBtn) confirmBtn.focus();
     }
 
-    function showAlert(title, message, type = 'info') {
+    function showAlert(title, message, type = 'info', options = {}) {
       return new Promise((resolve) => {
         showModal({
           type,
           title,
           message,
+          isHtml: options.isHtml || false,
           onConfirm: resolve
         });
       });
