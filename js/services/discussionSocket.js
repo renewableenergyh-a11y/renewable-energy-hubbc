@@ -109,6 +109,28 @@ export class DiscussionSocketService {
             console.log('📥 [socket.io] Received user-reaction event:', data);
             this._emit('user-reaction', data);
           });
+
+          // WebRTC Phase 1 Signaling Events (Placeholder)
+          // These events are structure placeholders - Phase 1 has no active signaling
+          this.socket.on('webrtc-ready', (data) => {
+            console.log('📥 [socket.io] WebRTC ready event:', data);
+            this._emit('webrtc-ready', data);
+          });
+
+          this.socket.on('webrtc-offer', (data) => {
+            console.log('📥 [socket.io] WebRTC offer (Phase 1 placeholder):', data);
+            this._emit('webrtc-offer', data);
+          });
+
+          this.socket.on('webrtc-answer', (data) => {
+            console.log('📥 [socket.io] WebRTC answer (Phase 1 placeholder):', data);
+            this._emit('webrtc-answer', data);
+          });
+
+          this.socket.on('webrtc-ice-candidate', (data) => {
+            console.log('📥 [socket.io] WebRTC ICE candidate (Phase 1 placeholder):', data);
+            this._emit('webrtc-ice-candidate', data);
+          });
         };
 
         script.onerror = () => {
@@ -325,6 +347,114 @@ export class DiscussionSocketService {
       return true;
     } catch (error) {
       console.error('❌ [emitReaction] Error sending reaction:', error);
+      return false;
+    }
+  }
+
+  /**
+   * WebRTC Phase 1 - Send webrtc-ready signal
+   * @param {String} sessionId - Session ID
+   * @param {String} fromUserId - Sender email
+   */
+  emitWebRTCReady(sessionId, fromUserId) {
+    if (!this.socket || !this.socket.connected) {
+      console.warn('⚠️ [emitWebRTCReady] Socket not connected');
+      return false;
+    }
+
+    try {
+      console.log('🎥 [WebRTC] Emitting webrtc-ready:', { sessionId, from: fromUserId });
+      this.socket.emit('webrtc-ready', {
+        sessionId,
+        from: fromUserId
+      });
+      return true;
+    } catch (error) {
+      console.error('❌ [emitWebRTCReady] Error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * WebRTC Phase 1 - Send webrtc-offer (placeholder)
+   * @param {String} sessionId - Session ID
+   * @param {String} fromUserId - Sender email
+   * @param {String} toUserId - Recipient email
+   * @param {Object} offer - SDP offer (Phase 2)
+   */
+  emitWebRTCOffer(sessionId, fromUserId, toUserId, offer = null) {
+    if (!this.socket || !this.socket.connected) {
+      console.warn('⚠️ [emitWebRTCOffer] Socket not connected');
+      return false;
+    }
+
+    try {
+      console.log('🎥 [WebRTC] Emitting webrtc-offer (Phase 1 placeholder):', { sessionId, from: fromUserId, to: toUserId });
+      this.socket.emit('webrtc-offer', {
+        sessionId,
+        from: fromUserId,
+        to: toUserId,
+        offer: offer
+      });
+      return true;
+    } catch (error) {
+      console.error('❌ [emitWebRTCOffer] Error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * WebRTC Phase 1 - Send webrtc-answer (placeholder)
+   * @param {String} sessionId - Session ID
+   * @param {String} fromUserId - Sender email
+   * @param {String} toUserId - Recipient email
+   * @param {Object} answer - SDP answer (Phase 2)
+   */
+  emitWebRTCAnswer(sessionId, fromUserId, toUserId, answer = null) {
+    if (!this.socket || !this.socket.connected) {
+      console.warn('⚠️ [emitWebRTCAnswer] Socket not connected');
+      return false;
+    }
+
+    try {
+      console.log('🎥 [WebRTC] Emitting webrtc-answer (Phase 1 placeholder):', { sessionId, from: fromUserId, to: toUserId });
+      this.socket.emit('webrtc-answer', {
+        sessionId,
+        from: fromUserId,
+        to: toUserId,
+        answer: answer
+      });
+      return true;
+    } catch (error) {
+      console.error('❌ [emitWebRTCAnswer] Error:', error);
+      return false;
+    }
+  }
+
+  /**
+   * WebRTC Phase 1 - Send ICE candidate (placeholder)
+   * @param {String} sessionId - Session ID
+   * @param {String} fromUserId - Sender email
+   * @param {String} toUserId - Recipient email
+   * @param {Object} candidate - ICE candidate (Phase 2)
+   */
+  emitWebRTCICECandidate(sessionId, fromUserId, toUserId, candidate = null) {
+    if (!this.socket || !this.socket.connected) {
+      console.warn('⚠️ [emitWebRTCICECandidate] Socket not connected');
+      return false;
+    }
+
+    try {
+      console.log('🎥 [WebRTC] Emitting webrtc-ice-candidate (Phase 1 placeholder):', { sessionId, from: fromUserId, to: toUserId });
+      this.socket.emit('webrtc-ice-candidate', {
+        sessionId,
+        from: fromUserId,
+        to: toUserId,
+        candidate: candidate
+      });
+      return true;
+    } catch (error) {
+      console.error('❌ [emitWebRTCICECandidate] Error:', error);
       return false;
     }
   }

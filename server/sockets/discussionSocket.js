@@ -146,7 +146,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
    */
   io.on('connection', (socket) => {
     console.log(`📡 Socket connected: ${socket.id}`);
-    console.log('✅ Socket.IO handlers registered: join-session, leave-session, raise-hand, reaction, ping, admin-remove-participant, close-session, check-session-status');
+    console.log('✅ Socket.IO handlers registered: join-session, leave-session, raise-hand, reaction, ping, admin-remove-participant, close-session, check-session-status, webrtc-ready, webrtc-offer, webrtc-answer, webrtc-ice-candidate');
 
     /**
      * Event: join-session
@@ -769,6 +769,107 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         console.log(`✅ [reaction] Broadcast complete: ${userId} (role: ${userRole || socket.userRole}) sent ${reaction} in session ${sessionId}`);
       } catch (error) {
         console.error('❌ [reaction] Error handling reaction:', error);
+      }
+    });
+
+    /**
+     * WebRTC Phase 1 Signaling Events
+     * These are structure placeholders - Phase 1 foundation only
+     * No actual offer/answer logic, just routing skeleton
+     */
+
+    /**
+     * Event: webrtc-ready
+     * Client signals they have local media and peer connections ready
+     */
+    socket.on('webrtc-ready', (data) => {
+      const { sessionId, from } = data;
+      
+      if (!sessionId || !from) {
+        console.warn('⚠️ [webrtc-ready] Missing required fields');
+        return;
+      }
+
+      try {
+        console.log(`🎥 [webrtc-ready] User ${from} ready in session ${sessionId}`);
+        
+        // Broadcast to session (Phase 1: informational only)
+        io.to(`discussion-session:${sessionId}`).emit('webrtc-ready', {
+          sessionId,
+          from,
+          timestamp: Date.now()
+        });
+      } catch (error) {
+        console.error('❌ [webrtc-ready] Error:', error);
+      }
+    });
+
+    /**
+     * Event: webrtc-offer
+     * Phase 1: Placeholder only
+     * In Phase 2: Route SDP offer from peer A to peer B
+     */
+    socket.on('webrtc-offer', (data) => {
+      const { sessionId, from, to, offer } = data;
+      
+      if (!sessionId || !from || !to) {
+        console.warn('⚠️ [webrtc-offer] Missing required fields');
+        return;
+      }
+
+      try {
+        console.log(`🎥 [webrtc-offer] Phase 1 placeholder: ${from} -> ${to} in session ${sessionId}`);
+        
+        // Phase 1: No actual signaling
+        // Phase 2 will route this to the specific peer
+      } catch (error) {
+        console.error('❌ [webrtc-offer] Error:', error);
+      }
+    });
+
+    /**
+     * Event: webrtc-answer
+     * Phase 1: Placeholder only
+     * In Phase 2: Route SDP answer from peer B to peer A
+     */
+    socket.on('webrtc-answer', (data) => {
+      const { sessionId, from, to, answer } = data;
+      
+      if (!sessionId || !from || !to) {
+        console.warn('⚠️ [webrtc-answer] Missing required fields');
+        return;
+      }
+
+      try {
+        console.log(`🎥 [webrtc-answer] Phase 1 placeholder: ${from} -> ${to} in session ${sessionId}`);
+        
+        // Phase 1: No actual signaling
+        // Phase 2 will route this to the specific peer
+      } catch (error) {
+        console.error('❌ [webrtc-answer] Error:', error);
+      }
+    });
+
+    /**
+     * Event: webrtc-ice-candidate
+     * Phase 1: Placeholder only
+     * In Phase 2: Route ICE candidates between peers
+     */
+    socket.on('webrtc-ice-candidate', (data) => {
+      const { sessionId, from, to, candidate } = data;
+      
+      if (!sessionId || !from || !to) {
+        console.warn('⚠️ [webrtc-ice-candidate] Missing required fields');
+        return;
+      }
+
+      try {
+        console.log(`🎥 [webrtc-ice-candidate] Phase 1 placeholder: ${from} -> ${to} in session ${sessionId}`);
+        
+        // Phase 1: No actual signaling
+        // Phase 2 will route ICE candidates to specific peer
+      } catch (error) {
+        console.error('❌ [webrtc-ice-candidate] Error:', error);
       }
     });
 

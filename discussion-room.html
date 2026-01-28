@@ -316,6 +316,70 @@
       transform: translateY(-2px);
     }
 
+    /* WebRTC Phase 1: Local Media Preview */
+    .webrtc-preview-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding: 20px;
+      background: var(--bg-tertiary);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      min-width: 300px;
+    }
+
+    .local-video-wrapper {
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 16/9;
+      background: #000;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .local-video-wrapper video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .local-video-placeholder {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 14px;
+    }
+
+    .webrtc-preview-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .webrtc-preview-label i {
+      color: var(--accent-green);
+    }
+
+    .webrtc-status-message {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-align: center;
+      line-height: 1.5;
+      max-width: 500px;
+    }
+
     .sidebar {
       background: var(--bg-primary);
       border-radius: 12px;
@@ -1329,9 +1393,24 @@
         <div class="room-message">
           📡 Real-time Discussion Room
         </div>
+        
+        <!-- WebRTC Phase 1: Local Media Preview -->
+        <div class="webrtc-preview-container" id="webrtcPreview">
+          <div class="webrtc-preview-label">
+            <i class="fas fa-video"></i>
+            Local Camera Preview
+          </div>
+          <div class="local-video-wrapper">
+            <video id="localVideo" playsinline autoplay muted></video>
+          </div>
+          <div class="webrtc-status-message">
+            <p>WebRTC media exchange will be enabled in the next phase.</p>
+            <p>Your local camera and microphone will be shared with participants once Phase 2 is implemented.</p>
+          </div>
+        </div>
+        
         <div class="room-note">
           <p>This is the discussion room.</p>
-          <p>WebRTC media exchange will be added in the next step.</p>
           <p>Participants are synced in real-time via Socket.IO on the right.</p>
         </div>
       </div>
@@ -1462,6 +1541,258 @@
       }
     };
     import { discussionSocket } from '/js/services/discussionSocket.js';
+
+    /**
+     * WebRTC Phase 1 - Foundation Only
+     * Implements local media capture, peer connection skeleton, and signaling placeholder
+     */
+    class WebRTCPhase1Manager {
+      constructor() {
+        this.localStream = null;
+        this.localVideoElement = null;
+        this.peerConnections = new Map(); // key = email (userId)
+        this.signalingState = new Map(); // key = email, value = { state }
+        this.localUserId = null;
+        this.sessionId = null;
+        
+        // STUN server only (Phase 1)
+        this.iceServers = [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun1.l.google.com:19302' }
+        ];
+      }
+
+      /**
+       * Initialize WebRTC manager
+       * @param {String} userId - Local user email
+       * @param {String} sessionId - Current session ID
+       * @param {HTMLVideoElement} videoElement - Local video element
+       */
+      initialize(userId, sessionId, videoElement) {
+        this.localUserId = userId;
+        this.sessionId = sessionId;
+        this.localVideoElement = videoElement;
+        console.log('🎥 [WebRTC] Initialized Phase 1 Manager:', { userId, sessionId });
+      }
+
+      /**
+       * Capture local media (camera + microphone)
+       * Phase 1: Show local preview only
+       */
+      async captureLocalMedia() {
+        try {
+          console.log('📹 [WebRTC] Requesting local media access...');
+          
+          this.localStream = await navigator.mediaDevices.getUserMedia({
+            video: { 
+              width: { ideal: 640 },
+              height: { ideal: 480 }
+            },
+            audio: true
+          });
+
+          console.log('✅ [WebRTC] Local media stream obtained');
+
+          // Display local preview
+          if (this.localVideoElement) {
+            this.localVideoElement.srcObject = this.localStream;
+            console.log('✅ [WebRTC] Local video preview displayed');
+          }
+
+          return this.localStream;
+        } catch (error) {
+          console.error('❌ [WebRTC] Failed to get media:', error);
+          
+          if (error.name === 'NotAllowedError') {
+            console.warn('⚠️ [WebRTC] User denied permission for camera/microphone');
+            this.handlePermissionDenied();
+          } else if (error.name === 'NotFoundError') {
+            console.warn('⚠️ [WebRTC] No camera/microphone found on this device');
+            this.handleDeviceNotFound();
+          } else {
+            console.error('⚠️ [WebRTC] Unexpected error:', error.message);
+          }
+          
+          return null;
+        }
+      }
+
+      /**
+       * Handle permission denial gracefully
+       */
+      handlePermissionDenied() {
+        const preview = document.getElementById('webrtcPreview');
+        if (preview) {
+          const message = preview.querySelector('.webrtc-status-message');
+          if (message) {
+            message.innerHTML = `
+              <p style="color: var(--text-secondary);">
+                <i class="fas fa-lock" style="color: #f44336;"></i> 
+                Camera/microphone permission denied.
+              </p>
+              <p style="font-size: 12px; color: var(--text-muted);">
+                You can still participate in the discussion. To enable video/audio, 
+                please allow camera and microphone permissions in your browser settings.
+              </p>
+            `;
+          }
+        }
+      }
+
+      /**
+       * Handle device not found
+       */
+      handleDeviceNotFound() {
+        const preview = document.getElementById('webrtcPreview');
+        if (preview) {
+          const message = preview.querySelector('.webrtc-status-message');
+          if (message) {
+            message.innerHTML = `
+              <p style="color: var(--text-secondary);">
+                <i class="fas fa-video-slash" style="color: #f44336;"></i> 
+                No camera or microphone detected.
+              </p>
+              <p style="font-size: 12px; color: var(--text-muted);">
+                Please ensure your device has camera and microphone devices connected.
+              </p>
+            `;
+          }
+        }
+      }
+
+      /**
+       * Create peer connection skeleton for a participant
+       * Phase 1: No offers/answers yet, STUN only
+       * @param {String} peerId - Email of remote participant
+       */
+      createPeerConnection(peerId) {
+        try {
+          console.log(`🔗 [WebRTC] Creating peer connection for: ${peerId}`);
+
+          const peerConnection = new RTCPeerConnection({
+            iceServers: this.iceServers
+          });
+
+          // Handle ICE candidates (Phase 1: STUN only)
+          peerConnection.onicecandidate = (event) => {
+            if (event.candidate) {
+              console.log(`🧊 [WebRTC] ICE candidate for ${peerId}:`, event.candidate);
+              // Phase 1: Placeholder only - no signaling yet
+              // In Phase 2, this will be sent to peer
+            }
+          };
+
+          // Connection state changes
+          peerConnection.onconnectionstatechange = () => {
+            console.log(`📊 [WebRTC] ${peerId} connection state:`, peerConnection.connectionState);
+          };
+
+          this.peerConnections.set(peerId, peerConnection);
+          this.signalingState.set(peerId, { state: 'created' });
+
+          console.log(`✅ [WebRTC] Peer connection created for ${peerId}`);
+          return peerConnection;
+        } catch (error) {
+          console.error(`❌ [WebRTC] Failed to create peer connection for ${peerId}:`, error);
+          return null;
+        }
+      }
+
+      /**
+       * Get or create peer connection
+       * @param {String} peerId - Email of remote participant
+       */
+      getPeerConnection(peerId) {
+        if (this.peerConnections.has(peerId)) {
+          return this.peerConnections.get(peerId);
+        }
+        return this.createPeerConnection(peerId);
+      }
+
+      /**
+       * Cleanup: Stop all local tracks and close peer connections
+       */
+      cleanup() {
+        try {
+          console.log('🧹 [WebRTC] Cleaning up WebRTC resources...');
+
+          // Stop local stream
+          if (this.localStream) {
+            this.localStream.getTracks().forEach(track => {
+              track.stop();
+              console.log(`⏹️ [WebRTC] Stopped track:`, track.kind);
+            });
+            this.localStream = null;
+          }
+
+          // Close peer connections
+          this.peerConnections.forEach((pc, peerId) => {
+            try {
+              pc.close();
+              console.log(`🔌 [WebRTC] Closed peer connection for ${peerId}`);
+            } catch (err) {
+              console.error(`Error closing peer connection for ${peerId}:`, err);
+            }
+          });
+
+          this.peerConnections.clear();
+          this.signalingState.clear();
+
+          console.log('✅ [WebRTC] Cleanup complete');
+        } catch (error) {
+          console.error('❌ [WebRTC] Error during cleanup:', error);
+        }
+      }
+
+      /**
+       * Handle new participant - create peer connection
+       * Phase 1: Only initialize skeleton
+       * @param {String} participantEmail - New participant email
+       */
+      handleNewParticipant(participantEmail) {
+        if (participantEmail === this.localUserId) {
+          console.log(`ℹ️ [WebRTC] Skipping self (${participantEmail})`);
+          return;
+        }
+
+        if (!this.peerConnections.has(participantEmail)) {
+          this.getPeerConnection(participantEmail);
+          console.log(`👤 [WebRTC] Peer connection created for new participant: ${participantEmail}`);
+        }
+      }
+
+      /**
+       * Handle participant leaving - cleanup peer connection
+       * @param {String} participantEmail - Leaving participant email
+       */
+      handleParticipantLeft(participantEmail) {
+        if (this.peerConnections.has(participantEmail)) {
+          try {
+            const pc = this.peerConnections.get(participantEmail);
+            pc.close();
+            this.peerConnections.delete(participantEmail);
+            this.signalingState.delete(participantEmail);
+            console.log(`🔌 [WebRTC] Closed peer connection for leaving participant: ${participantEmail}`);
+          } catch (error) {
+            console.error(`Error closing peer connection for ${participantEmail}:`, error);
+          }
+        }
+      }
+
+      /**
+       * Get stats on peer connections
+       */
+      getStats() {
+        return {
+          localStreamActive: this.localStream !== null,
+          peerConnectionCount: this.peerConnections.size,
+          peers: Array.from(this.peerConnections.keys())
+        };
+      }
+    }
+
+    // Global WebRTC manager instance
+    const webrtcManager = new WebRTCPhase1Manager();
 
     const roomTitle = document.getElementById('roomTitle');
     const participantCount = document.getElementById('participantCount');
@@ -1679,6 +2010,13 @@
       localStorage.removeItem('currentUser');
       localStorage.removeItem('adminUser');
       localStorage.removeItem('instructorUser');
+      
+      // Cleanup WebRTC resources
+      try {
+        webrtcManager.cleanup();
+      } catch (error) {
+        console.error('Error cleaning up WebRTC:', error);
+      }
       
       // Disconnect socket if connected
       if (discussionSocket && discussionSocket.socket) {
@@ -1975,9 +2313,43 @@
             console.log('🔌 [discussion-room] Joining socket room (broadcasts presence)');
             await discussionSocket.joinSession(sessionId, user.token, user.email, user.role);
             console.log('✅ [discussion-room] Socket joined and participant list broadcasted');
+
+            // Step 4: Initialize WebRTC Phase 1
+            console.log('🎥 [discussion-room] Initializing WebRTC Phase 1...');
+            const localVideoElement = document.getElementById('localVideo');
+            
+            webrtcManager.initialize(user.email, sessionId, localVideoElement);
+            
+            // Attempt to capture local media
+            try {
+              await webrtcManager.captureLocalMedia();
+              console.log('✅ [discussion-room] Local media captured successfully');
+            } catch (mediaError) {
+              console.warn('⚠️ [discussion-room] Failed to capture local media:', mediaError.message);
+              // Continue anyway - user can still participate without video/audio
+            }
+
+            // Create peer connections for existing participants
+            const allParticipants = participantState.getAll();
+            if (allParticipants && allParticipants.length > 0) {
+              console.log(`🎥 [discussion-room] Creating peer connections for ${allParticipants.length} existing participants`);
+              allParticipants.forEach(participant => {
+                if (participant.userId !== user.email) {
+                  webrtcManager.handleNewParticipant(participant.userId);
+                }
+              });
+            }
+
+            console.log('✅ [discussion-room] WebRTC Phase 1 initialized:', webrtcManager.getStats());
           }
         } catch (error) {
           console.error('Failed to initialize room:', error);
+          // Cleanup WebRTC on error
+          try {
+            webrtcManager.cleanup();
+          } catch (cleanupError) {
+            console.error('Error during WebRTC cleanup:', cleanupError);
+          }
           showModal('Failed to Load', `Unable to initialize the discussion room: ${error.message}`, [
             { text: 'Return', class: 'modal-btn-primary', callback: () => {
               closeModal();
@@ -1993,6 +2365,12 @@
         startAuthValidation();
       } catch (error) {
         console.error('Failed to initialize room:', error);
+        // Cleanup WebRTC on error
+        try {
+          webrtcManager.cleanup();
+        } catch (cleanupError) {
+          console.error('Error during WebRTC cleanup:', cleanupError);
+        }
         showModal('Failed to Load Room', `Error: ${error.message}`, [
           { text: 'Return', class: 'modal-btn-primary', callback: () => {
             closeModal();
@@ -2054,6 +2432,15 @@
         
         // Re-render UI with deduplicated list from state
         renderParticipants(participantState.getAll(), data.stats);
+
+        // WebRTC Phase 1: Initialize peer connections for all active participants
+        if (webrtcManager.localUserId) {
+          data.participants.forEach(participant => {
+            if (participant.userId !== webrtcManager.localUserId && participant.active) {
+              webrtcManager.handleNewParticipant(participant.userId);
+            }
+          });
+        }
       });
 
       discussionSocket.on('participant-joined', (data) => {
@@ -2075,6 +2462,11 @@
         renderParticipants(participantState.getAll(), { activeCount: participantState.getCount() });
         
         showParticipantNotification(data.name, 'joined');
+
+        // WebRTC Phase 1: Create peer connection for new participant
+        if (webrtcManager.localUserId && data.userId !== webrtcManager.localUserId) {
+          webrtcManager.handleNewParticipant(data.userId);
+        }
       });
 
       discussionSocket.on('participant-left', (data) => {
@@ -2083,6 +2475,9 @@
         // Remove from frontend state using userId if available, else userName
         if (data.userId) {
           participantState.remove(data.userId);
+
+          // WebRTC Phase 1: Cleanup peer connection for leaving participant
+          webrtcManager.handleParticipantLeft(data.userId);
         }
         
         // Show notification for participant leaving
@@ -2170,7 +2565,7 @@
       // Button events
       leaveBtn.addEventListener('click', handleLeave);
 
-      // Control button events (UI placeholders for WebRTC)
+      // Control button events (UI placeholders for WebRTC Phase 1)
       const muteBtn = document.getElementById('muteBtn');
       const cameraBtn = document.getElementById('cameraBtn');
       const raiseHandBtn = document.getElementById('raiseHandBtn');
@@ -2178,24 +2573,30 @@
       const shareBtn = document.getElementById('shareBtn');
 
       if (muteBtn) {
-        let isMuted = false;
-        muteBtn.addEventListener('click', () => {
-          isMuted = !isMuted;
-          muteBtn.classList.toggle('active', !isMuted);
-          muteBtn.innerHTML = isMuted 
-            ? '<i class="fas fa-microphone-slash"></i><span>Unmute</span>'
-            : '<i class="fas fa-microphone"></i><span>Mute</span>';
+        // Phase 1: Disable with informational message
+        muteBtn.disabled = true;
+        muteBtn.title = 'Microphone control will be enabled in Phase 2';
+        muteBtn.style.opacity = '0.6';
+        muteBtn.style.cursor = 'not-allowed';
+        muteBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          showModal('Feature Coming Soon', 'Microphone control will be available in Phase 2 of WebRTC implementation.', [
+            { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
+          ]);
         });
       }
 
       if (cameraBtn) {
-        let isCameraOn = false;
-        cameraBtn.addEventListener('click', () => {
-          isCameraOn = !isCameraOn;
-          cameraBtn.classList.toggle('active', isCameraOn);
-          cameraBtn.innerHTML = isCameraOn
-            ? '<i class="fas fa-video"></i><span>Camera On</span>'
-            : '<i class="fas fa-video-slash"></i><span>Camera Off</span>';
+        // Phase 1: Disable with informational message
+        cameraBtn.disabled = true;
+        cameraBtn.title = 'Camera control will be enabled in Phase 2';
+        cameraBtn.style.opacity = '0.6';
+        cameraBtn.style.cursor = 'not-allowed';
+        cameraBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          showModal('Feature Coming Soon', 'Camera control will be available in Phase 2 of WebRTC implementation.', [
+            { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
+          ]);
         });
       }
 
@@ -2341,10 +2742,21 @@
           closeModal();
           try {
             console.log('👋 [discussion-room] User confirmed leave');
+            
+            // Cleanup WebRTC resources
+            console.log('🧹 [discussion-room] Cleaning up WebRTC resources...');
+            webrtcManager.cleanup();
+            
             await discussionSocket.leaveSession();
             window.location.href = '/discussions.html';
           } catch (error) {
             console.error('Error leaving session:', error);
+            // Still cleanup WebRTC even if socket error
+            try {
+              webrtcManager.cleanup();
+            } catch (cleanupError) {
+              console.error('Error during WebRTC cleanup:', cleanupError);
+            }
             window.location.href = '/discussions.html';
           }
         }}
@@ -2361,6 +2773,10 @@
             const userId = user.id || user._id;
             const userRole = user.role || 'student';
             await discussionSocket.closeSession(sessionData.sessionId, user.token, userId, userRole);
+            
+            // Cleanup WebRTC
+            webrtcManager.cleanup();
+            
             showModal('Success', 'Session closed successfully.', [
               { text: 'OK', class: 'modal-btn-primary', callback: () => {
                 closeModal();
