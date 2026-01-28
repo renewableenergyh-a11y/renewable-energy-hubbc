@@ -1892,6 +1892,10 @@
         try {
           const userRole = user.role || 'student';
           console.log('📝 [discussion-room] User role:', userRole);
+          console.log('📝 [discussion-room] Full user object:', JSON.stringify(user, null, 2));
+          console.log('📝 [discussion-room] localStorage.currentUser:', localStorage.getItem('currentUser'));
+          console.log('📝 [discussion-room] localStorage.adminRole:', localStorage.getItem('adminRole'));
+          console.log('📝 [discussion-room] localStorage.adminData:', localStorage.getItem('adminData'));
           
           // Step 1: REST call CREATES participant in database (single source of truth)
           const registerResponse = await fetch(`/api/discussions/participants/${sessionId}/join`, {
@@ -2571,6 +2575,7 @@
             hasPremium: user.hasPremium
           };
           console.log('✅ [getLocalCurrentUser] Normalized user object:', normalized);
+          console.log('✅ [getLocalCurrentUser] Original user.role was:', user.role, 'normalized to:', normalized.role);
           return normalized;
         }
         
