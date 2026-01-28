@@ -5253,6 +5253,7 @@
     async function viewSessionDetails(sessionId) {
       try {
         const token = localStorage.getItem('adminToken');
+        console.log('📝 [viewSessionDetails] Fetching session:', sessionId);
         const response = await fetch(`/api/discussions/sessions/${sessionId}`, {
           headers: {
             'Authorization': 'Bearer ' + token,
@@ -5261,11 +5262,167 @@
           }
         });
 
+        console.log('📝 [viewSessionDetails] Response status:', response.status);
+        
         if (!response.ok) {
-          throw new Error('Failed to load session details');
+          const errorData = await response.json();
+          console.error('❌ [viewSessionDetails] API error:', errorData);
+          throw new Error('Failed to load session details: ' + response.status);
         }
 
-        const session = await response.json();
+        const data = await response.json();
+        console.log('📝 [viewSessionDetails] Raw response data:', JSON.stringify(data, null, 2));
+        
+        // Handle both wrapped and unwrapped responses
+        const session = data.session || data;
+        console.log('📝 [viewSessionDetails] Parsed session:', JSON.stringify(session, null, 2));
+        
+        const startTime = new Date(session.startTime);
+        const endTime = new Date(session.endTime);
+        const duration = Math.round((endTime - startTime) / 60000);
+
+        const creatorName = session.creatorName || session.createdByName || (session.creator && (session.creator.name || session.creator.fullName)) || session.createdBy || 'Unknown';
+        const creatorRole = session.creatorRole || session.createdByRole || (session.creator && session.creator.role) || 'unknown';
+        const creatorRoleLabel = (creatorRole && typeof creatorRole === 'string') ? creatorRole.charAt(0).toUpperCase() + creatorRole.slice(1) : creatorRole;
+        
+        console.log('📝 [viewSessionDetails] Extracted fields:', { creatorName, creatorRole, status: session.status, subject: session.subject });
+        
+        const detailsHtml = `
+          <style>
+            .session-details-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 24px;
+              padding: 16px 0;
+            }
+            .session-details-grid.full {
+              grid-column: 1 / -1;
+            }
+            .detail-item {
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+            }
+            .detail-label {
+              font-weight: 700;
+              color: var(--green-main, #10b981);
+              font-size: 11px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .detail-value {
+              color: var(--text-main, #1f2937);
+              font-size: 14px;
+              line-height: 1.6;
+            }
+            .detail-value.monospace {
+              font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+              font-size: 12px;
+              background: var(--bg-secondary, #f3f4f6);
+              padding: 10px 12px;
+              border-radius: 6px;
+              word-break: break-all;
+              overflow-wrap: break-word;
+            }
+            .status-badge {
+              display: inline-block;
+              padding: 6px 14px;
+              border-radius: 20px;
+              font-weight: 600;
+              font-size: 12px;
+              width: fit-content;
+            }
+            .status-badge.active {
+              background-color: #dcfce7;
+              color: #166534;
+            }
+            .status-badge.upcoming {
+              background-color: #dbeafe;
+              color: #0c4a6e;
+            }
+            .status-badge.closed {
+              background-color: #f3f4f6;
+              color: #6b7280;
+            }
+            .role-badge {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 16px;
+              background-color: var(--bg-secondary, #f3f4f6);
+              color: #374151;
+              font-weight: 600;
+              font-size: 12px;
+              width: fit-content;
+            }
+            .session-grid-full {
+              grid-column: 1 / -1;
+            }
+          </style>
+          <div class="session-details-grid">
+            <div class="detail-item">
+              <div class="detail-label">Session ID</div>
+              <div class="detail-value monospace">${session.sessionId || session._id || 'N/A'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Status</div>
+              <div class="status-badge ${session.status === 'active' ? 'active' : session.status === 'upcoming' ? 'upcoming' : 'closed'}">
+                ${session.status === 'active' ? '● Active Now' : session.status === 'upcoming' ? '◯ Upcoming' : '✕ Closed'}
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Created By</div>
+              <div class="detail-value">${escapeHtml(creatorName)}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Creator Role</div>
+              <div class="role-badge">${escapeHtml(creatorRoleLabel)}</div>
+            </div>
+
+            <div class="detail-item">
+              <div class="detail-label">Session Type</div>
+              <div class="detail-value">${session.sessionType === 'peer' ? '👥 Peer Discussion' : '👨‍🏫 Instructor-Led'}</div>
+            </div>
+            <div class="detail-item">
+              <div class="detail-label">Participants</div>
+              <div class="detail-value">${session.participantCount || session.participants?.length || 0}</div>
+            </div>
+
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Subject</div>
+              <div class="detail-value">${escapeHtml(session.subject || 'N/A')}</div>
+            </div>
+            ${session.description ? `
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Description</div>
+              <div class="detail-value">${escapeHtml(session.description)}</div>
+            </div>
+            ` : ''}
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Start Time</div>
+              <div class="detail-value">📅 ${startTime.toLocaleString()}</div>
+            </div>
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">End Time</div>
+              <div class="detail-value">📅 ${endTime.toLocaleString()}</div>
+            </div>
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Duration</div>
+              <div class="detail-value">⏱️ ${duration} minutes</div>
+            </div>
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Course ID</div>
+              <div class="detail-value monospace">${session.courseId || 'N/A'}</div>
+            </div>
+          </div>
+        `;
+        
+        await showAlert('Session Details', detailsHtml, 'info', { isHtml: true });
+      } catch (error) {
+        console.error('❌ [viewSessionDetails] Error:', error);
+        await showAlert('Error', 'Failed to load session details: ' + error.message, 'error');
+      }
+    }
         
         const startTime = new Date(session.startTime);
         const endTime = new Date(session.endTime);
