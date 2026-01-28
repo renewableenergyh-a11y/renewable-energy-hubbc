@@ -3175,10 +3175,27 @@
       try {
         console.log('[admin-dashboard] joinDiscussionSession called with sessionId:', sessionId);
         
-        // Preserve admin authentication and promote to app auth
+        // Preserve admin authentication for discussion room
         const adminToken = localStorage.getItem('adminToken');
-        const appToken = localStorage.getItem('appToken') || localStorage.getItem('token');
-        if (adminToken) localStorage.setItem('appToken', adminToken);
+        const adminEmail = localStorage.getItem('adminEmail') || '';
+        const adminRole = localStorage.getItem('adminRole') || 'superadmin';
+        const adminName = localStorage.getItem('adminName') || 'Admin';
+        const adminId = localStorage.getItem('adminId') || adminEmail;
+
+        if (adminToken) {
+          // Set standard auth token and currentUser so discussion room recognizes admin
+          localStorage.setItem('authToken', adminToken);
+          localStorage.setItem('currentUser', JSON.stringify({
+            id: adminId,
+            _id: adminId,
+            email: adminEmail,
+            name: adminName,
+            fullName: adminName,
+            username: adminName,
+            role: adminRole
+          }));
+          localStorage.setItem('isLoggedIn', 'true');
+        }
 
         // Redirect into the discussion room using standard session URL
         const targetUrl = `/discussion-room.html?sessionId=${sessionId}`;
