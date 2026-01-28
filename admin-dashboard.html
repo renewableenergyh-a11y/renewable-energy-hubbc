@@ -5256,58 +5256,131 @@
         const creatorRoleLabel = (creatorRole && typeof creatorRole === 'string') ? creatorRole.charAt(0).toUpperCase() + creatorRole.slice(1) : creatorRole;
         
         const detailsHtml = `
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Session ID</div>
-              <div style="color: var(--text-main); font-size: 13px; word-break: break-all; font-family: monospace; background: var(--bg-secondary); padding: 8px; border-radius: 4px;">${session.sessionId || 'N/A'}</div>
+          <style>
+            .session-details-grid {
+              display: grid;
+              grid-template-columns: 1fr 1fr;
+              gap: 24px;
+              padding: 16px 0;
+            }
+            .session-details-grid.full {
+              grid-column: 1 / -1;
+            }
+            .detail-item {
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+            }
+            .detail-label {
+              font-weight: 700;
+              color: var(--green-main, #10b981);
+              font-size: 11px;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+            }
+            .detail-value {
+              color: var(--text-main, #1f2937);
+              font-size: 14px;
+              line-height: 1.6;
+            }
+            .detail-value.monospace {
+              font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', 'Courier New', monospace;
+              font-size: 12px;
+              background: var(--bg-secondary, #f3f4f6);
+              padding: 10px 12px;
+              border-radius: 6px;
+              word-break: break-all;
+              overflow-wrap: break-word;
+            }
+            .status-badge {
+              display: inline-block;
+              padding: 6px 14px;
+              border-radius: 20px;
+              font-weight: 600;
+              font-size: 12px;
+              width: fit-content;
+            }
+            .status-badge.active {
+              background-color: #dcfce7;
+              color: #166534;
+            }
+            .status-badge.upcoming {
+              background-color: #dbeafe;
+              color: #0c4a6e;
+            }
+            .status-badge.closed {
+              background-color: #f3f4f6;
+              color: #6b7280;
+            }
+            .role-badge {
+              display: inline-block;
+              padding: 4px 12px;
+              border-radius: 16px;
+              background-color: var(--bg-secondary, #f3f4f6);
+              color: #374151;
+              font-weight: 600;
+              font-size: 12px;
+              width: fit-content;
+            }
+            .session-grid-full {
+              grid-column: 1 / -1;
+            }
+          </style>
+          <div class="session-details-grid">
+            <div class="detail-item">
+              <div class="detail-label">Session ID</div>
+              <div class="detail-value monospace">${session.sessionId || 'N/A'}</div>
             </div>
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Status</div>
-              <div style="display: inline-block; padding: 4px 12px; border-radius: 20px; background: ${session.status === 'active' ? '#dcfce7' : session.status === 'upcoming' ? '#dbeafe' : '#f3f4f6'}; color: ${session.status === 'active' ? '#166534' : session.status === 'upcoming' ? '#0c4a6e' : '#6b7280'}; font-weight: 600; font-size: 12px;">${session.status === 'active' ? 'Active Now' : session.status === 'upcoming' ? 'Upcoming' : 'Closed'}</div>
+            <div class="detail-item">
+              <div class="detail-label">Status</div>
+              <div class="status-badge ${session.status === 'active' ? 'active' : session.status === 'upcoming' ? 'upcoming' : 'closed'}">
+                ${session.status === 'active' ? '● Active Now' : session.status === 'upcoming' ? '◯ Upcoming' : '✕ Closed'}
+              </div>
             </div>
 
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Created By</div>
-              <div style="color: var(--text-main); font-size: 13px;">${escapeHtml(creatorName)}</div>
+            <div class="detail-item">
+              <div class="detail-label">Created By</div>
+              <div class="detail-value">${escapeHtml(creatorName)}</div>
             </div>
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Creator Role</div>
-              <div style="display: inline-block; padding: 4px 10px; border-radius: 16px; background: #f3f4f6; color: #374151; font-weight: 600; font-size: 12px;">${escapeHtml(creatorRoleLabel)}</div>
+            <div class="detail-item">
+              <div class="detail-label">Creator Role</div>
+              <div class="role-badge">${escapeHtml(creatorRoleLabel)}</div>
             </div>
 
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Session Type</div>
-              <div style="color: var(--text-main); font-size: 13px;">${session.sessionType === 'peer' ? 'Peer Discussion' : 'Instructor-Led'}</div>
+            <div class="detail-item">
+              <div class="detail-label">Session Type</div>
+              <div class="detail-value">${session.sessionType === 'peer' ? '👥 Peer Discussion' : '👨‍🏫 Instructor-Led'}</div>
             </div>
-            <div>
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Participants</div>
-              <div style="color: var(--text-main); font-size: 13px;">${session.participantCount || 0}</div>
+            <div class="detail-item">
+              <div class="detail-label">Participants</div>
+              <div class="detail-value">${session.participantCount || 0}</div>
             </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Subject</div>
-              <div style="color: var(--text-main); font-size: 13px;">${escapeHtml(session.subject || 'N/A')}</div>
+
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Subject</div>
+              <div class="detail-value">${escapeHtml(session.subject || 'N/A')}</div>
             </div>
             ${session.description ? `
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Description</div>
-              <div style="color: var(--text-main); font-size: 13px; line-height: 1.5;">${escapeHtml(session.description)}</div>
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Description</div>
+              <div class="detail-value">${escapeHtml(session.description)}</div>
             </div>
             ` : ''}
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Start Time</div>
-              <div style="color: var(--text-main); font-size: 13px;">${startTime.toLocaleString()}</div>
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Start Time</div>
+              <div class="detail-value">📅 ${startTime.toLocaleString()}</div>
             </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">End Time</div>
-              <div style="color: var(--text-main); font-size: 13px;">${endTime.toLocaleString()}</div>
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">End Time</div>
+              <div class="detail-value">📅 ${endTime.toLocaleString()}</div>
             </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Duration</div>
-              <div style="color: var(--text-main); font-size: 13px;">${duration} minutes</div>
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Duration</div>
+              <div class="detail-value">⏱️ ${duration} minutes</div>
             </div>
-            <div style="grid-column: 1 / -1;">
-              <div style="font-weight: 600; color: var(--green-main); font-size: 12px; text-transform: uppercase; margin-bottom: 6px;">Course ID</div>
-              <div style="color: var(--text-main); font-size: 13px; font-family: monospace; background: var(--bg-secondary); padding: 8px; border-radius: 4px; word-break: break-all;">${session.courseId || 'N/A'}</div>
+            <div class="detail-item session-grid-full">
+              <div class="detail-label">Course ID</div>
+              <div class="detail-value monospace">${session.courseId || 'N/A'}</div>
             </div>
           </div>
         `;
