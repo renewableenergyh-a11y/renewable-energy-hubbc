@@ -1425,28 +1425,36 @@
     // Create compatible authService interface
     const authService = {
       getCurrentUser: async () => {
-        // Check for regular app user first
-        let user = getCurrentUser();
-        let token = localStorage.getItem('authToken');
-        
-        // If no app user, check for admin user
-        if (!user) {
-          const adminDataStr = localStorage.getItem('adminData');
-          if (adminDataStr) {
-            try {
-              user = JSON.parse(adminDataStr);
-              token = localStorage.getItem('adminToken');
-            } catch (e) {
-              console.warn('Failed to parse adminData:', e);
-            }
+        // Check for admin user FIRST (priority over regular app user)
+        const adminDataStr = localStorage.getItem('adminData');
+        if (adminDataStr) {
+          try {
+            const user = JSON.parse(adminDataStr);
+            const token = localStorage.getItem('adminToken');
+            console.log('✅ [authService] Using admin credentials from adminData');
+            return {
+              ...user,
+              token: token
+            };
+          } catch (e) {
+            console.warn('Failed to parse adminData:', e);
           }
         }
         
-        if (!user) return null;
-        return {
-          ...user,
-          token: token
-        };
+        // Otherwise check for regular app user
+        let user = getCurrentUser();
+        let token = localStorage.getItem('authToken');
+        
+        if (user && token) {
+          console.log('✅ [authService] Using app user credentials');
+          return {
+            ...user,
+            token: token
+          };
+        }
+        
+        console.warn('⚠️ [authService] No valid user credentials found (no adminData, no currentUser+authToken)');
+        return null;
       },
       logout: async () => {
         logoutUser();
