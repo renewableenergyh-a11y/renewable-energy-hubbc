@@ -1961,7 +1961,7 @@
             // Step 3: ONLY AFTER REST succeeds, join socket to room
             // This broadcasts the participant list (which was created by REST)
             console.log('🔌 [discussion-room] Joining socket room (broadcasts presence)');
-            await discussionSocket.joinSession(sessionId, user.token, user.id || user._id, user.role);
+            await discussionSocket.joinSession(sessionId, user.token, user.email, user.role);
             console.log('✅ [discussion-room] Socket joined and participant list broadcasted');
           }
         } catch (error) {
