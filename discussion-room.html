@@ -2464,9 +2464,6 @@
           console.log('ℹ️ [discussion-room] Close button hidden for role:', user.role);
         }
 
-        // Setup event listeners BEFORE joining
-        setupListeners();
-
         // Get participant name from user details or prompt for one
         console.log('👤 [discussion-room] Getting participant name from user details...');
         const participantFullName = await getOrPromptParticipantName(user);
@@ -2588,6 +2585,9 @@
           }
 
           console.log('✅ [discussion-room] WebRTC Phase 1 initialized:', webrtcManager.getStats());
+
+          // Setup event listeners AFTER WebRTC manager is initialized (so webrtcManager exists)
+          setupListeners();
         } catch (error) {
           console.error('Failed to initialize room:', error);
           // Cleanup WebRTC on error
