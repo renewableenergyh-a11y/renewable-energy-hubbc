@@ -1184,7 +1184,7 @@
     @media (max-width: 1024px) {
       .room-container {
         grid-template-columns: 1fr;
-        grid-template-rows: auto 1fr auto;
+        grid-template-rows: auto 1fr auto auto;
         padding: 12px;
         gap: 12px;
       }
@@ -1192,6 +1192,8 @@
       .room-header {
         padding: 16px;
         border-radius: 8px;
+        grid-column: 1;
+        grid-row: 1;
       }
 
       .room-title {
@@ -1200,12 +1202,13 @@
 
       .room-main {
         grid-column: 1;
-        grid-row: 1 / 3;
+        grid-row: 2;
         border-radius: 8px;
       }
 
       .room-controls {
         grid-column: 1;
+        grid-row: 3;
         padding: 16px;
         border-radius: 8px;
         gap: 8px;
@@ -1217,7 +1220,7 @@
 
       .sidebars-container {
         grid-column: 1;
-        grid-row: 3;
+        grid-row: 4;
         position: static;
         display: flex;
         flex-direction: column;
