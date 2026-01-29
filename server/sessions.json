@@ -1,1 +1,780 @@
-{}
+{
+  "obbanda067@gmail.com": {
+    "_id": "696deb52114dbc2f90d77c42",
+    "sessionId": "obbanda067@gmail.com",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T08:29:05.142Z",
+    "email": "obbanda067@gmail.com",
+    "id": "obbanda067@gmail.com",
+    "name": "obbanda067",
+    "opened": true,
+    "messages": [],
+    "openedAt": "2026-01-19T10:32:28.478Z"
+  },
+  "s_hih1t75rf3cx": {
+    "_id": "696df0aa114dbc2f90d77c51",
+    "sessionId": "s_hih1t75rf3cx",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T08:51:53.538Z",
+    "email": "guest@example.com",
+    "id": "s_hih1t75rf3cx",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T08:51:53.538Z"
+      }
+    ],
+    "openedAt": "2026-01-19T09:26:40.723Z"
+  },
+  "s_c5ztvursfnxp": {
+    "_id": "696df0c4114dbc2f90d77c53",
+    "sessionId": "s_c5ztvursfnxp",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T08:52:19.977Z",
+    "email": "guest@example.com",
+    "id": "s_c5ztvursfnxp",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T08:52:19.977Z"
+      }
+    ],
+    "openedAt": "2026-01-19T09:26:36.928Z"
+  },
+  "s_k16j1m6kif2t": {
+    "_id": "696df145114dbc2f90d77c55",
+    "sessionId": "s_k16j1m6kif2t",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T08:54:28.636Z",
+    "email": "Aubreymkhulanabanda@gmail.com",
+    "id": "s_k16j1m6kif2t",
+    "name": "Aubreymkhulanabanda",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T08:54:28.636Z"
+      }
+    ],
+    "openedAt": "2026-01-20T01:19:19.866Z"
+  },
+  "s_yzumfjszsck7": {
+    "_id": "696df314114dbc2f90d77c5d",
+    "sessionId": "s_yzumfjszsck7",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T09:02:11.899Z",
+    "email": "guest@example.com",
+    "id": "s_yzumfjszsck7",
+    "name": "Guest User",
+    "opened": false,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T09:02:11.899Z"
+      },
+      {
+        "from": "Aubrey Mkhulana",
+        "text": "hello",
+        "files": [],
+        "role": "admin",
+        "time": "2026-01-19T09:02:27.018Z"
+      }
+    ],
+    "updatedAt": "2026-01-19T09:02:38.948Z"
+  },
+  "s_9xkp3wkdtm0t": {
+    "_id": "696df34f114dbc2f90d77c5f",
+    "sessionId": "s_9xkp3wkdtm0t",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T09:03:10.647Z",
+    "email": "guest@example.com",
+    "id": "s_9xkp3wkdtm0t",
+    "name": "Guest User",
+    "opened": false,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T09:03:10.647Z"
+      }
+    ],
+    "updatedAt": "2026-01-19T09:03:45.271Z"
+  },
+  "s_g5x8w4iw3z04": {
+    "_id": "696df532114dbc2f90d77c62",
+    "sessionId": "s_g5x8w4iw3z04",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T09:11:14.081Z",
+    "email": "guest@example.com",
+    "id": "s_g5x8w4iw3z04",
+    "name": "Guest User",
+    "opened": false,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T09:11:14.081Z"
+      }
+    ],
+    "updatedAt": "2026-01-19T09:12:04.925Z"
+  },
+  "s_gur17u7wf7ro": {
+    "_id": "696df73f114dbc2f90d77c68",
+    "sessionId": "s_gur17u7wf7ro",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T09:19:58.657Z",
+    "email": "guest@example.com",
+    "id": "s_gur17u7wf7ro",
+    "name": "Guest User",
+    "opened": false,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T09:19:58.657Z"
+      }
+    ],
+    "updatedAt": "2026-01-19T09:20:27.912Z"
+  },
+  "s_80px78sh81kq": {
+    "_id": "696e0824114dbc2f90d77c8d",
+    "sessionId": "s_80px78sh81kq",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:04.590Z",
+    "id": "s_80px78sh81kq",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:04.590Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:04.590Z"
+  },
+  "s_rwncmks27bs2": {
+    "_id": "696e0828114dbc2f90d77c8f",
+    "sessionId": "s_rwncmks27bs2",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:07.670Z",
+    "id": "s_rwncmks27bs2",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:07.670Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:07.670Z"
+  },
+  "s_4akrdhvcyc2s": {
+    "_id": "696e082c114dbc2f90d77c90",
+    "sessionId": "s_4akrdhvcyc2s",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:11.003Z",
+    "id": "s_4akrdhvcyc2s",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:11.003Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:11.003Z"
+  },
+  "s_uvvfm0jmtyzj": {
+    "_id": "696e082e114dbc2f90d77c91",
+    "sessionId": "s_uvvfm0jmtyzj",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:13.213Z",
+    "id": "s_uvvfm0jmtyzj",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:13.213Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:13.213Z"
+  },
+  "s_wwveqtvctc16": {
+    "_id": "696e0840114dbc2f90d77c92",
+    "sessionId": "s_wwveqtvctc16",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:30.764Z",
+    "id": "s_wwveqtvctc16",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:31.697Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:30.764Z"
+  },
+  "s_4w2261dclrma": {
+    "_id": "696e084d114dbc2f90d77c93",
+    "sessionId": "s_4w2261dclrma",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:45.471Z",
+    "id": "s_4w2261dclrma",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:45.471Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:45.471Z"
+  },
+  "s_3w4ias1xh1jm": {
+    "_id": "696e0851114dbc2f90d77c94",
+    "sessionId": "s_3w4ias1xh1jm",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:48.527Z",
+    "id": "s_3w4ias1xh1jm",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:48.527Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:48.527Z"
+  },
+  "s_escep6xraex7": {
+    "_id": "696e0854114dbc2f90d77c95",
+    "sessionId": "s_escep6xraex7",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:51.181Z",
+    "id": "s_escep6xraex7",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:51.181Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:51.181Z"
+  },
+  "s_dyq0g5n0auj5": {
+    "_id": "696e0856114dbc2f90d77c96",
+    "sessionId": "s_dyq0g5n0auj5",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:53.592Z",
+    "id": "s_dyq0g5n0auj5",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:53.592Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:53.592Z"
+  },
+  "s_wprg4vlaj5ed": {
+    "_id": "696e0859114dbc2f90d77c97",
+    "sessionId": "s_wprg4vlaj5ed",
+    "__v": 0,
+    "createdAt": "2026-01-19T10:32:56.172Z",
+    "id": "s_wprg4vlaj5ed",
+    "opened": true,
+    "openedAt": "2026-01-19T10:32:56.172Z",
+    "status": "open",
+    "updatedAt": "2026-01-19T10:32:56.172Z"
+  },
+  "s_86b46uur51r9": {
+    "_id": "696e0913114dbc2f90d77c9e",
+    "sessionId": "s_86b46uur51r9",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T10:36:03.146Z",
+    "email": "guest@example.com",
+    "id": "s_86b46uur51r9",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T10:36:03.146Z"
+      }
+    ],
+    "openedAt": "2026-01-19T10:36:08.176Z",
+    "updatedAt": "2026-01-19T10:36:29.147Z"
+  },
+  "s_155l871joai4": {
+    "_id": "696e0c95114dbc2f90d77ca3",
+    "sessionId": "s_155l871joai4",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T10:51:00.959Z",
+    "email": "guest@example.com",
+    "id": "s_155l871joai4",
+    "name": "Guest User",
+    "opened": true,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T10:51:00.959Z"
+      }
+    ],
+    "openedAt": "2026-01-19T10:51:06.241Z",
+    "updatedAt": "2026-01-19T10:52:05.632Z"
+  },
+  "s_zhczdkiwps47": {
+    "_id": "696e0cda114dbc2f90d77ca5",
+    "sessionId": "s_zhczdkiwps47",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T10:52:10.457Z",
+    "email": "guest@example.com",
+    "id": "s_zhczdkiwps47",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "Aubrey Mkhulana",
+        "text": "yes",
+        "files": [],
+        "role": "admin",
+        "time": "2026-01-19T10:52:21.603Z"
+      }
+    ],
+    "openedAt": "2026-01-20T01:19:15.927Z",
+    "updatedAt": "2026-01-19T10:52:21.604Z"
+  },
+  "s_lyoqaa5gva81": {
+    "_id": "696e0ddc114dbc2f90d77ca7",
+    "sessionId": "s_lyoqaa5gva81",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T10:56:27.203Z",
+    "email": "guest@example.com",
+    "id": "s_lyoqaa5gva81",
+    "name": "Guest User",
+    "opened": true,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T10:56:27.203Z"
+      }
+    ],
+    "openedAt": "2026-01-19T10:56:33.995Z",
+    "updatedAt": "2026-01-19T11:02:03.329Z",
+    "lastActivity": 1768820270412
+  },
+  "s_gdtq4npycqsx": {
+    "_id": "696e110c114dbc2f90d77ca9",
+    "sessionId": "s_gdtq4npycqsx",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T11:10:01.864Z",
+    "email": "guest@example.com",
+    "id": "s_gdtq4npycqsx",
+    "name": "Guest User",
+    "opened": true,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T11:10:01.864Z"
+      }
+    ],
+    "openedAt": "2026-01-19T11:10:12.871Z",
+    "updatedAt": "2026-01-19T11:14:15.333Z",
+    "lastActivity": 1768821043631
+  },
+  "s_b1em5gr9jkyt": {
+    "_id": "696e124a114dbc2f90d77cac",
+    "sessionId": "s_b1em5gr9jkyt",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T11:15:20.868Z",
+    "email": "guest@example.com",
+    "id": "s_b1em5gr9jkyt",
+    "name": "Guest User",
+    "opened": true,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T11:15:20.868Z"
+      }
+    ],
+    "openedAt": "2026-01-19T11:15:29.307Z",
+    "updatedAt": "2026-01-19T11:16:46.595Z"
+  },
+  "s_fmdyzvk3ofhi": {
+    "_id": "696e132b114dbc2f90d77caf",
+    "sessionId": "s_fmdyzvk3ofhi",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T11:19:07.103Z",
+    "email": "guest@example.com",
+    "id": "s_fmdyzvk3ofhi",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "User",
+        "text": "",
+        "files": [
+          {
+            "name": "CV.pdf",
+            "url": "/server/uploads/1768821670337_CV.pdf"
+          }
+        ],
+        "role": "user",
+        "time": "2026-01-19T11:21:10.337Z"
+      }
+    ],
+    "openedAt": "2026-01-20T01:19:14.156Z",
+    "updatedAt": "2026-01-19T11:21:43.087Z",
+    "lastActivity": 1768821670337
+  },
+  "s_7r2hvqw3wxcq": {
+    "_id": "696e14b8114dbc2f90d77cb3",
+    "sessionId": "s_7r2hvqw3wxcq",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T11:25:43.471Z",
+    "email": "guest@example.com",
+    "id": "s_7r2hvqw3wxcq",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Well",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T11:28:15.746Z"
+      }
+    ],
+    "openedAt": "2026-01-20T01:19:03.503Z",
+    "updatedAt": "2026-01-19T11:25:52.205Z",
+    "lastActivity": 1768822095746
+  },
+  "s_997iacxo1fse": {
+    "_id": "696e158b114dbc2f90d77cb6",
+    "sessionId": "s_997iacxo1fse",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T11:29:13.959Z",
+    "email": "guest@example.com",
+    "id": "s_997iacxo1fse",
+    "name": "Guest User",
+    "opened": true,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T11:29:13.959Z"
+      }
+    ],
+    "openedAt": "2026-01-19T11:29:24.523Z",
+    "updatedAt": "2026-01-19T11:30:23.589Z",
+    "lastActivity": 1768822193648
+  },
+  "s_fud9byj370vt": {
+    "_id": "696e23afc3bac22babdb4a08",
+    "sessionId": "s_fud9byj370vt",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T12:29:33.836Z",
+    "email": "guest@example.com",
+    "id": "s_fud9byj370vt",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "Aubrey",
+        "text": "hey",
+        "files": [],
+        "role": "admin",
+        "time": "2026-01-19T12:30:29.161Z"
+      }
+    ],
+    "openedAt": "2026-01-20T11:05:12.279Z",
+    "updatedAt": "2026-01-19T12:30:29.163Z"
+  },
+  "s_nl034lyjdyj8": {
+    "_id": "696e3f32c3bac22babdb4a16",
+    "sessionId": "s_nl034lyjdyj8",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-19T14:26:55.885Z",
+    "email": "guest@example.com",
+    "id": "s_nl034lyjdyj8",
+    "name": "Guest User",
+    "opened": true,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-19T14:26:55.885Z"
+      }
+    ],
+    "openedAt": "2026-01-19T14:27:02.909Z",
+    "updatedAt": "2026-01-19T14:28:07.577Z",
+    "lastActivity": 1768832851215
+  },
+  "s_b2ve1ity34ov": {
+    "_id": "696f5758f73f7f43f16135bd",
+    "sessionId": "s_b2ve1ity34ov",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-20T10:22:14.172Z",
+    "email": "guest@example.com",
+    "id": "s_b2ve1ity34ov",
+    "name": "Guest User",
+    "opened": true,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-20T10:22:14.172Z"
+      },
+      {
+        "from": "Aubrey",
+        "text": "helloi",
+        "files": [],
+        "role": "admin",
+        "time": "2026-01-20T10:29:36.265Z"
+      },
+      {
+        "from": "User",
+        "text": "I need some help",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-20T10:30:42.740Z"
+      },
+      {
+        "from": "Aubrey",
+        "text": "how can I help?",
+        "files": [],
+        "role": "admin",
+        "time": "2026-01-20T10:31:16.984Z"
+      },
+      {
+        "from": "User",
+        "text": "My payment is failing",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-20T10:31:58.702Z"
+      },
+      {
+        "from": "Aubrey",
+        "text": "okay",
+        "files": [],
+        "role": "admin",
+        "time": "2026-01-20T10:32:26.817Z"
+      },
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-20T11:04:45.277Z"
+      }
+    ],
+    "openedAt": "2026-01-20T11:04:55.779Z",
+    "updatedAt": "2026-01-20T11:04:59.805Z",
+    "lastActivity": 1768907085277
+  },
+  "s_xrau90dmme05": {
+    "_id": "6974d0563bd82d356413df58",
+    "sessionId": "s_xrau90dmme05",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-24T13:59:50.050Z",
+    "email": "guest@example.com",
+    "id": "s_xrau90dmme05",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-24T13:59:50.050Z"
+      }
+    ],
+    "openedAt": "2026-01-29T09:20:15.376Z"
+  },
+  "s_up14jpru5orf": {
+    "_id": "6975229b3bd82d356413e056",
+    "sessionId": "s_up14jpru5orf",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-24T19:50:51.724Z",
+    "email": "guest@example.com",
+    "id": "s_up14jpru5orf",
+    "name": "Guest User",
+    "opened": true,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-24T19:50:51.724Z"
+      }
+    ],
+    "openedAt": "2026-01-24T19:51:03.697Z",
+    "updatedAt": "2026-01-24T19:51:48.035Z",
+    "lastActivity": 1769284287528
+  },
+  "s_en7p134zr8y7": {
+    "_id": "6975f8773bd82d356413e162",
+    "sessionId": "s_en7p134zr8y7",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-25T11:03:19.565Z",
+    "email": "guest@example.com",
+    "id": "s_en7p134zr8y7",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Holla",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-25T11:03:19.565Z"
+      }
+    ],
+    "openedAt": "2026-01-29T09:20:08.885Z"
+  },
+  "s_q2cy8fiuilln": {
+    "_id": "697617b23bd82d356413e1ad",
+    "sessionId": "s_q2cy8fiuilln",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-25T13:16:34.098Z",
+    "email": "guest@example.com",
+    "id": "s_q2cy8fiuilln",
+    "name": "Guest User",
+    "opened": true,
+    "status": "active",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-25T13:16:34.098Z"
+      }
+    ],
+    "openedAt": "2026-01-25T13:16:40.325Z"
+  },
+  "s_jjvg2um20r6v": {
+    "_id": "697648ee3bd82d356413e213",
+    "sessionId": "s_jjvg2um20r6v",
+    "__v": 0,
+    "accepted": false,
+    "acceptedBy": null,
+    "active": false,
+    "createdAt": "2026-01-25T16:46:38.729Z",
+    "email": "guest@example.com",
+    "id": "s_jjvg2um20r6v",
+    "name": "Guest User",
+    "opened": true,
+    "status": "terminated",
+    "messages": [
+      {
+        "from": "User",
+        "text": "Hello",
+        "files": [],
+        "role": "user",
+        "time": "2026-01-25T16:46:38.729Z"
+      }
+    ],
+    "openedAt": "2026-01-25T16:46:46.011Z",
+    "updatedAt": "2026-01-25T16:49:06.914Z",
+    "lastActivity": 1769359642027
+  }
+}
