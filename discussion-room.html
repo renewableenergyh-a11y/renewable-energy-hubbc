@@ -317,6 +317,28 @@
       transform: translateY(-2px);
     }
 
+    /* Media Container for Remote Videos */
+    .media-container {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 12px;
+      background: #000;
+      border-radius: 12px;
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .media-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+      border-radius: 8px;
+      display: block;
+    }
+
     /* WebRTC Phase 1: Local Media Preview */
     .webrtc-preview-container {
       position: absolute;
@@ -1291,6 +1313,28 @@
         margin-bottom: 12px;
       }
 
+      .media-container {
+        width: 100%;
+        height: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 12px;
+        background: #000;
+        border-radius: 12px;
+        overflow: auto;
+        padding: 12px;
+      }
+
+      .media-container video {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16/9;
+        object-fit: cover;
+        background: #000;
+        border-radius: 8px;
+        display: block;
+      }
+
       .webrtc-preview-container {
         position: absolute;
         top: 15px;
@@ -1484,6 +1528,9 @@
       </div>
 
       <div class="room-content">
+        <!-- Remote Media Container - dynamically populated with peer video elements -->
+        <div class="media-container" id="mediaContainer"></div>
+
         <!-- WebRTC Phase 1: Local Media Preview -->
         <div class="webrtc-preview-container" id="webrtcPreview">
           <div class="webrtc-preview-label">
@@ -1649,29 +1696,26 @@
 
         // If it doesn't exist, create it dynamically
         if (!videoEl) {
-          console.log(`📺 [WebRTC] Creating video element for peer ${peerId}`);
-          
           videoEl = document.createElement('video');
           videoEl.id = `remote-video-${peerId}`;
           videoEl.autoplay = true;
           videoEl.playsInline = true;
-          videoEl.style.width = '100%';
-          videoEl.style.height = '100%';
-          videoEl.style.objectFit = 'cover';
+          videoEl.muted = false; // Only local stream is muted
           
-          // Append to webrtcPreview if it exists, otherwise append to body
-          const container = document.getElementById('webrtcPreview') || document.body;
-          container.appendChild(videoEl);
-          
-          console.log(`✅ [WebRTC] Created video element ${videoEl.id} and appended to DOM`);
+          // Append to media container for remote videos
+          const container = document.getElementById('mediaContainer');
+          if (container) {
+            container.appendChild(videoEl);
+          } else {
+            console.warn(`⚠️ [WebRTC] Media container not found, appending to body`);
+            document.body.appendChild(videoEl);
+          }
         }
 
         // Attach the stream
         videoEl.srcObject = stream;
-        videoEl.autoplay = true;
-        videoEl.playsInline = true;
 
-        console.log(`📺 [WebRTC] Remote stream attached for ${peerId}`);
+        console.log(`[WebRTC] Remote stream attached for ${peerId}`);
       } catch (error) {
         console.error(`❌ [WebRTC] Failed to attach remote stream for ${peerId}:`, error);
       }
@@ -1686,18 +1730,19 @@
       try {
         const videoEl = document.getElementById(`remote-video-${peerId}`);
         
-        if (!videoEl || !videoEl.srcObject) {
+        if (!videoEl) {
           return;
         }
 
-        // Stop all tracks in the stream
-        videoEl.srcObject.getTracks().forEach(track => {
-          track.stop();
-          console.log(`⏹️ [WebRTC] Stopped track (${track.kind}) for ${peerId}`);
-        });
+        if (videoEl.srcObject) {
+          videoEl.srcObject.getTracks().forEach(track => {
+            track.stop();
+          });
+          videoEl.srcObject = null;
+        }
 
-        videoEl.srcObject = null;
-        console.log(`🔌 [WebRTC] Remote stream detached for ${peerId}`);
+        videoEl.remove();
+        console.log(`[WebRTC] Remote stream detached for ${peerId}`);
       } catch (error) {
         console.error(`❌ [WebRTC] Failed to detach remote stream for ${peerId}:`, error);
       }
@@ -1993,25 +2038,13 @@
 
           // Phase 4: Handle remote media streams (audio/video)
           peerConnection.ontrack = (event) => {
-            console.log(`📥 [WebRTC] Remote track received from ${peerId}:`, event.track.kind);
-            
-            // Log all tracks in the stream for debugging
-            event.streams[0].getTracks().forEach(track => {
-              console.log(`📊 [WebRTC] Track received (${track.kind}) from ${peerId}`);
-            });
-
             const remoteStream = event.streams[0];
             if (!remoteStream) {
-              console.warn(`⚠️ [WebRTC] No remote stream found for ${peerId}`);
+              console.warn(`[WebRTC] No remote stream received from ${peerId}`);
               return;
             }
 
-            // Check for audio-only streams
-            if (remoteStream.getVideoTracks().length === 0 && remoteStream.getAudioTracks().length > 0) {
-              console.log(`🔊 [WebRTC] Audio-only stream received from ${peerId}`);
-            }
-
-            // Attach the remote stream to the video element
+            console.log(`[WebRTC] Remote track received from ${peerId}`);
             attachRemoteStream(peerId, remoteStream);
           };
 
