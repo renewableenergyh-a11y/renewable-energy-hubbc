@@ -2337,6 +2337,17 @@
         const user = await authService.getCurrentUser();
         console.log('👤 [discussion-room] Current user:', { id: user?.id, email: user?.email, role: user?.role, token: !!user?.token });
         
+        // Step 1: Validate token exists
+        if (!user || !user.token) {
+          console.error('❌ [discussion-room] No token available for authenticated requests');
+          console.warn('⚠️ [discussion-room] No user found, redirecting to login');
+          window.location.href = '/login.html';
+          return;
+        }
+
+        // Log token validity for debugging
+        console.log('[authService] Admin token length:', user.token.length, 'Role:', user.role);
+        
         if (!user) {
           console.warn('⚠️ [discussion-room] No user found, redirecting to login');
           window.location.href = '/login.html';
@@ -2386,7 +2397,18 @@
         // Check for authentication errors
         if (response.status === 401 || response.status === 403) {
           console.error('❌ [discussion-room] Authentication error (status:', response.status + '):', data);
+          console.error('[auth] Token may have expired. User role:', user.role);
           handleAuthFailure('Your authentication credentials are no longer valid.');
+          return;
+        }
+
+        // Verify admin role is properly assigned
+        console.log('[getLocalAdminUser] Normalized role:', user.role);
+        if (user.role && (user.role === 'admin' || user.role === 'instructor' || user.role === 'superadmin')) {
+          console.log('✅ [admin-auth] Admin/Instructor role confirmed for offer creation');
+        } else {
+          console.log('ℹ️ [admin-auth] User is student - will only answer offers');
+        }
           return;
         }
         
@@ -3340,30 +3362,41 @@
           
           if (!user || !user.token) {
             console.warn('🔐 [auth-validation] No user or token found');
-            // Don't force logout - let actual API failures handle it
             return;
           }
+
+          // Log token presence for debugging
+          console.log('[auth-validation] Token length:', user.token ? user.token.length : 'missing');
           
           // Verify token is still valid with a lightweight endpoint
           // Non-blocking - just log issues, don't logout
           try {
             const response = await fetch('/api/user/me', {
+              method: 'GET',
               headers: {
-                'Authorization': `Bearer ${user.token}`
+                'Authorization': `Bearer ${user.token}`,
+                'Content-Type': 'application/json'
               }
             });
             
             if (response.ok) {
               console.log('✅ [auth-validation] Session valid');
-            } else if (response.status === 401 || response.status === 403) {
-              console.warn('⚠️ [auth-validation] Token may have expired (status:', response.status + ')');
-              // Only logout on persistent auth failures, not on transient 401s
+            } else if (response.status === 401) {
+              // Token expired or invalid
+              console.warn('⚠️ [auth-validation] Token expired or invalid (status: 401)');
+              console.warn('[auth-validation] Admin role:', user.role);
+              // Only logout on persistent auth failures after multiple attempts
+              return;
+            } else if (response.status === 403) {
+              console.warn('⚠️ [auth-validation] Access forbidden (status: 403)');
+              return;
             } else {
               console.warn('⚠️ [auth-validation] Auth check failed (status:', response.status + ')');
             }
           } catch (fetchError) {
-            console.warn('⚠️ [auth-validation] Auth endpoint unavailable:', fetchError.message);
+            console.error('[auth-validation] Auth endpoint unavailable:', fetchError.message);
             // Network errors or endpoint not available - don't logout
+            // This is often ERR_CONNECTION_CLOSED or "Failed to fetch"
           }
         } catch (error) {
           console.error('❌ [auth-validation] Error checking auth:', error.message);
