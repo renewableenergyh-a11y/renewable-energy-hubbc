@@ -1952,7 +1952,18 @@
             iceServers: this.iceServers
           });
 
+          // Phase 4: ALWAYS add recv-only transceivers to ensure media lines in SDP
+          // This allows receiving media even if local stream is unavailable
+          try {
+            peerConnection.addTransceiver('audio', { recv: true, send: false });
+            peerConnection.addTransceiver('video', { recv: true, send: false });
+            console.log(`📡 [WebRTC] Added audio/video recv-only transceivers for ${peerId} (ensures media lines in SDP)`);
+          } catch (err) {
+            console.warn(`⚠️ [WebRTC] Failed to add transceivers for ${peerId}:`, err.message);
+          }
+
           // Phase 4: Add local media tracks to peer connection if available
+          // This upgrades the recv-only transceivers to sendrecv when local media exists
           if (this.localStream) {
             try {
               this.localStream.getTracks().forEach(track => {
@@ -1964,16 +1975,7 @@
               console.warn(`⚠️ [WebRTC] Failed to add local tracks for ${peerId}:`, err.message);
             }
           } else {
-            // Only add recv-only transceivers if NO local media is available
-            // This allows ontrack to fire even without local stream
-            try {
-              peerConnection.addTransceiver('audio', { recv: true, send: false });
-              peerConnection.addTransceiver('video', { recv: true, send: false });
-              console.log(`📡 [WebRTC] Added audio/video recv-only transceivers for ${peerId} (no local media)`);
-            } catch (err) {
-              console.warn(`⚠️ [WebRTC] Failed to add transceivers for ${peerId}:`, err.message);
-            }
-            console.log(`ℹ️ [WebRTC] No local stream available for ${peerId} - peer will not receive your media`);
+            console.log(`ℹ️ [WebRTC] No local stream available for ${peerId} - using recv-only transceivers only`);
           }
 
           // Phase 3: Force ICE gathering by creating a dummy data channel
