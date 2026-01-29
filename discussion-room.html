@@ -1624,6 +1624,56 @@
     import { discussionSocket } from '/js/services/discussionSocket.js';
 
     /**
+     * Phase 4: Attach remote media stream to video element
+     * @param {String} peerId - Email of remote peer
+     * @param {MediaStream} stream - Remote media stream
+     */
+    function attachRemoteStream(peerId, stream) {
+      try {
+        const videoEl = document.getElementById(`remote-video-${peerId}`);
+
+        if (!videoEl) {
+          console.warn(`⚠️ [WebRTC] No video element found for peer ${peerId}`);
+          return;
+        }
+
+        videoEl.srcObject = stream;
+        videoEl.autoplay = true;
+        videoEl.playsInline = true;
+
+        console.log(`📺 [WebRTC] Remote stream attached for ${peerId}`);
+      } catch (error) {
+        console.error(`❌ [WebRTC] Failed to attach remote stream for ${peerId}:`, error);
+      }
+    }
+
+    /**
+     * Phase 4: Detach and cleanup remote media stream
+     * Called when peer disconnects to prevent stream leaks
+     * @param {String} peerId - Email of remote peer
+     */
+    function detachRemoteStream(peerId) {
+      try {
+        const videoEl = document.getElementById(`remote-video-${peerId}`);
+        
+        if (!videoEl || !videoEl.srcObject) {
+          return;
+        }
+
+        // Stop all tracks in the stream
+        videoEl.srcObject.getTracks().forEach(track => {
+          track.stop();
+          console.log(`⏹️ [WebRTC] Stopped track (${track.kind}) for ${peerId}`);
+        });
+
+        videoEl.srcObject = null;
+        console.log(`🔌 [WebRTC] Remote stream detached for ${peerId}`);
+      } catch (error) {
+        console.error(`❌ [WebRTC] Failed to detach remote stream for ${peerId}:`, error);
+      }
+    }
+
+    /**
      * WebRTC Phase 1 - Foundation Only
      * Implements local media capture, peer connection skeleton, and signaling placeholder
      */
@@ -1885,6 +1935,30 @@
             console.log(`🧊 [WebRTC] ICE gathering state for ${peerId}: ${peerConnection.iceGatheringState}`);
           };
 
+          // Phase 4: Handle remote media streams (audio/video)
+          peerConnection.ontrack = (event) => {
+            console.log(`📥 [WebRTC] Remote track received from ${peerId}:`, event.track.kind);
+            
+            // Log all tracks in the stream for debugging
+            event.streams[0].getTracks().forEach(track => {
+              console.log(`📊 [WebRTC] Track received (${track.kind}) from ${peerId}`);
+            });
+
+            const remoteStream = event.streams[0];
+            if (!remoteStream) {
+              console.warn(`⚠️ [WebRTC] No remote stream found for ${peerId}`);
+              return;
+            }
+
+            // Check for audio-only streams
+            if (remoteStream.getVideoTracks().length === 0 && remoteStream.getAudioTracks().length > 0) {
+              console.log(`🔊 [WebRTC] Audio-only stream received from ${peerId}`);
+            }
+
+            // Attach the remote stream to the video element
+            attachRemoteStream(peerId, remoteStream);
+          };
+
           this.peerConnections.set(peerId, peerConnection);
           this.signalingState.set(peerId, { state: 'new' });
 
@@ -2128,12 +2202,16 @@
       }
 
       /**
-       * Handle participant leaving - cleanup peer connection
+       * Handle participant leaving - cleanup peer connection and remote stream
        * @param {String} participantEmail - Leaving participant email
        */
       handleParticipantLeft(participantEmail) {
         if (this.peerConnections.has(participantEmail)) {
           try {
+            // Phase 4: Detach and cleanup remote stream first
+            detachRemoteStream(participantEmail);
+
+            // Close peer connection
             const pc = this.peerConnections.get(participantEmail);
             pc.close();
             this.peerConnections.delete(participantEmail);
