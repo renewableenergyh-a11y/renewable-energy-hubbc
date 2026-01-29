@@ -1855,6 +1855,7 @@
       async captureLocalMedia() {
         try {
           console.log('📹 [WebRTC] Requesting local media access...');
+          console.log('🔍 [WebRTC] Current localStream before getUserMedia:', this.localStream);
           
           this.localStream = await navigator.mediaDevices.getUserMedia({
             video: { 
@@ -1865,11 +1866,14 @@
           });
 
           console.log('✅ [WebRTC] Local media stream obtained');
+          console.log('📊 [WebRTC] Stream tracks:', this.localStream.getTracks().map(t => `${t.kind}:${t.enabled}`));
 
           // Display local preview
           if (this.localVideoElement) {
             this.localVideoElement.srcObject = this.localStream;
             console.log('✅ [WebRTC] Local video preview displayed');
+          } else {
+            console.warn('⚠️ [WebRTC] localVideoElement not found!');
           }
 
           return this.localStream;
@@ -1942,6 +1946,7 @@
       createPeerConnection(peerId) {
         try {
           console.log(`🔗 [WebRTC] Creating peer connection for: ${peerId}`);
+          console.log(`🔍 [WebRTC] Current localStream state:`, this.localStream ? `✅ Available (${this.localStream.getTracks().length} tracks)` : '❌ NULL/undefined');
 
           const peerConnection = new RTCPeerConnection({
             iceServers: this.iceServers
@@ -2249,6 +2254,8 @@
        * @param {String} participantEmail - New participant email
        */
       handleNewParticipant(participantEmail) {
+        console.log(`👤 [WebRTC] handleNewParticipant called for: ${participantEmail}`);
+        
         if (participantEmail === this.localUserId) {
           console.log(`ℹ️ [WebRTC] Skipping self (${participantEmail})`);
           return;
