@@ -1878,6 +1878,7 @@
       /**
        * Create peer connection skeleton for a participant
        * Phase 2.1: Prepare for SDP offer/answer exchange
+       * Phase 4: Add transceivers to receive remote media even without local stream
        * @param {String} peerId - Email of remote participant
        */
       createPeerConnection(peerId) {
@@ -1887,6 +1888,16 @@
           const peerConnection = new RTCPeerConnection({
             iceServers: this.iceServers
           });
+
+          // Phase 4: Add transceivers to enable receiving media
+          // This allows ontrack to fire even if local media stream is unavailable
+          try {
+            peerConnection.addTransceiver('audio', { recv: true, send: false });
+            peerConnection.addTransceiver('video', { recv: true, send: false });
+            console.log(`📡 [WebRTC] Added audio/video transceivers for ${peerId} (recv-only mode)`);
+          } catch (err) {
+            console.warn(`⚠️ [WebRTC] Failed to add transceivers for ${peerId}:`, err.message);
+          }
 
           // Phase 3: Force ICE gathering by creating a dummy data channel
           // Without media or data channels, browsers suppress ICE candidate generation
