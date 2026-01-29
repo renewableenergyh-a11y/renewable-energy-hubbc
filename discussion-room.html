@@ -1947,16 +1947,6 @@
             iceServers: this.iceServers
           });
 
-          // Phase 4: Add transceivers to enable receiving media
-          // This allows ontrack to fire even if local media stream is unavailable
-          try {
-            peerConnection.addTransceiver('audio', { recv: true, send: false });
-            peerConnection.addTransceiver('video', { recv: true, send: false });
-            console.log(`📡 [WebRTC] Added audio/video transceivers for ${peerId} (recv-only mode)`);
-          } catch (err) {
-            console.warn(`⚠️ [WebRTC] Failed to add transceivers for ${peerId}:`, err.message);
-          }
-
           // Phase 4: Add local media tracks to peer connection if available
           if (this.localStream) {
             try {
@@ -1969,6 +1959,15 @@
               console.warn(`⚠️ [WebRTC] Failed to add local tracks for ${peerId}:`, err.message);
             }
           } else {
+            // Only add recv-only transceivers if NO local media is available
+            // This allows ontrack to fire even without local stream
+            try {
+              peerConnection.addTransceiver('audio', { recv: true, send: false });
+              peerConnection.addTransceiver('video', { recv: true, send: false });
+              console.log(`📡 [WebRTC] Added audio/video recv-only transceivers for ${peerId} (no local media)`);
+            } catch (err) {
+              console.warn(`⚠️ [WebRTC] Failed to add transceivers for ${peerId}:`, err.message);
+            }
             console.log(`ℹ️ [WebRTC] No local stream available for ${peerId} - peer will not receive your media`);
           }
 
