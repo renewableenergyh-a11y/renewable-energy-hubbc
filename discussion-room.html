@@ -1184,12 +1184,35 @@
     @media (max-width: 1024px) {
       .room-container {
         grid-template-columns: 1fr;
-        grid-template-rows: auto auto 1fr;
+        grid-template-rows: auto 1fr auto;
+        padding: 12px;
+        gap: 12px;
+      }
+
+      .room-header {
+        padding: 16px;
+        border-radius: 8px;
+      }
+
+      .room-title {
+        font-size: 20px;
       }
 
       .room-main {
         grid-column: 1;
         grid-row: 1 / 3;
+        border-radius: 8px;
+      }
+
+      .room-controls {
+        grid-column: 1;
+        padding: 16px;
+        border-radius: 8px;
+        gap: 8px;
+      }
+
+      .btn-leave {
+        margin-left: auto;
       }
 
       .sidebars-container {
@@ -1202,13 +1225,16 @@
         height: auto;
         overflow: visible;
         gap: 0;
-        max-height: 45vh;
+        max-height: 40vh;
+        border-radius: 8px;
       }
 
       .sidebar {
         width: 100%;
         flex: 1;
         overflow-y: auto;
+        border-radius: 8px;
+        padding: 16px;
       }
 
       .sidebar-toggle-btn {
@@ -1217,36 +1243,82 @@
     }
 
     @media (max-width: 768px) {
+      .room-container {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 1fr auto;
+        padding: 8px;
+        gap: 8px;
+        height: 100vh;
+      }
+
       .room-header {
-        padding: 16px;
-        flex-direction: column;
-        align-items: flex-start;
+        padding: 12px;
+        border-radius: 6px;
+        gap: 12px;
       }
 
       .room-title {
-        font-size: 22px;
-        width: 100%;
+        font-size: 16px;
+        margin-bottom: 6px;
       }
 
       .room-info {
-        flex-direction: column;
+        font-size: 11px;
         gap: 8px;
-        width: 100%;
+      }
+
+      .room-main {
+        grid-column: 1;
+        grid-row: 2;
+        border-radius: 6px;
+        overflow: hidden;
+      }
+
+      .room-content {
+        padding: 16px;
+        overflow-y: auto;
+      }
+
+      .room-message {
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+
+      .webrtc-preview-container {
+        max-width: 100%;
+        margin-bottom: 12px;
+        padding: 12px;
+        border-radius: 6px;
+      }
+
+      .local-video-wrapper {
+        max-width: 100%;
+        aspect-ratio: 16/9;
+      }
+
+      .webrtc-preview-label {
+        font-size: 10px;
+      }
+
+      .webrtc-status-message {
+        font-size: 11px;
       }
 
       .room-controls {
+        grid-column: 1;
+        grid-row: 3;
+        padding: 10px;
+        border-radius: 6px;
+        gap: 6px;
         flex-wrap: wrap;
-        padding: 12px;
-        gap: 8px;
       }
 
       .btn-control {
         flex: 1;
-        min-width: 70px;
-        justify-content: center;
-        gap: 4px;
-        padding: 7px 10px;
-        font-size: 11px;
+        min-width: 45px;
+        padding: 8px;
+        font-size: 10px;
+        border-radius: 6px;
       }
 
       .btn-control span {
@@ -1261,91 +1333,98 @@
         display: inline;
       }
 
+      .btn-leave {
+        margin-left: auto;
+        padding: 8px 16px;
+        font-size: 10px;
+      }
+
+      .btn-close-session {
+        display: none;
+      }
+
+      #themeToggleBtn {
+        padding: 6px;
+        font-size: 16px;
+      }
+
+      .sidebars-container {
+        grid-column: 1;
+        grid-row: auto;
+        position: static;
+        display: flex;
+        flex-direction: column;
+        margin-top: 0;
+        height: auto;
+        max-height: 35vh;
+        overflow-y: auto;
+        border-radius: 6px;
+        gap: 0;
+      }
+
+      .sidebar {
+        width: 100%;
+        flex: 1;
+        overflow-y: auto;
+        border-radius: 6px;
+        padding: 12px;
+        min-height: 0;
+      }
+
+      .sidebar-title {
+        font-size: 12px;
+        margin-bottom: 8px;
+      }
+
       .participants-list {
-        max-height: 300px;
+        max-height: 30vh;
+        gap: 6px;
       }
 
       .participant-item {
-        padding: 10px;
-        font-size: 12px;
+        padding: 8px;
+        font-size: 10px;
+        border-radius: 6px;
+        gap: 8px;
       }
 
       .participant-avatar {
         width: 32px;
         height: 32px;
+        font-size: 11px;
+      }
+
+      .participant-name {
+        font-size: 10px;
+      }
+
+      .participant-role {
+        font-size: 8px;
+      }
+
+      .participant-controls {
+        gap: 4px;
+      }
+
+      .mic-control-btn {
+        width: 24px;
+        height: 24px;
+        padding: 2px;
+      }
+
+      .remove-participant-btn {
+        width: 20px;
+        height: 20px;
         font-size: 12px;
+      }
+
+      .empty-participants {
+        padding: 20px 12px;
+        font-size: 11px;
       }
 
       .back-button {
         display: none;
-      }
-
-      /* Participants sidebar visible below media controls on mobile */
-      .room-container {
-        display: flex;
-        flex-direction: column;
-        grid-template-columns: unset;
-        grid-template-rows: unset;
-        height: auto;
-        max-height: 100vh;
-        overflow-y: auto;
-      }
-
-      .room-main {
-        grid-column: unset;
-        grid-row: unset;
-        flex: 0 0 auto;
-        max-height: 60vh;
-        overflow-y: auto;
-      }
-
-      .room-content {
-        flex: 0 0 auto;
-        max-height: 40vh;
-        overflow-y: auto;
-      }
-
-      .sidebars-container {
-        grid-column: unset !important;
-        grid-row: unset !important;
-        position: static !important;
-        bottom: auto !important;
-        left: auto !important;
-        right: auto !important;
-        width: auto !important;
-        z-index: auto !important;
-        margin-top: 0;
-        height: auto !important;
-        overflow: visible;
-        border-radius: 0;
-        border: none;
-        background: transparent;
-        flex: 1;
-        min-height: 300px;
-        gap: 0;
-      }
-
-      .sidebar-toggle-btn {
-        display: none !important;
-      }
-
-      .sidebar {
-        border: 1px solid var(--border-color);
-        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-        padding: 16px;
-        max-height: none;
-        border-radius: 12px;
-        margin: 12px;
-        overflow-y: auto;
-      }
-
-      .sidebar-title {
-        font-size: 14px;
-        margin-bottom: 12px;
-      }
-
-      .participants-list {
-        max-height: 300px;
       }
     }
 
