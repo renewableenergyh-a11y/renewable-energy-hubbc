@@ -460,26 +460,38 @@ export class DiscussionSocketService {
   }
 
   /**
-   * WebRTC Phase 1 - Send ICE candidate (placeholder)
-   * @param {String} sessionId - Session ID
-   * @param {String} fromUserId - Sender email
-   * @param {String} toUserId - Recipient email
-   * @param {Object} candidate - ICE candidate (Phase 2)
+   * WebRTC Phase 3 - Send ICE candidate
+   * Supports both old 4-param and new object format for flexibility
+   * @param {String|Object} sessionIdOrData - Session ID or full data object
+   * @param {String} fromUserId - Sender email (if using 4-param format)
+   * @param {String} toUserId - Recipient email (if using 4-param format)
+   * @param {Object} candidate - ICE candidate (if using 4-param format)
    */
-  emitWebRTCICECandidate(sessionId, fromUserId, toUserId, candidate = null) {
+  emitWebRTCICECandidate(sessionIdOrData, fromUserId, toUserId, candidate = null) {
     if (!this.socket || !this.socket.connected) {
       console.warn('⚠️ [emitWebRTCICECandidate] Socket not connected');
       return false;
     }
 
     try {
-      console.log('🎥 [WebRTC] Emitting webrtc-ice-candidate (Phase 1 placeholder):', { sessionId, from: fromUserId, to: toUserId });
-      this.socket.emit('webrtc-ice-candidate', {
-        sessionId,
-        from: fromUserId,
-        to: toUserId,
-        candidate: candidate
-      });
+      let payload;
+      
+      // Support both formats for flexibility
+      if (typeof sessionIdOrData === 'object') {
+        // New object format: emitWebRTCICECandidate({ sessionId, from, to, candidate })
+        payload = sessionIdOrData;
+      } else {
+        // Old 4-param format: emitWebRTCICECandidate(sessionId, from, to, candidate)
+        payload = {
+          sessionId: sessionIdOrData,
+          from: fromUserId,
+          to: toUserId,
+          candidate: candidate
+        };
+      }
+
+      console.log('📤 [WebRTC] Emitting webrtc-ice-candidate:', { from: payload.from, to: payload.to });
+      this.socket.emit('webrtc-ice-candidate', payload);
       return true;
     } catch (error) {
       console.error('❌ [emitWebRTCICECandidate] Error:', error);

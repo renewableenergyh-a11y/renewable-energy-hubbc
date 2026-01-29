@@ -1826,14 +1826,16 @@
             if (event.candidate) {
               console.log(`🧊 [WebRTC] ICE candidate generated for ${peerId}:`, event.candidate);
               // Send ICE candidate to remote peer via socket
-              if (this.socketService && this.socketService.socket) {
-                this.socketService.socket.emit('webrtc-ice-candidate', {
-                  sessionId: this.sessionId,
-                  from: this.localUserId,
-                  to: peerId,
-                  candidate: event.candidate
-                });
+              if (this.socketService && this.socketService.emitWebRTCICECandidate) {
+                this.socketService.emitWebRTCICECandidate(
+                  this.sessionId,
+                  this.localUserId,
+                  peerId,
+                  event.candidate
+                );
                 console.log(`📤 [WebRTC] ICE candidate sent to ${peerId}`);
+              } else {
+                console.warn(`⚠️ [WebRTC] Cannot send ICE candidate - socket service not available`);
               }
             }
           };
