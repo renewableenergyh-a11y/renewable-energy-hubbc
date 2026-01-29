@@ -1625,18 +1625,35 @@
 
     /**
      * Phase 4: Attach remote media stream to video element
+     * Dynamically creates video element if it doesn't exist
      * @param {String} peerId - Email of remote peer
      * @param {MediaStream} stream - Remote media stream
      */
     function attachRemoteStream(peerId, stream) {
       try {
-        const videoEl = document.getElementById(`remote-video-${peerId}`);
+        // Try to find existing video element first
+        let videoEl = document.getElementById(`remote-video-${peerId}`);
 
+        // If it doesn't exist, create it dynamically
         if (!videoEl) {
-          console.warn(`⚠️ [WebRTC] No video element found for peer ${peerId}`);
-          return;
+          console.log(`📺 [WebRTC] Creating video element for peer ${peerId}`);
+          
+          videoEl = document.createElement('video');
+          videoEl.id = `remote-video-${peerId}`;
+          videoEl.autoplay = true;
+          videoEl.playsInline = true;
+          videoEl.style.width = '100%';
+          videoEl.style.height = '100%';
+          videoEl.style.objectFit = 'cover';
+          
+          // Append to webrtcPreview if it exists, otherwise append to body
+          const container = document.getElementById('webrtcPreview') || document.body;
+          container.appendChild(videoEl);
+          
+          console.log(`✅ [WebRTC] Created video element ${videoEl.id} and appended to DOM`);
         }
 
+        // Attach the stream
         videoEl.srcObject = stream;
         videoEl.autoplay = true;
         videoEl.playsInline = true;
