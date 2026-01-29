@@ -820,37 +820,34 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       try {
         console.log(`📤 [webrtc-offer] Routing offer: ${from} -> ${to} in session ${sessionId}`);
         
-        // Find the recipient's socket in the same session room
-        const room = io.sockets.adapter.rooms.get(sessionId);
-        if (!room) {
-          console.warn(`⚠️ [webrtc-offer] Session room not found: ${sessionId}`);
+        // Find recipient by email in userSocketMap
+        const recipientInfo = userSocketMap.get(to);
+        if (!recipientInfo) {
+          console.warn(`⚠️ [webrtc-offer] Recipient not in userSocketMap: ${to}`);
           return;
         }
 
-        // Iterate through sockets in room and find recipient
-        let recipientFound = false;
-        for (const socketId of room) {
-          const clientSocket = io.sockets.sockets.get(socketId);
-          if (clientSocket && userSocketMap.has(clientSocket.handshake.auth?.email)) {
-            const userEmail = clientSocket.handshake.auth?.email;
-            if (userEmail === to) {
-              // Send ONLY to recipient
-              clientSocket.emit('webrtc-offer', {
-                sessionId,
-                from,
-                to,
-                sdp
-              });
-              recipientFound = true;
-              console.log(`✅ [webrtc-offer] Offer delivered to ${to}`);
-              break;
-            }
-          }
+        // Get recipient's socket
+        const recipientSocket = io.sockets.sockets.get(recipientInfo.socketId);
+        if (!recipientSocket) {
+          console.warn(`⚠️ [webrtc-offer] Recipient socket not found: ${to} (socketId: ${recipientInfo.socketId})`);
+          return;
         }
 
-        if (!recipientFound) {
-          console.warn(`⚠️ [webrtc-offer] Recipient not found in session: ${to}`);
+        // Verify recipient is in the same session
+        if (recipientInfo.sessionId !== sessionId) {
+          console.warn(`⚠️ [webrtc-offer] Recipient in different session: ${to}`);
+          return;
         }
+
+        // Send ONLY to recipient
+        recipientSocket.emit('webrtc-offer', {
+          sessionId,
+          from,
+          to,
+          sdp
+        });
+        console.log(`✅ [webrtc-offer] Offer delivered to ${to} (socketId: ${recipientInfo.socketId})`);
       } catch (error) {
         console.error('❌ [webrtc-offer] Error:', error);
       }
@@ -872,37 +869,34 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
       try {
         console.log(`📤 [webrtc-answer] Routing answer: ${from} -> ${to} in session ${sessionId}`);
         
-        // Find the recipient's socket in the same session room
-        const room = io.sockets.adapter.rooms.get(sessionId);
-        if (!room) {
-          console.warn(`⚠️ [webrtc-answer] Session room not found: ${sessionId}`);
+        // Find recipient by email in userSocketMap
+        const recipientInfo = userSocketMap.get(to);
+        if (!recipientInfo) {
+          console.warn(`⚠️ [webrtc-answer] Recipient not in userSocketMap: ${to}`);
           return;
         }
 
-        // Iterate through sockets in room and find recipient
-        let recipientFound = false;
-        for (const socketId of room) {
-          const clientSocket = io.sockets.sockets.get(socketId);
-          if (clientSocket && userSocketMap.has(clientSocket.handshake.auth?.email)) {
-            const userEmail = clientSocket.handshake.auth?.email;
-            if (userEmail === to) {
-              // Send ONLY to recipient
-              clientSocket.emit('webrtc-answer', {
-                sessionId,
-                from,
-                to,
-                sdp
-              });
-              recipientFound = true;
-              console.log(`✅ [webrtc-answer] Answer delivered to ${to}`);
-              break;
-            }
-          }
+        // Get recipient's socket
+        const recipientSocket = io.sockets.sockets.get(recipientInfo.socketId);
+        if (!recipientSocket) {
+          console.warn(`⚠️ [webrtc-answer] Recipient socket not found: ${to} (socketId: ${recipientInfo.socketId})`);
+          return;
         }
 
-        if (!recipientFound) {
-          console.warn(`⚠️ [webrtc-answer] Recipient not found in session: ${to}`);
+        // Verify recipient is in the same session
+        if (recipientInfo.sessionId !== sessionId) {
+          console.warn(`⚠️ [webrtc-answer] Recipient in different session: ${to}`);
+          return;
         }
+
+        // Send ONLY to recipient
+        recipientSocket.emit('webrtc-answer', {
+          sessionId,
+          from,
+          to,
+          sdp
+        });
+        console.log(`✅ [webrtc-answer] Answer delivered to ${to} (socketId: ${recipientInfo.socketId})`);
       } catch (error) {
         console.error('❌ [webrtc-answer] Error:', error);
       }
