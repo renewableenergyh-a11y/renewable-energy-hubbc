@@ -1821,17 +1821,31 @@
             iceServers: this.iceServers
           });
 
-          // Handle ICE candidates
+          // Phase 3: Handle ICE candidates for NAT traversal
           peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
-              console.log(`🧊 [WebRTC] ICE candidate for ${peerId}:`, event.candidate);
-              // Phase 2.2: Send ICE candidates via socket
+              console.log(`🧊 [WebRTC] ICE candidate generated for ${peerId}:`, event.candidate);
+              // Send ICE candidate to remote peer via socket
+              if (this.socketService && this.socketService.socket) {
+                this.socketService.socket.emit('webrtc-ice-candidate', {
+                  sessionId: this.sessionId,
+                  from: this.localUserId,
+                  to: peerId,
+                  candidate: event.candidate
+                });
+                console.log(`📤 [WebRTC] ICE candidate sent to ${peerId}`);
+              }
             }
           };
 
-          // Connection state changes
+          // Phase 3: Monitor connection state (updated when ICE candidates are successfully exchanged)
           peerConnection.onconnectionstatechange = () => {
-            console.log(`📊 [WebRTC] ${peerId} connection state:`, peerConnection.connectionState);
+            console.log(`📊 [WebRTC] Connection state for ${peerId}: ${peerConnection.connectionState}`);
+            if (peerConnection.connectionState === 'connected') {
+              console.log(`✅ [WebRTC] Peer connection established with ${peerId} (ICE candidates exchanged)`);
+            } else if (peerConnection.connectionState === 'failed') {
+              console.error(`❌ [WebRTC] Peer connection failed with ${peerId} (ICE candidate exchange incomplete?)`);
+            }
           };
 
           // Signaling state changes
@@ -1860,6 +1874,29 @@
           return this.peerConnections.get(peerId);
         }
         return this.createPeerConnection(peerId);
+      }
+
+      /**
+       * Phase 3: Handle incoming ICE candidate from remote peer
+       * @param {Object} candidateData - { from, to, candidate, sessionId }
+       */
+      async handleRemoteIceCandidate(candidateData) {
+        try {
+          const { from, candidate } = candidateData;
+          console.log(`📥 [WebRTC] Received ICE candidate from ${from}:`, candidate);
+
+          const pc = this.getPeerConnection(from);
+          if (!pc) {
+            console.warn(`⚠️ [WebRTC] No peer connection found for incoming ICE candidate from ${from}`);
+            return;
+          }
+
+          // Add ICE candidate to peer connection
+          await pc.addIceCandidate(new RTCIceCandidate(candidate));
+          console.log(`✅ [WebRTC] ICE candidate added for ${from}`);
+        } catch (error) {
+          console.error(`❌ [WebRTC] Failed to add ICE candidate:`, error);
+        }
       }
 
       /**
@@ -2934,13 +2971,15 @@
       });
 
       /**
-       * Handle incoming ICE candidates
-       * Phase 2.2: ICE candidate handling
+       * Phase 3: Handle incoming ICE candidates
+       * Exchange ICE candidates for NAT traversal and peer connection establishment
        */
       discussionSocket.on('webrtc-ice-candidate', (candidateData) => {
-        console.log(`🧊 [webrtc-ice] Received ICE candidate from: ${candidateData.from}`);
-        // Phase 2.2: ICE candidate processing would go here
-        // For now, this is a placeholder for future ICE candidate handling
+        console.log(`📥 [webrtc-ice-candidate] Received ICE candidate from: ${candidateData.from}`);
+        
+        if (candidateData && candidateData.candidate && webrtcManager) {
+          webrtcManager.handleRemoteIceCandidate(candidateData);
+        }
       });
 
       // Button events

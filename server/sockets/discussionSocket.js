@@ -904,22 +904,47 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
     /**
      * Event: webrtc-ice-candidate
-     * Phase 1: Placeholder only
-     * In Phase 2: Route ICE candidates between peers
+     * Phase 3: Route ICE candidates between peers for NAT traversal
      */
     socket.on('webrtc-ice-candidate', (data) => {
       const { sessionId, from, to, candidate } = data;
       
-      if (!sessionId || !from || !to) {
-        console.warn('⚠️ [webrtc-ice-candidate] Missing required fields');
+      if (!sessionId || !from || !to || !candidate) {
+        console.warn('⚠️ [webrtc-ice-candidate] Missing required fields:', { sessionId, from, to, hasCandidate: !!candidate });
         return;
       }
 
       try {
-        console.log(`🎥 [webrtc-ice-candidate] Phase 1 placeholder: ${from} -> ${to} in session ${sessionId}`);
+        console.log(`🧊 [webrtc-ice-candidate] Routing ICE candidate: ${from} -> ${to} in session ${sessionId}`);
         
-        // Phase 1: No actual signaling
-        // Phase 2 will route ICE candidates to specific peer
+        // Find recipient by email in userSocketMap
+        const recipientInfo = userSocketMap.get(to);
+        if (!recipientInfo) {
+          console.warn(`⚠️ [webrtc-ice-candidate] Recipient not in userSocketMap: ${to}`);
+          return;
+        }
+
+        // Get recipient's socket
+        const recipientSocket = io.sockets.sockets.get(recipientInfo.socketId);
+        if (!recipientSocket) {
+          console.warn(`⚠️ [webrtc-ice-candidate] Recipient socket not found: ${to} (socketId: ${recipientInfo.socketId})`);
+          return;
+        }
+
+        // Verify recipient is in the same session
+        if (recipientInfo.sessionId !== sessionId) {
+          console.warn(`⚠️ [webrtc-ice-candidate] Recipient in different session: ${to}`);
+          return;
+        }
+
+        // Send ONLY to recipient
+        recipientSocket.emit('webrtc-ice-candidate', {
+          sessionId,
+          from,
+          to,
+          candidate
+        });
+        console.log(`✅ [webrtc-ice-candidate] ICE candidate delivered to ${to} (socketId: ${recipientInfo.socketId})`);
       } catch (error) {
         console.error('❌ [webrtc-ice-candidate] Error:', error);
       }
