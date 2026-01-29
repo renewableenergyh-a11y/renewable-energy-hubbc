@@ -376,26 +376,40 @@ export class DiscussionSocketService {
   }
 
   /**
-   * WebRTC Phase 1 - Send webrtc-offer (placeholder)
-   * @param {String} sessionId - Session ID
-   * @param {String} fromUserId - Sender email
-   * @param {String} toUserId - Recipient email
-   * @param {Object} offer - SDP offer (Phase 2)
+   * WebRTC Phase 2.1 - Send SDP offer
+   * Accepts either old format (sessionId, from, to, offer) OR new format (offerData object)
+   * New format: { sessionId, from, to, sdp }
    */
-  emitWebRTCOffer(sessionId, fromUserId, toUserId, offer = null) {
+  emitWebRTCOffer(sessionIdOrData, fromUserId = null, toUserId = null, offer = null) {
     if (!this.socket || !this.socket.connected) {
       console.warn('⚠️ [emitWebRTCOffer] Socket not connected');
       return false;
     }
 
     try {
-      console.log('🎥 [WebRTC] Emitting webrtc-offer (Phase 1 placeholder):', { sessionId, from: fromUserId, to: toUserId });
-      this.socket.emit('webrtc-offer', {
-        sessionId,
-        from: fromUserId,
-        to: toUserId,
-        offer: offer
-      });
+      let offerPayload;
+
+      // Support both call signatures for backward compatibility
+      if (typeof sessionIdOrData === 'object' && sessionIdOrData.sessionId) {
+        // New format: { sessionId, from, to, sdp }
+        offerPayload = {
+          sessionId: sessionIdOrData.sessionId,
+          from: sessionIdOrData.from,
+          to: sessionIdOrData.to,
+          sdp: sessionIdOrData.sdp
+        };
+      } else {
+        // Old format: (sessionId, fromUserId, toUserId, offer)
+        offerPayload = {
+          sessionId: sessionIdOrData,
+          from: fromUserId,
+          to: toUserId,
+          sdp: offer
+        };
+      }
+
+      console.log('📤 [WebRTC] Emitting webrtc-offer:', { from: offerPayload.from, to: offerPayload.to });
+      this.socket.emit('webrtc-offer', offerPayload);
       return true;
     } catch (error) {
       console.error('❌ [emitWebRTCOffer] Error:', error);
@@ -404,26 +418,40 @@ export class DiscussionSocketService {
   }
 
   /**
-   * WebRTC Phase 1 - Send webrtc-answer (placeholder)
-   * @param {String} sessionId - Session ID
-   * @param {String} fromUserId - Sender email
-   * @param {String} toUserId - Recipient email
-   * @param {Object} answer - SDP answer (Phase 2)
+   * WebRTC Phase 2.1 - Send SDP answer
+   * Accepts either old format (sessionId, from, to, answer) OR new format (answerData object)
+   * New format: { sessionId, from, to, sdp }
    */
-  emitWebRTCAnswer(sessionId, fromUserId, toUserId, answer = null) {
+  emitWebRTCAnswer(sessionIdOrData, fromUserId = null, toUserId = null, answer = null) {
     if (!this.socket || !this.socket.connected) {
       console.warn('⚠️ [emitWebRTCAnswer] Socket not connected');
       return false;
     }
 
     try {
-      console.log('🎥 [WebRTC] Emitting webrtc-answer (Phase 1 placeholder):', { sessionId, from: fromUserId, to: toUserId });
-      this.socket.emit('webrtc-answer', {
-        sessionId,
-        from: fromUserId,
-        to: toUserId,
-        answer: answer
-      });
+      let answerPayload;
+
+      // Support both call signatures for backward compatibility
+      if (typeof sessionIdOrData === 'object' && sessionIdOrData.sessionId) {
+        // New format: { sessionId, from, to, sdp }
+        answerPayload = {
+          sessionId: sessionIdOrData.sessionId,
+          from: sessionIdOrData.from,
+          to: sessionIdOrData.to,
+          sdp: sessionIdOrData.sdp
+        };
+      } else {
+        // Old format: (sessionId, fromUserId, toUserId, answer)
+        answerPayload = {
+          sessionId: sessionIdOrData,
+          from: fromUserId,
+          to: toUserId,
+          sdp: answer
+        };
+      }
+
+      console.log('📤 [WebRTC] Emitting webrtc-answer:', { from: answerPayload.from, to: answerPayload.to });
+      this.socket.emit('webrtc-answer', answerPayload);
       return true;
     } catch (error) {
       console.error('❌ [emitWebRTCAnswer] Error:', error);

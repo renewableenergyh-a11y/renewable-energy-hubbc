@@ -806,22 +806,51 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
     /**
      * Event: webrtc-offer
-     * Phase 1: Placeholder only
-     * In Phase 2: Route SDP offer from peer A to peer B
+     * Phase 2.1: Route SDP offer from sender to recipient only (not broadcast)
+     * Only the recipient socket receives this, not the entire room
      */
     socket.on('webrtc-offer', (data) => {
-      const { sessionId, from, to, offer } = data;
+      const { sessionId, from, to, sdp } = data;
       
-      if (!sessionId || !from || !to) {
-        console.warn('⚠️ [webrtc-offer] Missing required fields');
+      if (!sessionId || !from || !to || !sdp) {
+        console.warn('⚠️ [webrtc-offer] Missing required fields:', { sessionId, from, to, hasSdp: !!sdp });
         return;
       }
 
       try {
-        console.log(`🎥 [webrtc-offer] Phase 1 placeholder: ${from} -> ${to} in session ${sessionId}`);
+        console.log(`📤 [webrtc-offer] Routing offer: ${from} -> ${to} in session ${sessionId}`);
         
-        // Phase 1: No actual signaling
-        // Phase 2 will route this to the specific peer
+        // Find the recipient's socket in the same session room
+        const room = io.sockets.adapter.rooms.get(sessionId);
+        if (!room) {
+          console.warn(`⚠️ [webrtc-offer] Session room not found: ${sessionId}`);
+          return;
+        }
+
+        // Iterate through sockets in room and find recipient
+        let recipientFound = false;
+        for (const socketId of room) {
+          const clientSocket = io.sockets.sockets.get(socketId);
+          if (clientSocket && userSocketMap.has(clientSocket.handshake.auth?.email)) {
+            const userEmail = clientSocket.handshake.auth?.email;
+            if (userEmail === to) {
+              // Send ONLY to recipient
+              clientSocket.emit('webrtc-offer', {
+                sessionId,
+                from,
+                to,
+                sdp
+              });
+              recipientFound = true;
+              console.log(`✅ [webrtc-offer] Offer delivered to ${to}`);
+              break;
+            }
+          }
+        }
+
+        if (!recipientFound) {
+          console.warn(`⚠️ [webrtc-offer] Recipient not found in session: ${to}`);
+        }
       } catch (error) {
         console.error('❌ [webrtc-offer] Error:', error);
       }
@@ -829,22 +858,51 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
     /**
      * Event: webrtc-answer
-     * Phase 1: Placeholder only
-     * In Phase 2: Route SDP answer from peer B to peer A
+     * Phase 2.1: Route SDP answer from sender to recipient only (not broadcast)
+     * Only the recipient socket receives this, not the entire room
      */
     socket.on('webrtc-answer', (data) => {
-      const { sessionId, from, to, answer } = data;
+      const { sessionId, from, to, sdp } = data;
       
-      if (!sessionId || !from || !to) {
-        console.warn('⚠️ [webrtc-answer] Missing required fields');
+      if (!sessionId || !from || !to || !sdp) {
+        console.warn('⚠️ [webrtc-answer] Missing required fields:', { sessionId, from, to, hasSdp: !!sdp });
         return;
       }
 
       try {
-        console.log(`🎥 [webrtc-answer] Phase 1 placeholder: ${from} -> ${to} in session ${sessionId}`);
+        console.log(`📤 [webrtc-answer] Routing answer: ${from} -> ${to} in session ${sessionId}`);
         
-        // Phase 1: No actual signaling
-        // Phase 2 will route this to the specific peer
+        // Find the recipient's socket in the same session room
+        const room = io.sockets.adapter.rooms.get(sessionId);
+        if (!room) {
+          console.warn(`⚠️ [webrtc-answer] Session room not found: ${sessionId}`);
+          return;
+        }
+
+        // Iterate through sockets in room and find recipient
+        let recipientFound = false;
+        for (const socketId of room) {
+          const clientSocket = io.sockets.sockets.get(socketId);
+          if (clientSocket && userSocketMap.has(clientSocket.handshake.auth?.email)) {
+            const userEmail = clientSocket.handshake.auth?.email;
+            if (userEmail === to) {
+              // Send ONLY to recipient
+              clientSocket.emit('webrtc-answer', {
+                sessionId,
+                from,
+                to,
+                sdp
+              });
+              recipientFound = true;
+              console.log(`✅ [webrtc-answer] Answer delivered to ${to}`);
+              break;
+            }
+          }
+        }
+
+        if (!recipientFound) {
+          console.warn(`⚠️ [webrtc-answer] Recipient not found in session: ${to}`);
+        }
       } catch (error) {
         console.error('❌ [webrtc-answer] Error:', error);
       }

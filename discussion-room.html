@@ -1743,7 +1743,7 @@
 
       /**
        * Create peer connection skeleton for a participant
-       * Phase 1: No offers/answers yet, STUN only
+       * Phase 2.1: Prepare for SDP offer/answer exchange
        * @param {String} peerId - Email of remote participant
        */
       createPeerConnection(peerId) {
@@ -1754,12 +1754,11 @@
             iceServers: this.iceServers
           });
 
-          // Handle ICE candidates (Phase 1: STUN only)
+          // Handle ICE candidates
           peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
               console.log(`🧊 [WebRTC] ICE candidate for ${peerId}:`, event.candidate);
-              // Phase 1: Placeholder only - no signaling yet
-              // In Phase 2, this will be sent to peer
+              // Phase 2.2: Send ICE candidates via socket
             }
           };
 
@@ -1768,8 +1767,14 @@
             console.log(`📊 [WebRTC] ${peerId} connection state:`, peerConnection.connectionState);
           };
 
+          // Signaling state changes
+          peerConnection.onsignalingstatechange = () => {
+            console.log(`🔄 [WebRTC] ${peerId} signaling state:`, peerConnection.signalingState);
+            this.signalingState.set(peerId, { state: peerConnection.signalingState });
+          };
+
           this.peerConnections.set(peerId, peerConnection);
-          this.signalingState.set(peerId, { state: 'created' });
+          this.signalingState.set(peerId, { state: 'new' });
 
           console.log(`✅ [WebRTC] Peer connection created for ${peerId}`);
           return peerConnection;
@@ -1788,6 +1793,113 @@
           return this.peerConnections.get(peerId);
         }
         return this.createPeerConnection(peerId);
+      }
+
+      /**
+       * Phase 2.1: Create and send SDP offer to remote peer
+       * Called when new participant joins and we are existing participant
+       * @param {String} remotePeerEmail - Email of new participant
+       * @param {Function} emitFunction - Socket emit function (webrtc-offer)
+       */
+      async createAndSendOffer(remotePeerEmail, emitFunction) {
+        try {
+          console.log(`📤 [WebRTC] Creating offer for: ${remotePeerEmail}`);
+
+          const pc = this.getPeerConnection(remotePeerEmail);
+          if (!pc) {
+            console.error(`❌ [WebRTC] No peer connection for ${remotePeerEmail}`);
+            return;
+          }
+
+          // Create SDP offer
+          const offer = await pc.createOffer({
+            offerToReceiveAudio: false,  // No media in Phase 2.1
+            offerToReceiveVideo: false   // No media in Phase 2.1
+          });
+
+          // Set as local description
+          await pc.setLocalDescription(offer);
+          console.log(`📝 [WebRTC] Local description set for ${remotePeerEmail}`);
+
+          // Send offer via socket
+          emitFunction({
+            sessionId: this.sessionId,
+            from: this.localUserId,
+            to: remotePeerEmail,
+            sdp: offer
+          });
+
+          console.log(`✅ [WebRTC] Offer sent to ${remotePeerEmail}`);
+        } catch (error) {
+          console.error(`❌ [WebRTC] Failed to create/send offer for ${remotePeerEmail}:`, error);
+        }
+      }
+
+      /**
+       * Phase 2.1: Handle incoming SDP offer from remote peer
+       * @param {Object} offerData - { from, to, sdp, sessionId }
+       * @param {Function} emitFunction - Socket emit function (webrtc-answer)
+       */
+      async handleRemoteOffer(offerData, emitFunction) {
+        try {
+          const { from, sdp } = offerData;
+          console.log(`📥 [WebRTC] Received offer from: ${from}`);
+
+          const pc = this.getPeerConnection(from);
+          if (!pc) {
+            console.error(`❌ [WebRTC] No peer connection for ${from}`);
+            return;
+          }
+
+          // Set remote description (offer)
+          const remoteOffer = new RTCSessionDescription(sdp);
+          await pc.setRemoteDescription(remoteOffer);
+          console.log(`📝 [WebRTC] Remote description (offer) set from ${from}`);
+
+          // Create SDP answer
+          const answer = await pc.createAnswer();
+
+          // Set as local description
+          await pc.setLocalDescription(answer);
+          console.log(`📝 [WebRTC] Local description (answer) set for ${from}`);
+
+          // Send answer back via socket
+          emitFunction({
+            sessionId: this.sessionId,
+            from: this.localUserId,
+            to: from,
+            sdp: answer
+          });
+
+          console.log(`✅ [WebRTC] Answer sent to ${from}`);
+        } catch (error) {
+          console.error(`❌ [WebRTC] Failed to handle offer:`, error);
+        }
+      }
+
+      /**
+       * Phase 2.1: Handle incoming SDP answer from remote peer
+       * @param {Object} answerData - { from, to, sdp, sessionId }
+       */
+      async handleRemoteAnswer(answerData) {
+        try {
+          const { from, sdp } = answerData;
+          console.log(`📥 [WebRTC] Received answer from: ${from}`);
+
+          const pc = this.getPeerConnection(from);
+          if (!pc) {
+            console.error(`❌ [WebRTC] No peer connection for ${from}`);
+            return;
+          }
+
+          // Set remote description (answer)
+          const remoteAnswer = new RTCSessionDescription(sdp);
+          await pc.setRemoteDescription(remoteAnswer);
+          console.log(`📝 [WebRTC] Remote description (answer) set from ${from}`);
+          console.log(`✅ [WebRTC] Signaling stable with ${from} - state: ${pc.signalingState}`);
+        } catch (error) {
+          console.error(`❌ [WebRTC] Failed to handle answer:`, error);
+        }
       }
 
       /**
@@ -1826,8 +1938,8 @@
       }
 
       /**
-       * Handle new participant - create peer connection
-       * Phase 1: Only initialize skeleton
+       * Handle new participant - create peer connection and send offer
+       * Phase 2.1: Create peer connection and initiate SDP offer
        * @param {String} participantEmail - New participant email
        */
       handleNewParticipant(participantEmail) {
@@ -1839,6 +1951,15 @@
         if (!this.peerConnections.has(participantEmail)) {
           this.getPeerConnection(participantEmail);
           console.log(`👤 [WebRTC] Peer connection created for new participant: ${participantEmail}`);
+
+          // Phase 2.1: Create and send offer to new participant
+          // (existing participants send offers to new joiners)
+          if (this.socketService && this.socketService.emitWebRTCOffer) {
+            this.createAndSendOffer(
+              participantEmail,
+              (data) => this.socketService.emitWebRTCOffer(data)
+            );
+          }
         }
       }
 
@@ -2408,6 +2529,7 @@
           const localVideoElement = document.getElementById('localVideo');
           
           webrtcManager.initialize(user.email, sessionId, localVideoElement);
+          webrtcManager.socketService = discussionSocket; // Phase 2.1: Attach socket service for signaling
           
           // Attempt to capture local media
           try {
@@ -2648,6 +2770,46 @@
         }, 3500);
         
         console.log(`✅ [user-reaction] Displayed reaction from ${userName}: ${reaction}`);
+      });
+
+      // ========== Phase 2.1: WebRTC SDP Signaling ==========
+      /**
+       * Handle incoming SDP offer from existing participant
+       * When we (new participant) receive offer: set remote, create answer, send back
+       */
+      discussionSocket.on('webrtc-offer', (offerData) => {
+        console.log(`📥 [webrtc-offer] Received offer from: ${offerData.from}`);
+        
+        // Only process offers (new participant receiving from existing participant)
+        if (offerData && offerData.sdp && webrtcManager) {
+          webrtcManager.handleRemoteOffer(
+            offerData,
+            (data) => discussionSocket.emitWebRTCAnswer(data)
+          );
+        }
+      });
+
+      /**
+       * Handle incoming SDP answer from new participant
+       * When we (existing participant) receive answer: set remote description
+       */
+      discussionSocket.on('webrtc-answer', (answerData) => {
+        console.log(`📥 [webrtc-answer] Received answer from: ${answerData.from}`);
+        
+        // Only process answers (existing participant receiving from new participant)
+        if (answerData && answerData.sdp && webrtcManager) {
+          webrtcManager.handleRemoteAnswer(answerData);
+        }
+      });
+
+      /**
+       * Handle incoming ICE candidates
+       * Phase 2.2: ICE candidate handling
+       */
+      discussionSocket.on('webrtc-ice-candidate', (candidateData) => {
+        console.log(`🧊 [webrtc-ice] Received ICE candidate from: ${candidateData.from}`);
+        // Phase 2.2: ICE candidate processing would go here
+        // For now, this is a placeholder for future ICE candidate handling
       });
 
       // Button events
