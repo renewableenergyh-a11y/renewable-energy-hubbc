@@ -1635,6 +1635,7 @@
         this.signalingState = new Map(); // key = email, value = { state }
         this.localUserId = null;
         this.sessionId = null;
+        this.currentSessionUserRole = null; // Phase 2.1: Role-based offer control
         
         // STUN server only (Phase 1)
         this.iceServers = [
@@ -1648,12 +1649,14 @@
        * @param {String} userId - Local user email
        * @param {String} sessionId - Current session ID
        * @param {HTMLVideoElement} videoElement - Local video element
+       * @param {String} userRole - Current session user's role (for offer control)
        */
-      initialize(userId, sessionId, videoElement) {
+      initialize(userId, sessionId, videoElement, userRole = null) {
         this.localUserId = userId;
         this.sessionId = sessionId;
         this.localVideoElement = videoElement;
-        console.log('🎥 [WebRTC] Initialized Phase 1 Manager:', { userId, sessionId });
+        this.currentSessionUserRole = userRole;
+        console.log('🎥 [WebRTC] Initialized Phase 1 Manager:', { userId, sessionId, role: userRole });
       }
 
       /**
@@ -1938,8 +1941,9 @@
       }
 
       /**
-       * Handle new participant - create peer connection and send offer
-       * Phase 2.1: Create peer connection and initiate SDP offer
+       * Handle new participant - create peer connection and conditional offer
+       * Phase 2.1: Role-based offer control - only admins/instructors create offers
+       * Students ONLY respond with answers (glare prevention)
        * @param {String} participantEmail - New participant email
        */
       handleNewParticipant(participantEmail) {
@@ -1952,13 +1956,20 @@
           this.getPeerConnection(participantEmail);
           console.log(`👤 [WebRTC] Peer connection created for new participant: ${participantEmail}`);
 
-          // Phase 2.1: Create and send offer to new participant
-          // (existing participants send offers to new joiners)
-          if (this.socketService && this.socketService.emitWebRTCOffer) {
-            this.createAndSendOffer(
-              participantEmail,
-              (data) => this.socketService.emitWebRTCOffer(data)
-            );
+          // Phase 2.1: ROLE-BASED OFFER CONTROL (CRITICAL)
+          // Only admins/instructors/superadmins can create offers
+          // Students MUST ONLY answer (prevents offer collision/glare)
+          if (this.currentSessionUserRole && this.currentSessionUserRole !== 'student') {
+            // This user is allowed to create offers
+            if (this.socketService && this.socketService.emitWebRTCOffer) {
+              this.createAndSendOffer(
+                participantEmail,
+                (data) => this.socketService.emitWebRTCOffer(data)
+              );
+            }
+          } else {
+            // Student role or role not set - do NOT create offer
+            console.log(`⏭️ [WebRTC] Offer creation skipped for ${participantEmail} (student role - only answers allowed)`);
           }
         }
       }
@@ -2528,7 +2539,7 @@
           console.log('🎥 [discussion-room] Initializing WebRTC Phase 1...');
           const localVideoElement = document.getElementById('localVideo');
           
-          webrtcManager.initialize(user.email, sessionId, localVideoElement);
+          webrtcManager.initialize(user.email, sessionId, localVideoElement, user.role);
           webrtcManager.socketService = discussionSocket; // Phase 2.1: Attach socket service for signaling
           
           // Attempt to capture local media
