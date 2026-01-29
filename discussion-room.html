@@ -2345,6 +2345,11 @@
           return;
         }
 
+        // Normalize role - students have undefined/missing role
+        const normalizedRole = user.role || 'student';
+        user.role = normalizedRole;
+        console.log('[authService] Normalized role for user:', normalizedRole);
+
         // Log token validity for debugging
         console.log('[authService] Admin token length:', user.token.length, 'Role:', user.role);
         
