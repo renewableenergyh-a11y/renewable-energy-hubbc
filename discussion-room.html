@@ -1821,6 +1821,22 @@
             iceServers: this.iceServers
           });
 
+          // Phase 3: Force ICE gathering by creating a dummy data channel
+          // Without media or data channels, browsers suppress ICE candidate generation
+          try {
+            const dummyDataChannel = peerConnection.createDataChannel('signal', { negotiated: false });
+            console.log(`📡 [WebRTC] Created dummy data channel for ${peerId} to stimulate ICE gathering`);
+            
+            dummyDataChannel.onopen = () => {
+              console.log(`✅ [WebRTC] Dummy data channel opened for ${peerId}`);
+            };
+            dummyDataChannel.onclose = () => {
+              console.log(`❌ [WebRTC] Dummy data channel closed for ${peerId}`);
+            };
+          } catch (err) {
+            console.warn(`⚠️ [WebRTC] Failed to create data channel for ${peerId}:`, err.message);
+          }
+
           // Phase 3: Handle ICE candidates for NAT traversal
           peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
@@ -1872,7 +1888,7 @@
           this.peerConnections.set(peerId, peerConnection);
           this.signalingState.set(peerId, { state: 'new' });
 
-          console.log(`✅ [WebRTC] Peer connection created for ${peerId} (handlers attached)`);
+          console.log(`✅ [WebRTC] Peer connection created for ${peerId} (handlers attached, data channel added)`);
           return peerConnection;
         } catch (error) {
           console.error(`❌ [WebRTC] Failed to create peer connection for ${peerId}:`, error);
