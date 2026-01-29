@@ -916,13 +916,17 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
 
       try {
         console.log(`🧊 [webrtc-ice-candidate] Routing ICE candidate: ${from} -> ${to} in session ${sessionId}`);
+        console.log(`📍 [webrtc-ice-candidate] userSocketMap size:`, userSocketMap.size, `Looking for: ${to}`);
         
         // Find recipient by email in userSocketMap
         const recipientInfo = userSocketMap.get(to);
         if (!recipientInfo) {
           console.warn(`⚠️ [webrtc-ice-candidate] Recipient not in userSocketMap: ${to}`);
+          console.warn(`📍 [webrtc-ice-candidate] Available emails in map:`, Array.from(userSocketMap.keys()));
           return;
         }
+
+        console.log(`✅ [webrtc-ice-candidate] Found recipient in userSocketMap: ${to}`);
 
         // Get recipient's socket
         const recipientSocket = io.sockets.sockets.get(recipientInfo.socketId);
@@ -931,9 +935,11 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           return;
         }
 
+        console.log(`✅ [webrtc-ice-candidate] Found recipient socket: ${to} (socketId: ${recipientInfo.socketId})`);
+
         // Verify recipient is in the same session
         if (recipientInfo.sessionId !== sessionId) {
-          console.warn(`⚠️ [webrtc-ice-candidate] Recipient in different session: ${to}`);
+          console.warn(`⚠️ [webrtc-ice-candidate] Recipient in different session: ${to} (expected: ${sessionId}, actual: ${recipientInfo.sessionId})`);
           return;
         }
 
