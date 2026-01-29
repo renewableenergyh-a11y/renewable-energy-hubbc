@@ -1837,6 +1837,9 @@
               } else {
                 console.warn(`⚠️ [WebRTC] Cannot send ICE candidate - socket service not available`);
               }
+            } else {
+              // event.candidate === null means ICE gathering is complete
+              console.log(`✅ [WebRTC] ICE gathering complete for ${peerId}`);
             }
           };
 
@@ -1856,10 +1859,20 @@
             this.signalingState.set(peerId, { state: peerConnection.signalingState });
           };
 
+          // Phase 3: Monitor ICE connection state separately for debugging
+          peerConnection.oniceconnectionstatechange = () => {
+            console.log(`❄️  [WebRTC] ICE connection state for ${peerId}: ${peerConnection.iceConnectionState}`);
+          };
+
+          // Phase 3: Monitor ICE gathering state
+          peerConnection.onicegatheringstatechange = () => {
+            console.log(`🧊 [WebRTC] ICE gathering state for ${peerId}: ${peerConnection.iceGatheringState}`);
+          };
+
           this.peerConnections.set(peerId, peerConnection);
           this.signalingState.set(peerId, { state: 'new' });
 
-          console.log(`✅ [WebRTC] Peer connection created for ${peerId}`);
+          console.log(`✅ [WebRTC] Peer connection created for ${peerId} (handlers attached)`);
           return peerConnection;
         } catch (error) {
           console.error(`❌ [WebRTC] Failed to create peer connection for ${peerId}:`, error);
