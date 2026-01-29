@@ -318,21 +318,25 @@
 
     /* WebRTC Phase 1: Local Media Preview */
     .webrtc-preview-container {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      width: 240px;
+      height: 135px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 24px;
-      padding: 20px;
-      background: var(--bg-tertiary);
+      gap: 8px;
+      z-index: 100;
       border-radius: 12px;
-      border: 1px solid var(--border-color);
-      min-width: 300px;
+      overflow: hidden;
+      border: 2px solid var(--border-color);
+      background: rgba(0, 0, 0, 0.8);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
 
     .local-video-wrapper {
       width: 100%;
-      max-width: 400px;
+      height: 100%;
       aspect-ratio: 16/9;
       background: #000;
       border-radius: 8px;
@@ -358,26 +362,25 @@
     }
 
     .webrtc-preview-label {
-      font-size: 12px;
+      font-size: 10px;
       font-weight: 600;
       color: var(--text-secondary);
       text-transform: uppercase;
       letter-spacing: 0.5px;
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
+      padding: 4px 8px;
+      background: rgba(0, 0, 0, 0.5);
     }
 
     .webrtc-preview-label i {
       color: var(--accent-green);
+      font-size: 10px;
     }
 
     .webrtc-status-message {
-      font-size: 13px;
-      color: var(--text-secondary);
-      text-align: center;
-      line-height: 1.5;
-      max-width: 500px;
+      display: none;
     }
 
     .sidebar {
@@ -1287,23 +1290,31 @@
       }
 
       .webrtc-preview-container {
-        max-width: 100%;
-        margin-bottom: 12px;
-        padding: 12px;
+        position: fixed;
+        top: 15px;
+        left: 15px;
+        width: 180px;
+        height: 101px;
+        max-width: 180px;
+        margin-bottom: 0;
+        padding: 4px;
         border-radius: 6px;
+        z-index: 100;
       }
 
       .local-video-wrapper {
         max-width: 100%;
+        height: 100%;
         aspect-ratio: 16/9;
       }
 
       .webrtc-preview-label {
-        font-size: 10px;
+        font-size: 8px;
+        padding: 2px 4px;
       }
 
       .webrtc-status-message {
-        font-size: 11px;
+        display: none;
       }
 
       .room-controls {
