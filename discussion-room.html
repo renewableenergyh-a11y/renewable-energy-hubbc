@@ -3366,9 +3366,14 @@
           // Log token presence for debugging
           console.log('[auth-validation] Token length:', user.token ? user.token.length : 'missing');
           
+          // Skip /api/user/me validation for superadmins (they use separate token storage)
+          if (user.role === 'superadmin') {
+            console.log('ℹ️ [auth-validation] Skipping /api/user/me for superadmin (separate token storage)');
+            return;
+          }
+          
           // Verify token is still valid with a lightweight endpoint
           // Non-blocking - just log issues, don't logout
-          // Note: /api/user/me may return 401 for admin tokens due to separate token storage
           try {
             const response = await fetch('/api/user/me', {
               method: 'GET',
@@ -3381,11 +3386,10 @@
             if (response.ok) {
               console.log('✅ [auth-validation] Session valid');
             } else if (response.status === 401) {
-              // Token may be expired or admin token (separate storage)
-              console.warn('⚠️ [auth-validation] User endpoint returned 401');
-              console.warn('[auth-validation] User is:', user.email, 'role:', user.role);
-              // Don't logout - may be admin with separate token storage
-              // Actual auth failure would occur when joining session
+              // Token expired or invalid
+              console.warn('⚠️ [auth-validation] Token expired or invalid (status: 401)');
+              console.warn('[auth-validation] User role:', user.role);
+              // Only logout on persistent auth failures after multiple attempts
               return;
             } else if (response.status === 403) {
               console.warn('⚠️ [auth-validation] Access forbidden (status: 403)');
