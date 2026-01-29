@@ -1912,6 +1912,21 @@
             console.warn(`⚠️ [WebRTC] Failed to add transceivers for ${peerId}:`, err.message);
           }
 
+          // Phase 4: Add local media tracks to peer connection if available
+          if (this.localStream) {
+            try {
+              this.localStream.getTracks().forEach(track => {
+                peerConnection.addTrack(track, this.localStream);
+                console.log(`📤 [WebRTC] Added local ${track.kind} track to peer connection for ${peerId}`);
+              });
+              console.log(`📤 [WebRTC] Added ${this.localStream.getTracks().length} local tracks to peer connection for ${peerId}`);
+            } catch (err) {
+              console.warn(`⚠️ [WebRTC] Failed to add local tracks for ${peerId}:`, err.message);
+            }
+          } else {
+            console.log(`ℹ️ [WebRTC] No local stream available for ${peerId} - peer will not receive your media`);
+          }
+
           // Phase 3: Force ICE gathering by creating a dummy data channel
           // Without media or data channels, browsers suppress ICE candidate generation
           try {
