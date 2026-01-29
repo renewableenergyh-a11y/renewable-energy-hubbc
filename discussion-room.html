@@ -1936,9 +1936,11 @@
             offerToReceiveVideo: false   // No media in Phase 2.1
           });
 
-          // Set as local description
+          // Set as local description - THIS TRIGGERS ICE GATHERING
+          console.log(`🎯 [WebRTC] About to set local description (offer) for ${remotePeerEmail} - ICE gathering should start now`);
           await pc.setLocalDescription(offer);
           console.log(`📝 [WebRTC] Local description set for ${remotePeerEmail}`);
+          console.log(`🧊 [WebRTC] ICE gathering state after setLocalDescription: ${pc.iceGatheringState}`);
 
           // Send offer via socket
           emitFunction({
@@ -1972,15 +1974,19 @@
 
           // Set remote description (offer)
           const remoteOffer = new RTCSessionDescription(sdp);
+          console.log(`🎯 [WebRTC] About to set remote description (offer) for ${from} - ICE gathering should start now`);
           await pc.setRemoteDescription(remoteOffer);
           console.log(`📝 [WebRTC] Remote description (offer) set from ${from}`);
+          console.log(`🧊 [WebRTC] ICE gathering state after setRemoteDescription: ${pc.iceGatheringState}`);
 
           // Create SDP answer
           const answer = await pc.createAnswer();
 
-          // Set as local description
+          // Set as local description - THIS ALSO TRIGGERS ICE GATHERING
+          console.log(`🎯 [WebRTC] About to set local description (answer) for ${from} - ICE gathering should continue`);
           await pc.setLocalDescription(answer);
           console.log(`📝 [WebRTC] Local description (answer) set for ${from}`);
+          console.log(`🧊 [WebRTC] ICE gathering state after setLocalDescription (answer): ${pc.iceGatheringState}`);
 
           // Send answer back via socket
           emitFunction({
@@ -1994,9 +2000,7 @@
         } catch (error) {
           console.error(`❌ [WebRTC] Failed to handle offer:`, error);
         }
-      }
-
-      /**
+      }      /**
        * Phase 2.1: Handle incoming SDP answer from remote peer
        * @param {Object} answerData - { from, to, sdp, sessionId }
        */
