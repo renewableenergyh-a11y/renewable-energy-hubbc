@@ -1188,72 +1188,6 @@
       }
 
       .sidebars-container {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        z-index: 1000;
-        display: flex;
-        flex-direction: column;
-        height: 0;
-        overflow: hidden;
-        transition: height 0.3s ease;
-      }
-
-      .sidebars-container.mobile-sidebars-active {
-        height: 80vh;
-        overflow-y: auto;
-      }
-
-      .sidebar {
-        max-height: 100%;
-        flex: none;
-        height: auto;
-        position: relative;
-        bottom: auto;
-        margin: 0;
-        border-radius: 0;
-      }
-
-      .sidebar-toggle-btn {
-        display: block;
-        position: fixed;
-        bottom: 0;
-        left: 16px;
-        right: 16px;
-        padding: 12px 16px;
-        background: var(--accent-green);
-        color: white;
-        border: none;
-        border-radius: 8px 8px 0 0;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 600;
-        gap: 8px;
-        align-items: center;
-        margin: 0;
-        transition: all 0.2s ease;
-        font-family: 'Poppins', sans-serif;
-        z-index: 999;
-        width: calc(100% - 32px);
-      }
-
-      #participantsToggleBtn {
-        bottom: 0;
-      }
-
-      .sidebar-toggle-btn:hover {
-        opacity: 0.9;
-      }
-
-      body.dark .sidebar-toggle-btn {
-        background: var(--accent-green);
-      }
-    }
-
-    @media (max-width: 1024px) {
-      .sidebars-container {
         position: static;
         display: flex;
         grid-column: 1;
@@ -1267,6 +1201,10 @@
       .sidebar {
         width: 100%;
         max-height: 45vh;
+      }
+
+      .sidebar-toggle-btn {
+        display: none;
       }
     }
 
@@ -1334,14 +1272,14 @@
         display: none;
       }
 
-      /* Show participants below media controls on mobile */
+      /* Participants sidebar visible below media controls on mobile */
       .room-container {
         grid-template-columns: 1fr;
       }
 
       .sidebars-container {
         grid-column: 1 !important;
-        grid-row: 2 !important;
+        grid-row: auto;
         position: static !important;
         bottom: auto !important;
         left: auto !important;
@@ -1349,12 +1287,32 @@
         width: auto !important;
         z-index: auto !important;
         margin-top: 12px;
-        max-height: 40vh;
         height: auto !important;
         overflow-y: auto;
         border-radius: 12px;
         border: 1px solid var(--border-color);
         background: var(--bg-primary);
+        flex-direction: column;
+      }
+
+      .sidebar-toggle-btn {
+        display: none !important;
+      }
+
+      .sidebar {
+        border: none;
+        box-shadow: none;
+        padding: 16px;
+        max-height: 40vh;
+      }
+
+      .sidebar-title {
+        font-size: 14px;
+        margin-bottom: 12px;
+      }
+
+      .participants-list {
+        max-height: 35vh;
       }
 
       .room-main {
