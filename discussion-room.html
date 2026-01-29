@@ -1637,6 +1637,11 @@
         this.sessionId = null;
         this.currentSessionUserRole = null; // Phase 2.1: Role-based offer control
         
+        // Phase 2.2: Peer-only discussion support
+        this.allParticipants = []; // List of all participants (for peer-only offer initiator determination)
+        this.instructorPresent = false; // Flag: true if session has instructor/admin/superadmin
+        this.isOfferInitiator = false; // Flag: true if this peer should create offers in peer-only session
+        
         // STUN server only (Phase 1)
         this.iceServers = [
           { urls: 'stun:stun.l.google.com:19302' },
@@ -1650,13 +1655,72 @@
        * @param {String} sessionId - Current session ID
        * @param {HTMLVideoElement} videoElement - Local video element
        * @param {String} userRole - Current session user's role (for offer control)
+       * @param {Array} participants - List of all participants (for peer-only session support)
        */
-      initialize(userId, sessionId, videoElement, userRole = null) {
+      initialize(userId, sessionId, videoElement, userRole = null, participants = []) {
         this.localUserId = userId;
         this.sessionId = sessionId;
         this.localVideoElement = videoElement;
         this.currentSessionUserRole = userRole;
-        console.log('🎥 [WebRTC] Initialized Phase 1 Manager:', { userId, sessionId, role: userRole });
+        
+        // Phase 2.2: Detect instructor presence and determine offer initiator for peer-only sessions
+        this.allParticipants = participants || [];
+        this.instructorPresent = this.allParticipants.some(p => 
+          ['instructor', 'admin', 'superadmin'].includes(p.role)
+        );
+        
+        // In peer-only sessions, use first participant as offer initiator
+        if (!this.instructorPresent && this.allParticipants.length > 0) {
+          const firstParticipant = this.allParticipants[0];
+          this.isOfferInitiator = (userId === firstParticipant.userId);
+        } else {
+          // In instructor-led sessions, only instructors/admins create offers
+          this.isOfferInitiator = (userRole === 'instructor' || userRole === 'admin' || userRole === 'superadmin');
+        }
+        
+        console.log('🎥 [WebRTC] Initialized Phase 2.2 Manager:', {
+          userId,
+          sessionId,
+          role: userRole,
+          instructorPresent: this.instructorPresent,
+          isOfferInitiator: this.isOfferInitiator,
+          participantCount: this.allParticipants.length
+        });
+      }
+
+      /**
+       * Update participant list and recalculate offer initiator for peer-only sessions
+       * Called when participants join/leave to reassign initiator if needed
+       * @param {Array} participants - Updated list of all participants
+       */
+      updateParticipants(participants) {
+        this.allParticipants = participants || [];
+        
+        // Recalculate instructor presence
+        const wasInstructorPresent = this.instructorPresent;
+        this.instructorPresent = this.allParticipants.some(p => 
+          ['instructor', 'admin', 'superadmin'].includes(p.role)
+        );
+        
+        // Recalculate offer initiator
+        const wasOfferInitiator = this.isOfferInitiator;
+        if (!this.instructorPresent && this.allParticipants.length > 0) {
+          const firstParticipant = this.allParticipants[0];
+          this.isOfferInitiator = (this.localUserId === firstParticipant.userId);
+        } else {
+          this.isOfferInitiator = (this.currentSessionUserRole === 'instructor' || 
+                                   this.currentSessionUserRole === 'admin' || 
+                                   this.currentSessionUserRole === 'superadmin');
+        }
+        
+        // Log if initiator status changed
+        if (wasOfferInitiator !== this.isOfferInitiator) {
+          console.log(`🔄 [WebRTC] Offer initiator status changed: ${wasOfferInitiator} → ${this.isOfferInitiator}`);
+        }
+        
+        if (wasInstructorPresent !== this.instructorPresent) {
+          console.log(`🔄 [WebRTC] Session type changed: ${wasInstructorPresent ? 'instructor-led' : 'peer-only'} → ${this.instructorPresent ? 'instructor-led' : 'peer-only'}`);
+        }
       }
 
       /**
@@ -1942,8 +2006,12 @@
 
       /**
        * Handle new participant - create peer connection and conditional offer
-       * Phase 2.1: Role-based offer control - only admins/instructors create offers
-       * Students ONLY respond with answers (glare prevention)
+       * Phase 2.2: Supports both instructor-led and peer-only discussions
+       * 
+       * Logic:
+       * - Instructor-led: Only instructor/admin/superadmin creates offers, students answer
+       * - Peer-only: First participant (by join order) creates offers, others answer
+       * 
        * @param {String} participantEmail - New participant email
        */
       handleNewParticipant(participantEmail) {
@@ -1956,20 +2024,33 @@
           this.getPeerConnection(participantEmail);
           console.log(`👤 [WebRTC] Peer connection created for new participant: ${participantEmail}`);
 
-          // Phase 2.1: ROLE-BASED OFFER CONTROL (CRITICAL)
-          // Only admins/instructors/superadmins can create offers
-          // Students MUST ONLY answer (prevents offer collision/glare)
-          if (this.currentSessionUserRole && this.currentSessionUserRole !== 'student') {
-            // This user is allowed to create offers
-            if (this.socketService && this.socketService.emitWebRTCOffer) {
-              this.createAndSendOffer(
-                participantEmail,
-                (data) => this.socketService.emitWebRTCOffer(data)
-              );
+          // Phase 2.2: Unified offer control logic for both discussion types
+          if (this.instructorPresent) {
+            // INSTRUCTOR-LED DISCUSSION: Only instructors/admins create offers
+            if (this.currentSessionUserRole && this.currentSessionUserRole !== 'student') {
+              if (this.socketService && this.socketService.emitWebRTCOffer) {
+                console.log(`📤 [WebRTC] Offer created by instructor/admin: ${participantEmail}`);
+                this.createAndSendOffer(
+                  participantEmail,
+                  (data) => this.socketService.emitWebRTCOffer(data)
+                );
+              }
+            } else {
+              console.log(`⏭️ [WebRTC] Offer creation skipped for ${participantEmail} (student role - only answers allowed)`);
             }
           } else {
-            // Student role or role not set - do NOT create offer
-            console.log(`⏭️ [WebRTC] Offer creation skipped for ${participantEmail} (student role - only answers allowed)`);
+            // PEER-ONLY DISCUSSION: Only the offer initiator creates offers
+            if (this.isOfferInitiator) {
+              if (this.socketService && this.socketService.emitWebRTCOffer) {
+                console.log(`📤 [WebRTC] Peer-only session: Offer created by ${this.localUserId} (first peer)`);
+                this.createAndSendOffer(
+                  participantEmail,
+                  (data) => this.socketService.emitWebRTCOffer(data)
+                );
+              }
+            } else {
+              console.log(`⏭️ [WebRTC] Peer-only session: Offer creation skipped for ${participantEmail} (${this.localUserId} is not initiator - only answers allowed)`);
+            }
           }
         }
       }
@@ -2557,11 +2638,12 @@
           await discussionSocket.joinSession(sessionId, user.token, user.email, user.role);
           console.log('✅ [discussion-room] Socket joined and participant list broadcasted');
 
-          // Step 4: Initialize WebRTC Phase 1
-          console.log('🎥 [discussion-room] Initializing WebRTC Phase 1...');
+          // Step 4: Initialize WebRTC Phase 2.2 (with peer-only discussion support)
+          console.log('🎥 [discussion-room] Initializing WebRTC Phase 2.2...');
           const localVideoElement = document.getElementById('localVideo');
+          const allParticipantsForWebRTC = participantState.getAll();
           
-          webrtcManager.initialize(user.email, sessionId, localVideoElement, user.role);
+          webrtcManager.initialize(user.email, sessionId, localVideoElement, user.role, allParticipantsForWebRTC);
           webrtcManager.socketService = discussionSocket; // Phase 2.1: Attach socket service for signaling
           
           // Attempt to capture local media
@@ -2679,7 +2761,11 @@
         // Re-render UI with deduplicated list from state
         renderParticipants(participantState.getAll(), data.stats);
 
-        // WebRTC Phase 1: Initialize peer connections for all active participants
+        // Phase 2.2: Update WebRTC manager with new participant list
+        // This recalculates instructorPresent and isOfferInitiator for peer-only sessions
+        webrtcManager.updateParticipants(data.participants);
+
+        // WebRTC Phase 2.2: Initialize peer connections for all active participants
         if (webrtcManager.localUserId) {
           data.participants.forEach(participant => {
             if (participant.userId !== webrtcManager.localUserId && participant.active) {
@@ -2705,11 +2791,15 @@
         });
         
         // Re-render immediately to show the new participant
-        renderParticipants(participantState.getAll(), { activeCount: participantState.getCount() });
+        const updatedParticipants = participantState.getAll();
+        renderParticipants(updatedParticipants, { activeCount: participantState.getCount() });
         
         showParticipantNotification(data.name, 'joined');
 
-        // WebRTC Phase 1: Create peer connection for new participant
+        // Phase 2.2: Update WebRTC manager with updated participant list
+        webrtcManager.updateParticipants(updatedParticipants);
+
+        // WebRTC Phase 2.2: Create peer connection for new participant
         if (webrtcManager.localUserId && data.userId !== webrtcManager.localUserId) {
           webrtcManager.handleNewParticipant(data.userId);
         }
@@ -2722,7 +2812,7 @@
         if (data.userId) {
           participantState.remove(data.userId);
 
-          // WebRTC Phase 1: Cleanup peer connection for leaving participant
+          // WebRTC Phase 2.2: Cleanup peer connection for leaving participant
           webrtcManager.handleParticipantLeft(data.userId);
         }
         
@@ -2732,7 +2822,12 @@
         }
         
         // Re-render UI to reflect removal
-        renderParticipants(participantState.getAll(), { activeCount: participantState.getCount() });
+        const updatedParticipants = participantState.getAll();
+        renderParticipants(updatedParticipants, { activeCount: participantState.getCount() });
+        
+        // Phase 2.2: Update WebRTC manager with new participant list
+        // In peer-only sessions, this may reassign the offer initiator
+        webrtcManager.updateParticipants(updatedParticipants);
       });
 
       discussionSocket.on('session-closed', (data) => {
