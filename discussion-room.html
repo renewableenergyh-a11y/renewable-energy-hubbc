@@ -2531,12 +2531,9 @@
       }
 
       /**
-       * Handle new participant - create peer connection and conditional offer
-       * Phase 2.2: Supports both instructor-led and peer-only discussions
-       * 
-       * Logic:
-       * - Instructor-led: Only instructor/admin/superadmin creates offers, students answer
-       * - Peer-only: First participant (by join order) creates offers, others answer
+       * Handle new participant - create peer connection and offer
+       * CRITICAL: All participants should create offers (bidirectional)
+       * This ensures video flows in both directions
        * 
        * @param {String} participantEmail - New participant email
        */
@@ -2552,33 +2549,19 @@
           this.getPeerConnection(participantEmail);
           console.log(`👤 [WebRTC] Peer connection created for new participant: ${participantEmail}`);
 
-          // Phase 2.2: Unified offer control logic for both discussion types
-          if (this.instructorPresent) {
-            // INSTRUCTOR-LED DISCUSSION: Only instructors/admins create offers
-            if (this.currentSessionUserRole && this.currentSessionUserRole !== 'student') {
-              if (this.socketService && this.socketService.emitWebRTCOffer) {
-                console.log(`📤 [WebRTC] Offer created by instructor/admin: ${participantEmail}`);
-                this.createAndSendOffer(
-                  participantEmail,
-                  (data) => this.socketService.emitWebRTCOffer(data)
-                );
-              }
-            } else {
-              console.log(`⏭️ [WebRTC] Offer creation skipped for ${participantEmail} (student role - only answers allowed)`);
-            }
+          // CRITICAL FIX: ALL participants create offers for BIDIRECTIONAL video exchange
+          // This ensures that regardless of role, both directions work:
+          // - Admin → Student: Works
+          // - Student → Admin: Works (from student initiating)
+          // - Student → Student: Works
+          if (this.socketService && this.socketService.emitWebRTCOffer) {
+            console.log(`📤 [WebRTC] Creating offer to ${participantEmail} for bidirectional video exchange`);
+            this.createAndSendOffer(
+              participantEmail,
+              (data) => this.socketService.emitWebRTCOffer(data)
+            );
           } else {
-            // PEER-ONLY DISCUSSION: Only the offer initiator creates offers
-            if (this.isOfferInitiator) {
-              if (this.socketService && this.socketService.emitWebRTCOffer) {
-                console.log(`📤 [WebRTC] Peer-only session: Offer created by ${this.localUserId} (first peer)`);
-                this.createAndSendOffer(
-                  participantEmail,
-                  (data) => this.socketService.emitWebRTCOffer(data)
-                );
-              }
-            } else {
-              console.log(`⏭️ [WebRTC] Peer-only session: Offer creation skipped for ${participantEmail} (${this.localUserId} is not initiator - only answers allowed)`);
-            }
+            console.warn(`⚠️ [WebRTC] Socket service not available, cannot create offer to ${participantEmail}`);
           }
         }
       }
