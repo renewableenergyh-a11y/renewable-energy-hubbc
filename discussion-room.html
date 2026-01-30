@@ -1953,6 +1953,24 @@
             iceServers: this.iceServers
           });
 
+          // CRITICAL: Register ontrack IMMEDIATELY after pc creation (BEFORE any SDP or track operations)
+          // Create persistent remote stream for this peer
+          peerConnection.__remoteStream = new MediaStream();
+
+          peerConnection.ontrack = (event) => {
+            console.log('[WebRTC] ontrack fired for', peerId, {
+              kind: event.track.kind,
+              streams: event.streams
+            });
+
+            // Add track to persistent remote stream
+            peerConnection.__remoteStream.addTrack(event.track);
+            console.log('[WebRTC] Remote track added:', event.track.kind, 'for', peerId);
+            
+            // Attach the stream to video element
+            attachRemoteStream(peerId, peerConnection.__remoteStream);
+          };
+
           // Phase 4: ALWAYS add recv-only transceivers to ensure media lines in SDP
           // This allows receiving media even if local stream is unavailable
           try {
@@ -2041,20 +2059,6 @@
           // Phase 3: Monitor ICE gathering state
           peerConnection.onicegatheringstatechange = () => {
             console.log(`🧊 [WebRTC] ICE gathering state for ${peerId}: ${peerConnection.iceGatheringState}`);
-          };
-
-          // Phase 4: Handle remote media streams (audio/video)
-          peerConnection.ontrack = (event) => {
-            console.log('[WebRTC] ontrack fired for', peerId);
-
-            const remoteStream = event.streams[0];
-            if (!remoteStream) {
-              console.warn(`[WebRTC] No remote stream received from ${peerId}`);
-              return;
-            }
-
-            console.log(`[WebRTC] Remote track received from ${peerId}`);
-            attachRemoteStream(peerId, remoteStream);
           };
 
           this.peerConnections.set(peerId, peerConnection);
