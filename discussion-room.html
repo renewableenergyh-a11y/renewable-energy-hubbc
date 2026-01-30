@@ -2668,27 +2668,23 @@
         const user = await authService.getCurrentUser();
         console.log('👤 [discussion-room] Current user:', { id: user?.id, email: user?.email, role: user?.role, token: !!user?.token });
         
-        // Step 1: Validate token exists
-        if (!user || !user.token) {
-          console.error('❌ [discussion-room] No token available for authenticated requests');
+        // Step 1: Validate token exists - ONLY redirect if completely unauthenticated
+        // Students are allowed to continue if they have ANY valid authentication
+        if (!user) {
+          console.error('❌ [discussion-room] No user found');
           console.warn('⚠️ [discussion-room] No user found, redirecting to login');
           window.location.href = '/login.html';
           return;
         }
 
+        // At this point, user is authenticated
         // Normalize role - students have undefined/missing role
         const normalizedRole = user.role || 'student';
         user.role = normalizedRole;
         console.log('[authService] Normalized role for user:', normalizedRole);
 
         // Log token validity for debugging
-        console.log('[authService] Admin token length:', user.token.length, 'Role:', user.role);
-        
-        if (!user) {
-          console.warn('⚠️ [discussion-room] No user found, redirecting to login');
-          window.location.href = '/login.html';
-          return;
-        }
+        console.log('[authService] Token available:', !!user.token, 'Role:', user.role);
 
         isInstructor = user.role === 'instructor' || user.role === 'admin' || user.role === 'superadmin';
 
