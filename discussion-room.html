@@ -2160,9 +2160,26 @@
             return;
           }
 
+          // CRITICAL: Add local tracks BEFORE handling the offer (same as offerer)
+          // This ensures tracks are present in SDP answer
+          if (this.localStream) {
+            try {
+              console.log(`📤 [WebRTC] Adding local tracks to answerer peer connection for ${from}`);
+              this.localStream.getTracks().forEach(track => {
+                pc.addTrack(track, this.localStream);
+                console.log(`📤 [WebRTC] Added local ${track.kind} track (answerer) to peer connection for ${from}`);
+              });
+              console.log(`📤 [WebRTC] Answerer: Added ${this.localStream.getTracks().length} local tracks for ${from}`);
+            } catch (err) {
+              console.warn(`⚠️ [WebRTC] Failed to add local tracks (answerer) for ${from}:`, err.message);
+            }
+          } else {
+            console.log(`ℹ️ [WebRTC] No local stream available for answerer ${from}`);
+          }
+
           // Set remote description (offer)
           const remoteOffer = new RTCSessionDescription(sdp);
-          console.log(`🎯 [WebRTC] About to set remote description (offer) for ${from} - ICE gathering should start now`);
+          console.log(`🎯 [WebRTC] About to set remote description (offer) for ${from}`);
           await pc.setRemoteDescription(remoteOffer);
           console.log(`📝 [WebRTC] Remote description (offer) set from ${from}`);
           console.log(`🧊 [WebRTC] ICE gathering state after setRemoteDescription: ${pc.iceGatheringState}`);
@@ -2170,8 +2187,8 @@
           // Create SDP answer
           const answer = await pc.createAnswer();
 
-          // Set as local description - THIS ALSO TRIGGERS ICE GATHERING
-          console.log(`🎯 [WebRTC] About to set local description (answer) for ${from} - ICE gathering should continue`);
+          // Set as local description
+          console.log(`🎯 [WebRTC] About to set local description (answer) for ${from}`);
           await pc.setLocalDescription(answer);
           console.log(`📝 [WebRTC] Local description (answer) set for ${from}`);
           console.log(`🧊 [WebRTC] ICE gathering state after setLocalDescription (answer): ${pc.iceGatheringState}`);
