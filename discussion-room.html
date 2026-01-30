@@ -1891,7 +1891,52 @@
             console.error('⚠️ [WebRTC] Unexpected error:', error.message);
           }
           
-          return null;
+          // 🔥 CRITICAL FIX: Create SYNTHETIC MEDIA TRACKS when real media fails
+          // This allows WebRTC negotiation to work even without camera/mic
+          console.log('🎬 [WebRTC] Creating synthetic media tracks for WebRTC negotiation...');
+          try {
+            // Create canvas-based video track (black/silent frames)
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#000000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            const canvasStream = canvas.captureStream(30); // 30 FPS
+            const videoTrack = canvasStream.getVideoTracks()[0];
+            
+            // Create silent audio track using AudioContext
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(0, audioContext.currentTime); // MUTE (no sound)
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            oscillator.start();
+            
+            const audioDestination = audioContext.createMediaStreamDestination();
+            oscillator.connect(audioDestination);
+            gainNode.connect(audioDestination);
+            const audioTrack = audioDestination.stream.getAudioTracks()[0];
+            
+            // Combine into single stream
+            this.localStream = new MediaStream();
+            if (videoTrack) {
+              this.localStream.addTrack(videoTrack);
+              console.log('✅ [WebRTC] Added synthetic video track (black canvas)');
+            }
+            if (audioTrack) {
+              this.localStream.addTrack(audioTrack);
+              console.log('✅ [WebRTC] Added synthetic audio track (muted)');
+            }
+            
+            console.log('🎬 [WebRTC] Synthetic media stream created:', this.localStream.getTracks().length, 'tracks');
+            return this.localStream;
+          } catch (syntheticError) {
+            console.error('❌ [WebRTC] Failed to create synthetic media:', syntheticError);
+            return null;
+          }
         }
       }
 
