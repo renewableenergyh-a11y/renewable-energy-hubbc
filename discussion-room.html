@@ -2650,6 +2650,10 @@
 
     // Global WebRTC manager instance
     const webrtcManager = new WebRTCPhase1Manager();
+    
+    // Make accessible from browser console for debugging
+    window.webrtcManager = webrtcManager;
+    console.log('✅ WebRTC Manager exposed globally. Use: webrtcManager.getDiagnostics()');
 
     const roomTitle = document.getElementById('roomTitle');
     const participantCount = document.getElementById('participantCount');
