@@ -403,7 +403,95 @@
     }
 
     .webrtc-status-message {
-      display: none;
+      display: block;
+      padding: 10px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Remote Videos Grid (NEW) */
+    .remote-videos-container {
+      margin: 20px 0;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+    }
+
+    .remote-videos-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 12px;
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .video-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .video-tile {
+      width: 100%;
+      aspect-ratio: 16/9;
+      background: #1a1a1a;
+      border-radius: 8px;
+      overflow: hidden;
+      position: relative;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    .video-tile video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: #000;
+    }
+
+    .video-tile-name {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+      color: white;
+      padding: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .video-tile-placeholder {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+      color: var(--text-muted);
+      text-align: center;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .video-tile-placeholder i {
+      font-size: 32px;
+      opacity: 0.5;
     }
 
     .sidebar {
@@ -1541,9 +1629,24 @@
             <video id="localVideo" playsinline autoplay muted></video>
           </div>
           <div class="webrtc-status-message">
-            <p>WebRTC media exchange will be enabled in the next phase.</p>
-            <p>Your local camera and microphone will be shared with participants once Phase 2 is implemented.</p>
+            <p>Your camera and microphone are being shared with participants.</p>
           </div>
+        </div>
+
+        <!-- Remote Participants Video Grid (NEW) -->
+        <div class="remote-videos-container">
+          <div class="remote-videos-label">
+            <i class="fas fa-users"></i>
+            Participants
+          </div>
+          <div class="video-grid" id="videoGrid">
+            <!-- Remote video tiles will be dynamically added here -->
+          </div>
+        </div>
+
+        <!-- Remote Audio Container (hidden) (NEW) -->
+        <div id="remoteAudioContainer" style="display: none;">
+          <!-- Remote audio elements will be created here -->
         </div>
       </div>
 
@@ -1689,63 +1792,155 @@
      * @param {String} peerId - Email of remote peer
      * @param {MediaStream} stream - Remote media stream
      */
+    /**
+     * Attach remote media stream to video element
+     * Creates video tile dynamically and adds to grid
+     * @param {String} peerId - Email of remote peer
+     * @param {MediaStream} stream - Remote media stream
+     */
     function attachRemoteStream(peerId, stream) {
       try {
-        // Try to find existing video element first
-        let videoEl = document.getElementById(`remote-video-${peerId}`);
-
-        // If it doesn't exist, create it dynamically
-        if (!videoEl) {
-          videoEl = document.createElement('video');
-          videoEl.id = `remote-video-${peerId}`;
-          videoEl.autoplay = true;
-          videoEl.playsInline = true;
-          videoEl.muted = false; // Only local stream is muted
-          
-          // Append to media container for remote videos
-          const container = document.getElementById('mediaContainer');
-          if (container) {
-            container.appendChild(videoEl);
-            console.log(`✅ [WebRTC] Video element created and appended to mediaContainer for ${peerId}`);
-          } else {
-            console.warn(`⚠️ [WebRTC] Media container not found, appending to body`);
-            document.body.appendChild(videoEl);
-          }
+        console.log(`📺 [attachRemoteStream] Attaching stream for ${peerId}, tracks:`, stream.getTracks().map(t => t.kind));
+        
+        const videoGrid = document.getElementById('videoGrid');
+        if (!videoGrid) {
+          console.warn('❌ Video grid container not found');
+          return;
         }
 
-        // Attach the stream
-        videoEl.srcObject = stream;
+        // Check if video tile already exists
+        let videoTile = document.getElementById(`video-tile-${peerId}`);
+        if (videoTile) {
+          console.log(`ℹ️ [attachRemoteStream] Video tile already exists for ${peerId}`);
+          return;
+        }
 
-        console.log(`✅ [WebRTC] Remote stream attached for ${peerId} (${stream.getTracks().length} tracks)`);
+        // Create video tile wrapper
+        videoTile = document.createElement('div');
+        videoTile.className = 'video-tile';
+        videoTile.id = `video-tile-${peerId}`;
+
+        // Create video element
+        const videoEl = document.createElement('video');
+        videoEl.id = `remote-video-${peerId}`;
+        videoEl.autoplay = true;
+        videoEl.playsinline = true;
+        videoEl.style.width = '100%';
+        videoEl.style.height = '100%';
+        videoEl.style.objectFit = 'cover';
+        videoEl.style.display = 'block';
+        videoEl.style.background = '#000';
+
+        // ✅ CRITICAL: Attach the stream to the video element
+        videoEl.srcObject = stream;
+        console.log(`📤 [attachRemoteStream] Stream attached to video element for ${peerId}`);
+
+        // Create name label
+        const nameLabel = document.createElement('div');
+        nameLabel.className = 'video-tile-name';
+        nameLabel.textContent = peerId.split('@')[0]; // Show email prefix as name
+        nameLabel.style.fontSize = '12px';
+        nameLabel.style.overflow = 'hidden';
+        nameLabel.style.textOverflow = 'ellipsis';
+        nameLabel.style.whiteSpace = 'nowrap';
+
+        // Assemble tile
+        videoTile.appendChild(videoEl);
+        videoTile.appendChild(nameLabel);
+
+        // Add to grid
+        videoGrid.appendChild(videoTile);
+        console.log(`✅ [attachRemoteStream] Video tile added to grid for ${peerId}`);
+
+        // ✅ CRITICAL: Start playback with error handling
+        videoEl.play()
+          .then(() => {
+            console.log(`▶️ [attachRemoteStream] Video playing for ${peerId}`);
+          })
+          .catch(err => {
+            console.warn(`⚠️ [attachRemoteStream] Autoplay failed for ${peerId}:`, err.message);
+            // Show play button or message
+            const placeholder = document.createElement('div');
+            placeholder.className = 'video-tile-placeholder';
+            placeholder.innerHTML = `
+              <i class="fas fa-play-circle"></i>
+              <small>Click to play</small>
+            `;
+            videoEl.style.display = 'none';
+            videoTile.appendChild(placeholder);
+            
+            // Allow user to click to play
+            placeholder.addEventListener('click', () => {
+              videoEl.style.display = 'block';
+              placeholder.remove();
+              videoEl.play().catch(e => console.warn('Play failed:', e));
+            });
+          });
+
+        // Handle track end (participant left or camera turned off)
+        stream.getTracks().forEach(track => {
+          track.onended = () => {
+            console.log(`🔴 [attachRemoteStream] Track ended for ${peerId}: ${track.kind}`);
+            // If all tracks ended, show placeholder
+            if (stream.getTracks().every(t => t.readyState === 'ended')) {
+              const placeholder = document.createElement('div');
+              placeholder.className = 'video-tile-placeholder';
+              placeholder.innerHTML = `
+                <i class="fas fa-video-slash"></i>
+                <small>Stream ended</small>
+              `;
+              videoEl.style.display = 'none';
+              videoTile.appendChild(placeholder);
+            }
+          };
+        });
+
       } catch (error) {
-        console.error(`❌ [WebRTC] Failed to attach remote stream for ${peerId}:`, error);
+        console.error(`❌ [attachRemoteStream] Error attaching remote stream for ${peerId}:`, error);
       }
     }
 
     /**
-     * Phase 4: Detach and cleanup remote media stream
-     * Called when peer disconnects to prevent stream leaks
+     * Detach and cleanup remote media stream
+     * Stops all tracks and removes video tile from DOM
      * @param {String} peerId - Email of remote peer
      */
     function detachRemoteStream(peerId) {
       try {
-        const videoEl = document.getElementById(`remote-video-${peerId}`);
-        
-        if (!videoEl) {
-          return;
-        }
+        console.log(`🧹 [detachRemoteStream] Detaching stream for ${peerId}`);
 
-        if (videoEl.srcObject) {
-          videoEl.srcObject.getTracks().forEach(track => {
-            track.stop();
-          });
+        // Get video element
+        const videoEl = document.getElementById(`remote-video-${peerId}`);
+        if (videoEl) {
+          // Stop all tracks in the stream
+          if (videoEl.srcObject) {
+            videoEl.srcObject.getTracks().forEach(track => {
+              track.stop();
+              console.log(`⏹️ [detachRemoteStream] Stopped track: ${track.kind}`);
+            });
+          }
           videoEl.srcObject = null;
         }
 
-        videoEl.remove();
-        console.log(`[WebRTC] Remote stream detached for ${peerId}`);
+        // Remove video tile from DOM
+        const videoTile = document.getElementById(`video-tile-${peerId}`);
+        if (videoTile) {
+          videoTile.remove();
+          console.log(`🗑️ [detachRemoteStream] Video tile removed for ${peerId}`);
+        }
+
+        // Remove audio element if exists
+        const audioEl = document.getElementById(`remote-audio-${peerId}`);
+        if (audioEl) {
+          audioEl.pause();
+          audioEl.srcObject = null;
+          audioEl.remove();
+          console.log(`🔊 [detachRemoteStream] Audio element removed for ${peerId}`);
+        }
+
+        console.log(`✅ [detachRemoteStream] Cleanup complete for ${peerId}`);
       } catch (error) {
-        console.error(`❌ [WebRTC] Failed to detach remote stream for ${peerId}:`, error);
+        console.error(`❌ [detachRemoteStream] Error detaching stream for ${peerId}:`, error);
       }
     }
 
@@ -2227,9 +2422,9 @@
           }
 
           // Set remote description (offer)
-          const remoteOffer = new RTCSessionDescription(sdp);
+          // ✅ FIXED: Use SDP directly, RTCSessionDescription constructor is deprecated
           console.log(`🎯 [WebRTC] About to set remote description (offer) for ${from}`);
-          await pc.setRemoteDescription(remoteOffer);
+          await pc.setRemoteDescription(sdp);
           console.log(`📝 [WebRTC] Remote description (offer) set from ${from}`);
           console.log(`🧊 [WebRTC] ICE gathering state after setRemoteDescription: ${pc.iceGatheringState}`);
 
@@ -2270,8 +2465,8 @@
           }
 
           // Set remote description (answer)
-          const remoteAnswer = new RTCSessionDescription(sdp);
-          await pc.setRemoteDescription(remoteAnswer);
+          // ✅ FIXED: Use SDP directly, RTCSessionDescription constructor is deprecated
+          await pc.setRemoteDescription(sdp);
           console.log(`📝 [WebRTC] Remote description (answer) set from ${from}`);
           console.log(`✅ [WebRTC] Signaling stable with ${from} - state: ${pc.signalingState}`);
         } catch (error) {
