@@ -2531,8 +2531,10 @@
       }
 
       /**
-       * Handle new participant - simplified: only instructors create offers
-       * Everyone can receive and answer, ensuring bidirectional video
+       * Handle new participant - offer creation logic
+       * 
+       * Instructor-led: Only instructor/admin creates offers
+       * Peer-only: Use alphabetical tiebreaker (smaller email creates offer)
        * 
        * @param {String} participantEmail - New participant email
        */
@@ -2546,22 +2548,34 @@
         if (!this.peerConnections.has(participantEmail)) {
           this.getPeerConnection(participantEmail);
 
-          // SIMPLIFIED: Only instructor/admin creates offers
-          // Everyone else automatically answers when they receive an offer
-          // This is deterministic and prevents race conditions
-          const isInstructor = this.currentSessionUserRole && 
+          let shouldCreateOffer = false;
+
+          if (this.instructorPresent) {
+            // INSTRUCTOR-LED: Only instructor creates offers
+            shouldCreateOffer = this.currentSessionUserRole && 
                               ['instructor', 'admin', 'superadmin'].includes(this.currentSessionUserRole);
-          
-          if (isInstructor) {
-            console.log(`📤 [WebRTC] Instructor creating offer to ${participantEmail}`);
+            if (shouldCreateOffer) {
+              console.log(`📤 [WebRTC] Instructor creating offer to ${participantEmail}`);
+            } else {
+              console.log(`⏳ [WebRTC] Student waiting for instructor's offer for ${participantEmail}`);
+            }
+          } else {
+            // PEER-ONLY: Alphabetical tiebreaker (simpler than instructor model)
+            shouldCreateOffer = this.localUserId < participantEmail;
+            if (shouldCreateOffer) {
+              console.log(`📤 [WebRTC] Peer-only: Creating offer to ${participantEmail} (${this.localUserId} < ${participantEmail})`);
+            } else {
+              console.log(`⏳ [WebRTC] Peer-only: Waiting for offer from ${participantEmail} (${this.localUserId} > ${participantEmail})`);
+            }
+          }
+
+          if (shouldCreateOffer) {
             if (this.socketService && this.socketService.emitWebRTCOffer) {
               this.createAndSendOffer(
                 participantEmail,
                 (data) => this.socketService.emitWebRTCOffer(data)
               );
             }
-          } else {
-            console.log(`⏳ [WebRTC] Waiting for offer from instructor for ${participantEmail}`);
           }
         }
       }
