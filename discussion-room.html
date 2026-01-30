@@ -2531,44 +2531,37 @@
       }
 
       /**
-       * Handle new participant - create peer connection and offer
-       * CRITICAL: Use alphabetical tiebreaker to prevent race conditions
-       * Only the peer with the smaller ID creates the offer (deterministic)
-       * This ensures exactly one offer per pair, preventing glare/conflicts
+       * Handle new participant - simplified: only instructors create offers
+       * Everyone can receive and answer, ensuring bidirectional video
        * 
        * @param {String} participantEmail - New participant email
        */
       handleNewParticipant(participantEmail) {
-        console.log(`👤 [WebRTC] handleNewParticipant called for: ${participantEmail}`);
+        console.log(`👤 [WebRTC] New participant: ${participantEmail}`);
         
         if (participantEmail === this.localUserId) {
-          console.log(`ℹ️ [WebRTC] Skipping self (${participantEmail})`);
           return;
         }
 
         if (!this.peerConnections.has(participantEmail)) {
           this.getPeerConnection(participantEmail);
-          console.log(`👤 [WebRTC] Peer connection created for new participant: ${participantEmail}`);
 
-          // CRITICAL: Tiebreaker using alphabetical order to prevent race conditions
-          // Only the peer with SMALLER ID creates the offer
-          // This ensures: exactly ONE offer per pair, regardless of when participants join
-          const shouldCreateOffer = this.localUserId < participantEmail;
+          // SIMPLIFIED: Only instructor/admin creates offers
+          // Everyone else automatically answers when they receive an offer
+          // This is deterministic and prevents race conditions
+          const isInstructor = this.currentSessionUserRole && 
+                              ['instructor', 'admin', 'superadmin'].includes(this.currentSessionUserRole);
           
-          console.log(`🎯 [WebRTC] Offer tiebreaker: "${this.localUserId}" vs "${participantEmail}" → should create offer: ${shouldCreateOffer}`);
-
-          if (shouldCreateOffer) {
+          if (isInstructor) {
+            console.log(`📤 [WebRTC] Instructor creating offer to ${participantEmail}`);
             if (this.socketService && this.socketService.emitWebRTCOffer) {
-              console.log(`📤 [WebRTC] Creating offer to ${participantEmail} (${this.localUserId} < ${participantEmail})`);
               this.createAndSendOffer(
                 participantEmail,
                 (data) => this.socketService.emitWebRTCOffer(data)
               );
-            } else {
-              console.warn(`⚠️ [WebRTC] Socket service not available, cannot create offer to ${participantEmail}`);
             }
           } else {
-            console.log(`⏭️ [WebRTC] Skipping offer creation to ${participantEmail} (${this.localUserId} >= ${participantEmail}), will answer their offer instead`);
+            console.log(`⏳ [WebRTC] Waiting for offer from instructor for ${participantEmail}`);
           }
         }
       }
