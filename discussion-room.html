@@ -1706,6 +1706,7 @@
           const container = document.getElementById('mediaContainer');
           if (container) {
             container.appendChild(videoEl);
+            console.log(`✅ [WebRTC] Video element created and appended to mediaContainer for ${peerId}`);
           } else {
             console.warn(`⚠️ [WebRTC] Media container not found, appending to body`);
             document.body.appendChild(videoEl);
@@ -1715,7 +1716,7 @@
         // Attach the stream
         videoEl.srcObject = stream;
 
-        console.log(`[WebRTC] Remote stream attached for ${peerId}`);
+        console.log(`✅ [WebRTC] Remote stream attached for ${peerId} (${stream.getTracks().length} tracks)`);
       } catch (error) {
         console.error(`❌ [WebRTC] Failed to attach remote stream for ${peerId}:`, error);
       }
@@ -2044,6 +2045,8 @@
 
           // Phase 4: Handle remote media streams (audio/video)
           peerConnection.ontrack = (event) => {
+            console.log('[WebRTC] ontrack fired for', peerId);
+
             const remoteStream = event.streams[0];
             if (!remoteStream) {
               console.warn(`[WebRTC] No remote stream received from ${peerId}`);
@@ -2115,11 +2118,11 @@
             return;
           }
 
+          // SANITY CHECK: Log tracks before creating offer
+          console.log(`[WebRTC] Tracks before offer:`, pc.getSenders().map(s => s.track?.kind));
+
           // Create SDP offer
-          const offer = await pc.createOffer({
-            offerToReceiveAudio: false,  // No media in Phase 2.1
-            offerToReceiveVideo: false   // No media in Phase 2.1
-          });
+          const offer = await pc.createOffer();
 
           // Set as local description - THIS TRIGGERS ICE GATHERING
           console.log(`🎯 [WebRTC] About to set local description (offer) for ${remotePeerEmail} - ICE gathering should start now`);
