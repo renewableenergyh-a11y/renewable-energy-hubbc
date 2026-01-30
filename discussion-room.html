@@ -2214,17 +2214,22 @@
           peerConnection.__remoteStream = new MediaStream();
 
           peerConnection.ontrack = (event) => {
-            console.log('[WebRTC] ontrack fired for', peerId, {
+            console.log('🎬 [WebRTC] *** ONTRACK FIRED ***', peerId, {
               kind: event.track.kind,
-              streams: event.streams
+              trackState: event.track.readyState,
+              streams: event.streams.length,
+              timestamp: new Date().toISOString()
             });
 
             // Add track to persistent remote stream
             peerConnection.__remoteStream.addTrack(event.track);
-            console.log('[WebRTC] Remote track added:', event.track.kind, 'for', peerId);
+            console.log('🎬 [WebRTC] Remote track added to stream:', event.track.kind, 'for', peerId);
+            console.log('🎬 [WebRTC] Remote stream now has', peerConnection.__remoteStream.getTracks().length, 'tracks');
             
             // Attach the stream to video element
+            console.log('🎬 [WebRTC] About to call attachRemoteStream for', peerId);
             attachRemoteStream(peerId, peerConnection.__remoteStream);
+            console.log('🎬 [WebRTC] attachRemoteStream returned for', peerId);
           };
 
           // Phase 4: FORCE transceivers BEFORE offer/answer with sendrecv direction
@@ -2641,10 +2646,22 @@
               track: r.track ? { kind: r.track.kind, state: r.track.readyState } : null
             }))
           })),
-          videoGridChildren: document.getElementById('videoGrid')?.children.length || 0
+          videoGridChildren: document.getElementById('videoGrid')?.children.length || 0,
+          allParticipants: this.allParticipants.length
         };
         console.log('%c📊 WebRTC Diagnostics:', 'color: #0066ff; font-weight: bold;', diagnostics);
         return diagnostics;
+      }
+
+      /**
+       * Check participant count from state
+       */
+      getParticipantCount() {
+        return {
+          total: this.allParticipants.length,
+          peers: Array.from(this.peerConnections.keys()),
+          details: this.allParticipants.map(p => ({ userId: p.userId, role: p.role, active: p.active }))
+        };
       }
     }
 
