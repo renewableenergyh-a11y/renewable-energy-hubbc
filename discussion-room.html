@@ -2602,6 +2602,42 @@
           peers: Array.from(this.peerConnections.keys())
         };
       }
+
+      /**
+       * Diagnostic helper - Get detailed WebRTC state for debugging
+       * Call from browser console: webrtcManager.getDiagnostics()
+       */
+      getDiagnostics() {
+        const diagnostics = {
+          localUserId: this.localUserId,
+          sessionId: this.sessionId,
+          localStream: this.localStream ? {
+            active: this.localStream.active,
+            trackCount: this.localStream.getTracks().length,
+            tracks: this.localStream.getTracks().map(t => ({
+              kind: t.kind,
+              state: t.readyState,
+              enabled: t.enabled
+            }))
+          } : null,
+          peerConnections: Array.from(this.peerConnections.entries()).map(([peerId, pc]) => ({
+            peerId,
+            connectionState: pc.connectionState,
+            iceConnectionState: pc.iceConnectionState,
+            iceGatheringState: pc.iceGatheringState,
+            signalingState: pc.signalingState,
+            senders: pc.getSenders().map(s => ({
+              track: s.track ? { kind: s.track.kind, state: s.track.readyState } : null
+            })),
+            receivers: pc.getReceivers().map(r => ({
+              track: r.track ? { kind: r.track.kind, state: r.track.readyState } : null
+            }))
+          })),
+          videoGridChildren: document.getElementById('videoGrid')?.children.length || 0
+        };
+        console.log('%c📊 WebRTC Diagnostics:', 'color: #0066ff; font-weight: bold;', diagnostics);
+        return diagnostics;
+      }
     }
 
     // Global WebRTC manager instance
