@@ -1863,27 +1863,31 @@
         const tracks = stream.getTracks();
         console.log(`📊 [attachRemoteStream] Stream has ${tracks.length} tracks for ${peerId}:`, tracks.map(t => ({ kind: t.kind, state: t.readyState })));
         
-        // Wait for tracks to be ready before playing
-        const waitForTracks = () => {
-          if (tracks.length === 0) {
-            console.warn(`⚠️ [attachRemoteStream] No tracks in stream for ${peerId}, waiting...`);
-            setTimeout(waitForTracks, 100);
-            return;
-          }
-          
-          // Tracks are present, try to play
+        // Attempt to play immediately (browsers show video element once play is called, even if tracks arrive later)
+        const attemptPlay = () => {
           videoEl.play()
             .then(() => {
               console.log(`▶️ [attachRemoteStream] Video playing for ${peerId}`);
             })
             .catch(err => {
               console.warn(`⚠️ [attachRemoteStream] Autoplay failed for ${peerId}:`, err.message);
-              // Still show the video container even if autoplay fails
-              console.log(`ℹ️ [attachRemoteStream] Video element visible for ${peerId} (may need user interaction)`);
+              // Video element is still visible even if autoplay fails
+              // Tracks may still arrive and display
+              console.log(`ℹ️ [attachRemoteStream] Waiting for tracks to arrive for ${peerId}...`);
+              
+              // Retry play every 500ms while tracks are missing
+              const retryPlay = () => {
+                if (stream.getTracks().length > 0) {
+                  videoEl.play().catch(() => {});
+                } else {
+                  setTimeout(retryPlay, 500);
+                }
+              };
+              setTimeout(retryPlay, 500);
             });
         };
         
-        waitForTracks();
+        attemptPlay();
 
         // Handle track end (participant left or camera turned off)
         stream.getTracks().forEach(track => {
