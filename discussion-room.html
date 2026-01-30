@@ -1823,8 +1823,14 @@
         // Create video element
         const videoEl = document.createElement('video');
         videoEl.id = `remote-video-${peerId}`;
+        // CRITICAL FIX: Required attributes for autoplay to work
         videoEl.autoplay = true;
+        videoEl.muted = false;  // Unmuted for remote participant audio
         videoEl.playsinline = true;
+        videoEl.controls = false;
+        // CRITICAL: Set attributes BEFORE attaching stream
+        videoEl.setAttribute('autoplay', 'true');
+        videoEl.setAttribute('playsinline', 'true');
         videoEl.style.width = '100%';
         videoEl.style.height = '100%';
         videoEl.style.objectFit = 'cover';
@@ -1833,7 +1839,7 @@
 
         // ✅ CRITICAL: Attach the stream to the video element
         videoEl.srcObject = stream;
-        console.log(`📤 [attachRemoteStream] Stream attached to video element for ${peerId}`);
+        console.log(`📤 [attachRemoteStream] Stream attached to video element for ${peerId}, srcObject:`, videoEl.srcObject);
 
         // Create name label
         const nameLabel = document.createElement('div');
@@ -1853,29 +1859,31 @@
         console.log(`✅ [attachRemoteStream] Video tile added to grid for ${peerId}`);
 
         // ✅ CRITICAL: Start playback with error handling
-        videoEl.play()
-          .then(() => {
-            console.log(`▶️ [attachRemoteStream] Video playing for ${peerId}`);
-          })
-          .catch(err => {
-            console.warn(`⚠️ [attachRemoteStream] Autoplay failed for ${peerId}:`, err.message);
-            // Show play button or message
-            const placeholder = document.createElement('div');
-            placeholder.className = 'video-tile-placeholder';
-            placeholder.innerHTML = `
-              <i class="fas fa-play-circle"></i>
-              <small>Click to play</small>
-            `;
-            videoEl.style.display = 'none';
-            videoTile.appendChild(placeholder);
-            
-            // Allow user to click to play
-            placeholder.addEventListener('click', () => {
-              videoEl.style.display = 'block';
-              placeholder.remove();
-              videoEl.play().catch(e => console.warn('Play failed:', e));
+        // Check if stream has tracks
+        const tracks = stream.getTracks();
+        console.log(`📊 [attachRemoteStream] Stream has ${tracks.length} tracks for ${peerId}:`, tracks.map(t => ({ kind: t.kind, state: t.readyState })));
+        
+        // Wait for tracks to be ready before playing
+        const waitForTracks = () => {
+          if (tracks.length === 0) {
+            console.warn(`⚠️ [attachRemoteStream] No tracks in stream for ${peerId}, waiting...`);
+            setTimeout(waitForTracks, 100);
+            return;
+          }
+          
+          // Tracks are present, try to play
+          videoEl.play()
+            .then(() => {
+              console.log(`▶️ [attachRemoteStream] Video playing for ${peerId}`);
+            })
+            .catch(err => {
+              console.warn(`⚠️ [attachRemoteStream] Autoplay failed for ${peerId}:`, err.message);
+              // Still show the video container even if autoplay fails
+              console.log(`ℹ️ [attachRemoteStream] Video element visible for ${peerId} (may need user interaction)`);
             });
-          });
+        };
+        
+        waitForTracks();
 
         // Handle track end (participant left or camera turned off)
         stream.getTracks().forEach(track => {
