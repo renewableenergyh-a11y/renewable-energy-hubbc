@@ -1804,7 +1804,7 @@
      */
     function attachRemoteStream(peerId, stream) {
       try {
-        console.log(`📺 [attachRemoteStream] Attaching stream for ${peerId}, tracks:`, stream.getTracks().map(t => t.kind));
+        console.log(`📺 [attachRemoteStream] Attaching stream for ${peerId}`);
         
         const videoGrid = document.getElementById('videoGrid');
         if (!videoGrid) {
@@ -1812,107 +1812,61 @@
           return;
         }
 
-        // Check if video tile already exists
-        let videoTile = document.getElementById(`video-tile-${peerId}`);
-        if (videoTile) {
-          console.log(`ℹ️ [attachRemoteStream] Video tile already exists for ${peerId}`);
+        // Check if already attached
+        if (document.getElementById(`remote-video-${peerId}`)) {
+          console.log(`ℹ️ Video already exists for ${peerId}`);
           return;
         }
 
-        // Create video tile wrapper
-        videoTile = document.createElement('div');
-        videoTile.className = 'video-tile';
-        videoTile.id = `video-tile-${peerId}`;
-
-        // Create video element
+        // Create simple video element
         const videoEl = document.createElement('video');
         videoEl.id = `remote-video-${peerId}`;
-        // CRITICAL FIX: Required attributes for autoplay to work
+        videoEl.srcObject = stream;
         videoEl.autoplay = true;
-        videoEl.muted = false;  // Unmuted for remote participant audio
         videoEl.playsinline = true;
-        videoEl.controls = false;
-        // CRITICAL: Set attributes BEFORE attaching stream
-        videoEl.setAttribute('autoplay', 'true');
-        videoEl.setAttribute('playsinline', 'true');
+        videoEl.muted = false;
         videoEl.style.width = '100%';
         videoEl.style.height = '100%';
         videoEl.style.objectFit = 'cover';
-        videoEl.style.display = 'block';
         videoEl.style.background = '#000';
+        videoEl.style.borderRadius = '8px';
+        videoEl.style.display = 'block';
 
-        // ✅ CRITICAL: Attach the stream to the video element
-        videoEl.srcObject = stream;
-        console.log(`📤 [attachRemoteStream] Stream attached to video element for ${peerId}, srcObject:`, videoEl.srcObject);
+        // Create wrapper
+        const wrapper = document.createElement('div');
+        wrapper.id = `video-tile-${peerId}`;
+        wrapper.style.width = '100%';
+        wrapper.style.aspectRatio = '16/9';
+        wrapper.style.background = '#1a1a1a';
+        wrapper.style.borderRadius = '8px';
+        wrapper.style.overflow = 'hidden';
+        wrapper.style.position = 'relative';
+        wrapper.style.border = '1px solid rgba(255,255,255,0.1)';
+        wrapper.appendChild(videoEl);
 
-        // Create name label
-        const nameLabel = document.createElement('div');
-        nameLabel.className = 'video-tile-name';
-        nameLabel.textContent = peerId.split('@')[0]; // Show email prefix as name
-        nameLabel.style.fontSize = '12px';
-        nameLabel.style.overflow = 'hidden';
-        nameLabel.style.textOverflow = 'ellipsis';
-        nameLabel.style.whiteSpace = 'nowrap';
+        // Add name label
+        const nameDiv = document.createElement('div');
+        nameDiv.style.position = 'absolute';
+        nameDiv.style.bottom = '0';
+        nameDiv.style.left = '0';
+        nameDiv.style.right = '0';
+        nameDiv.style.background = 'linear-gradient(transparent, rgba(0,0,0,0.7))';
+        nameDiv.style.color = 'white';
+        nameDiv.style.padding = '8px';
+        nameDiv.style.fontSize = '12px';
+        nameDiv.textContent = peerId.split('@')[0];
+        wrapper.appendChild(nameDiv);
 
-        // Assemble tile
-        videoTile.appendChild(videoEl);
-        videoTile.appendChild(nameLabel);
+        videoGrid.appendChild(wrapper);
+        console.log(`✅ Video tile added for ${peerId}`);
 
-        // Add to grid
-        videoGrid.appendChild(videoTile);
-        console.log(`✅ [attachRemoteStream] Video tile added to grid for ${peerId}`);
-
-        // ✅ CRITICAL: Start playback with error handling
-        // Check if stream has tracks
-        const tracks = stream.getTracks();
-        console.log(`📊 [attachRemoteStream] Stream has ${tracks.length} tracks for ${peerId}:`, tracks.map(t => ({ kind: t.kind, state: t.readyState })));
-        
-        // Attempt to play immediately (browsers show video element once play is called, even if tracks arrive later)
-        const attemptPlay = () => {
-          videoEl.play()
-            .then(() => {
-              console.log(`▶️ [attachRemoteStream] Video playing for ${peerId}`);
-            })
-            .catch(err => {
-              console.warn(`⚠️ [attachRemoteStream] Autoplay failed for ${peerId}:`, err.message);
-              // Video element is still visible even if autoplay fails
-              // Tracks may still arrive and display
-              console.log(`ℹ️ [attachRemoteStream] Waiting for tracks to arrive for ${peerId}...`);
-              
-              // Retry play every 500ms while tracks are missing
-              const retryPlay = () => {
-                if (stream.getTracks().length > 0) {
-                  videoEl.play().catch(() => {});
-                } else {
-                  setTimeout(retryPlay, 500);
-                }
-              };
-              setTimeout(retryPlay, 500);
-            });
-        };
-        
-        attemptPlay();
-
-        // Handle track end (participant left or camera turned off)
-        stream.getTracks().forEach(track => {
-          track.onended = () => {
-            console.log(`🔴 [attachRemoteStream] Track ended for ${peerId}: ${track.kind}`);
-            // If all tracks ended, show placeholder
-            if (stream.getTracks().every(t => t.readyState === 'ended')) {
-              const placeholder = document.createElement('div');
-              placeholder.className = 'video-tile-placeholder';
-              placeholder.innerHTML = `
-                <i class="fas fa-video-slash"></i>
-                <small>Stream ended</small>
-              `;
-              videoEl.style.display = 'none';
-              videoTile.appendChild(placeholder);
-            }
-          };
+        // Try to play
+        videoEl.play().catch(err => {
+          console.warn(`⚠️ Autoplay failed for ${peerId}:`, err.message);
         });
 
       } catch (error) {
-        console.error(`❌ [attachRemoteStream] Error attaching remote stream for ${peerId}:`, error);
+        console.error(`❌ Error attaching stream:`, error);
       }
     }
 
