@@ -1971,12 +1971,12 @@
             attachRemoteStream(peerId, peerConnection.__remoteStream);
           };
 
-          // Phase 4: ALWAYS add recv-only transceivers to ensure media lines in SDP
-          // This allows receiving media even if local stream is unavailable
+          // Phase 4: FORCE transceivers BEFORE offer/answer with sendrecv direction
+          // This guarantees m= lines exist even if tracks are late
           try {
-            peerConnection.addTransceiver('audio', { recv: true, send: false });
-            peerConnection.addTransceiver('video', { recv: true, send: false });
-            console.log(`📡 [WebRTC] Added audio/video recv-only transceivers for ${peerId} (ensures media lines in SDP)`);
+            peerConnection.addTransceiver('audio', { direction: 'sendrecv' });
+            peerConnection.addTransceiver('video', { direction: 'sendrecv' });
+            console.log(`📡 [WebRTC] Added audio/video sendrecv transceivers for ${peerId} (forces media negotiation)`);
           } catch (err) {
             console.warn(`⚠️ [WebRTC] Failed to add transceivers for ${peerId}:`, err.message);
           }
