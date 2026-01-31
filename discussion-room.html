@@ -3024,6 +3024,8 @@
                </div>`
             : '';
 
+          console.log(`📊 [renderParticipants] Participant ${p.userId}: audioEnabled=${p.audioEnabled}, indicator="${audioWaveIndicator ? 'PRESENT' : 'EMPTY'}"`);
+
           return `
             <div class="participant-item">
               <div style="display:flex;align-items:center;gap:10px;flex:1">
