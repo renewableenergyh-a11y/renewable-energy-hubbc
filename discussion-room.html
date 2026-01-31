@@ -47,36 +47,32 @@
       background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
     }
 
-    /* SIMPLE LAYOUT */
+    /* ============ ZOOM-LIKE LAYOUT ============ */
+    
     .room-container {
       display: flex;
       flex-direction: column;
       height: 100vh;
-      gap: 0;
-      padding: 0;
+      background: var(--bg-secondary);
     }
 
+    /* DESKTOP: Two-column layout */
     @media (min-width: 769px) {
       .room-container {
         flex-direction: row;
       }
     }
 
-    .room-main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-secondary);
-      min-height: 0;
-    }
-
+    /* Header spans full width */
     .room-header {
+      flex: 0 0 auto;
       padding: 12px 16px;
       background: var(--bg-primary);
       border-bottom: 1px solid var(--border-color);
       display: flex;
       justify-content: space-between;
       align-items: center;
+      order: -1;
     }
 
     .room-title {
@@ -92,22 +88,45 @@
       margin: 0;
     }
 
+    /* LEFT SIDE: Media interface - Primary area */
+    .room-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-secondary);
+      min-height: 0;
+      order: 1;
+    }
+
+    @media (min-width: 769px) {
+      .room-main {
+        flex: 0 0 75%;
+        order: 1;
+      }
+    }
+
+    /* Media content area - videos only */
     .room-content {
       flex: 1;
       padding: 12px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
+      min-height: 0;
     }
 
+    /* Local preview */
     #webrtcPreview {
       margin-bottom: 12px;
+      flex-shrink: 0;
     }
 
+    /* Remote video grid - responsive */
     #videoContainer {
       display: grid;
       gap: 8px;
       grid-template-columns: repeat(2, 1fr);
+      flex: 1;
     }
 
     @media (min-width: 769px) {
@@ -123,7 +142,9 @@
       }
     }
 
+    /* MOBILE: Controls below media */
     .room-controls {
+      flex: 0 0 auto;
       padding: 12px;
       background: var(--bg-primary);
       border-top: 1px solid var(--border-color);
@@ -131,24 +152,19 @@
       gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
+      order: 2;
     }
 
-    @media (min-width: 769px) {
-      .room-controls {
-        padding: 12px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 6px;
-      }
-    }
-
+    /* MOBILE: Footer hidden on large screens */
     .room-footer {
+      flex: 0 0 auto;
       padding: 12px;
       background: var(--bg-primary);
       border-top: 1px solid var(--border-color);
       display: flex;
       justify-content: center;
       gap: 8px;
+      order: 3;
     }
 
     @media (min-width: 769px) {
@@ -157,30 +173,62 @@
       }
     }
 
+    /* RIGHT SIDE: Sidebar - 25% width on desktop */
     .sidebars-container {
-      display: none;
+      flex: 0 0 100%;
+      display: flex;
       flex-direction: column;
-      width: 320px;
       background: var(--bg-primary);
-      border-left: 1px solid var(--border-color);
-      overflow: hidden;
+      border-top: 1px solid var(--border-color);
+      order: 4;
     }
 
     @media (min-width: 769px) {
       .sidebars-container {
-        display: flex;
+        flex: 0 0 25%;
+        border-top: none;
+        border-left: 1px solid var(--border-color);
+        order: 2;
       }
     }
 
+    /* Participants list - top 50% of sidebar */
     .sidebar {
       flex: 1;
       padding: 12px;
       overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
       border-bottom: 1px solid var(--border-color);
     }
 
+    @media (min-width: 769px) {
+      .sidebar {
+        border-bottom: 1px solid var(--border-color);
+      }
+    }
+
+    /* Media controls - bottom 50% of sidebar */
     .room-controls {
       flex: 0 0 auto;
+      padding: 12px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      order: 2;
+    }
+
+    @media (min-width: 769px) {
+      .room-controls {
+        flex: 0 0 auto;
+        flex-wrap: wrap;
+        gap: 8px;
+        padding: 12px;
+        border-top: none;
+        border-bottom: none;
+      }
     }
 
     /* Button styles */
