@@ -435,49 +435,38 @@
 
     .video-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 16px;
       width: 100%;
     }
 
-    @media (max-width: 768px) {
-      .video-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .video-tile {
-      width: 100%;
-      aspect-ratio: 16/9;
-      background: #1a1a1a;
+    .video-grid > div {
+      aspect-ratio: 16 / 9;
+      background: #000;
       border-radius: 8px;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       position: relative;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
 
-    .video-tile video {
-      width: 100%;
-      height: 100%;
+    .video-grid video {
+      width: 100% !important;
+      height: 100% !important;
       object-fit: cover;
-      display: block;
-      background: #000;
+      display: block !important;
     }
 
     .video-tile-name {
       position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+      bottom: 8px;
+      left: 8px;
+      background: rgba(0, 0, 0, 0.6);
       color: white;
-      padding: 8px;
+      padding: 4px 8px;
       font-size: 12px;
-      font-weight: 600;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      border-radius: 4px;
     }
 
     .video-tile-placeholder {
@@ -1803,71 +1792,29 @@
      * @param {MediaStream} stream - Remote media stream
      */
     function attachRemoteStream(peerId, stream) {
-      try {
-        console.log(`📺 [attachRemoteStream] Attaching stream for ${peerId}`);
-        
-        const videoGrid = document.getElementById('videoGrid');
-        if (!videoGrid) {
-          console.warn('❌ Video grid container not found');
-          return;
-        }
+      const videoGrid = document.getElementById('videoGrid');
+      if (!videoGrid) return;
+      if (document.getElementById(`tile-${peerId}`)) return;
 
-        // Check if already attached
-        if (document.getElementById(`remote-video-${peerId}`)) {
-          console.log(`ℹ️ Video already exists for ${peerId}`);
-          return;
-        }
-
-        // Create simple video element
-        const videoEl = document.createElement('video');
-        videoEl.id = `remote-video-${peerId}`;
-        videoEl.srcObject = stream;
-        videoEl.autoplay = true;
-        videoEl.playsinline = true;
-        videoEl.muted = false;
-        videoEl.style.width = '100%';
-        videoEl.style.height = '100%';
-        videoEl.style.objectFit = 'cover';
-        videoEl.style.background = '#000';
-        videoEl.style.borderRadius = '8px';
-        videoEl.style.display = 'block';
-
-        // Create wrapper
-        const wrapper = document.createElement('div');
-        wrapper.id = `video-tile-${peerId}`;
-        wrapper.style.width = '100%';
-        wrapper.style.aspectRatio = '16/9';
-        wrapper.style.background = '#1a1a1a';
-        wrapper.style.borderRadius = '8px';
-        wrapper.style.overflow = 'hidden';
-        wrapper.style.position = 'relative';
-        wrapper.style.border = '1px solid rgba(255,255,255,0.1)';
-        wrapper.appendChild(videoEl);
-
-        // Add name label
-        const nameDiv = document.createElement('div');
-        nameDiv.style.position = 'absolute';
-        nameDiv.style.bottom = '0';
-        nameDiv.style.left = '0';
-        nameDiv.style.right = '0';
-        nameDiv.style.background = 'linear-gradient(transparent, rgba(0,0,0,0.7))';
-        nameDiv.style.color = 'white';
-        nameDiv.style.padding = '8px';
-        nameDiv.style.fontSize = '12px';
-        nameDiv.textContent = peerId.split('@')[0];
-        wrapper.appendChild(nameDiv);
-
-        videoGrid.appendChild(wrapper);
-        console.log(`✅ Video tile added for ${peerId}`);
-
-        // Try to play
-        videoEl.play().catch(err => {
-          console.warn(`⚠️ Autoplay failed for ${peerId}:`, err.message);
-        });
-
-      } catch (error) {
-        console.error(`❌ Error attaching stream:`, error);
-      }
+      const tile = document.createElement('div');
+      tile.id = `tile-${peerId}`;
+      
+      const video = document.createElement('video');
+      video.autoplay = true;
+      video.playsinline = true;
+      video.muted = false;
+      video.srcObject = stream;
+      
+      const label = document.createElement('div');
+      label.className = 'video-tile-name';
+      label.textContent = peerId.split('@')[0];
+      
+      tile.appendChild(video);
+      tile.appendChild(label);
+      videoGrid.appendChild(tile);
+      
+      console.log(`✅ Video: ${peerId}`);
+      video.play().catch(() => {});
     }
 
     /**
