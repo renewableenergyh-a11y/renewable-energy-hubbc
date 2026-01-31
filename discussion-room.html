@@ -1194,39 +1194,46 @@
             }
           };
           
-          // Add transceivers based on role to negotiate media
+          // Add transceivers with local tracks
+          // For sendrecv: we specify the send track upfront
+          const audioTracks = this.localStream?.getAudioTracks() || [];
+          const videoTracks = this.localStream?.getVideoTracks() || [];
+          
           try {
-            peerConnection.addTransceiver('audio', { direction: 'sendrecv' });
-            if (isAdmin) {
-              peerConnection.addTransceiver('video', { direction: 'sendrecv' });
-              console.log(`📡 [WebRTC-lecture] Added audio+video transceivers (admin)`);
+            // Add audio transceiver with audio track
+            if (audioTracks.length > 0) {
+              const audioTransceiver = peerConnection.addTransceiver(audioTracks[0], {
+                direction: 'sendrecv',
+                streams: [this.localStream]
+              });
+              console.log(`📡 [WebRTC-lecture] Added audio transceiver with track (${audioTracks[0].id})`);
             } else {
-              console.log(`📡 [WebRTC-lecture] Added audio-only transceiver (student)`);
+              // No audio track available, add transceiver without track
+              peerConnection.addTransceiver('audio', { direction: 'sendrecv' });
+              console.log(`📡 [WebRTC-lecture] Added audio transceiver (no track yet)`);
+            }
+            
+            // Add video transceiver only for admins
+            if (isAdmin) {
+              if (videoTracks.length > 0) {
+                const videoTransceiver = peerConnection.addTransceiver(videoTracks[0], {
+                  direction: 'sendrecv',
+                  streams: [this.localStream]
+                });
+                console.log(`📡 [WebRTC-lecture] Added video transceiver with track (${videoTracks[0].id})`);
+              } else {
+                peerConnection.addTransceiver('video', { direction: 'sendrecv' });
+                console.log(`📡 [WebRTC-lecture] Added video transceiver (no track yet)`);
+              }
             }
           } catch (err) {
             console.warn(`⚠️ [WebRTC-lecture] Failed to add transceivers for ${peerId}:`, err);
           }
           
-          // Add tracks to the connection
-          // Note: We add tracks AFTER transceivers to properly bind them
-          if (this.localStream) {
-            try {
-              this.localStream.getTracks().forEach(track => {
-                // Students never send video
-                if (!isAdmin && track.kind === 'video') {
-                  console.log(`🔇 [WebRTC-lecture] NOT adding video track from student`);
-                  return;
-                }
-                const sender = peerConnection.addTrack(track, this.localStream);
-                console.log(`✅ [WebRTC-lecture] Added ${track.kind} track to ${peerId}`, {
-                  trackId: track.id,
-                  trackEnabled: track.enabled
-                });
-              });
-            } catch (err) {
-              console.warn(`⚠️ [WebRTC-lecture] Failed to add local tracks for ${peerId}:`, err);
-            }
-          } else {
+          // If transceivers failed but we have local tracks, try adding with addTrack as fallback
+          if (this.localStream && audioTracks.length === 0 && videoTracks.length === 0) {
+            console.warn(`⚠️ [WebRTC-lecture] No local tracks available`);
+          } else if (!this.localStream) {
             console.warn(`⚠️ [WebRTC-lecture] No local stream available for ${peerId}`);
           }
           
@@ -1413,33 +1420,51 @@
             return;
           }
 
-          console.log(`📡 [WebRTC] Adding local tracks to ${this.peerConnections.size} existing peer connections`);
+          const audioTracks = this.localStream.getAudioTracks();
+          const videoTracks = this.localStream.getVideoTracks();
+          
+          console.log(`📡 [WebRTC] Adding tracks to ${this.peerConnections.size} peer connections`, {
+            audioTracks: audioTracks.length,
+            videoTracks: videoTracks.length,
+            isAdmin
+          });
           
           this.peerConnections.forEach((pc, peerId) => {
-            // Check if tracks are already added
-            const senders = pc.getSenders();
-            const audioSenderExists = senders.some(s => s.track && s.track.kind === 'audio');
-            const videoSenderExists = senders.some(s => s.track && s.track.kind === 'video');
+            // Check if transceivers already have tracks
+            const transceivers = pc.getTransceivers();
             
-            this.localStream.getTracks().forEach(track => {
-              // Skip video tracks for students
-              if (!isAdmin && track.kind === 'video') {
-                console.log(`🔇 [WebRTC] Skipping video track for student peer ${peerId}`);
-                return;
-              }
-
-              // Check if this track kind is already present
-              const trackExists = senders.some(s => s.track && s.track.kind === track.kind);
-              if (trackExists) {
-                console.log(`ℹ️ [WebRTC] ${track.kind} track already exists for ${peerId}, skipping`);
-                return;
-              }
-
-              try {
-                pc.addTrack(track, this.localStream);
-                console.log(`✅ [WebRTC] Added ${track.kind} track to existing peer connection for ${peerId}`);
-              } catch (err) {
-                console.warn(`⚠️ [WebRTC] Failed to add ${track.kind} track to ${peerId}:`, err);
+            transceivers.forEach(transceiver => {
+              if (transceiver.direction === 'sendrecv' || transceiver.direction === 'sendonly') {
+                if (transceiver.mid === null) {
+                  // Transceiver hasn't been used yet
+                  if (transceiver.receiver.track && transceiver.receiver.track.kind === 'audio') {
+                    // Audio transceiver - replace with our audio track
+                    if (audioTracks.length > 0) {
+                      try {
+                        transceiver.sender.replaceTrack(audioTracks[0]).then(() => {
+                          console.log(`✅ [WebRTC] Replaced audio track on transceiver for ${peerId}`);
+                        }).catch(err => {
+                          console.warn(`⚠️ [WebRTC] Failed to replace audio track: ${err}`);
+                        });
+                      } catch (err) {
+                        console.warn(`⚠️ [WebRTC] Error replacing audio track for ${peerId}:`, err);
+                      }
+                    }
+                  } else if (transceiver.receiver.track && transceiver.receiver.track.kind === 'video') {
+                    // Video transceiver - only for admins
+                    if (isAdmin && videoTracks.length > 0) {
+                      try {
+                        transceiver.sender.replaceTrack(videoTracks[0]).then(() => {
+                          console.log(`✅ [WebRTC] Replaced video track on transceiver for ${peerId}`);
+                        }).catch(err => {
+                          console.warn(`⚠️ [WebRTC] Failed to replace video track: ${err}`);
+                        });
+                      } catch (err) {
+                        console.warn(`⚠️ [WebRTC] Error replacing video track for ${peerId}:`, err);
+                      }
+                    }
+                  }
+                }
               }
             });
           });
@@ -2689,6 +2714,21 @@
       div.textContent = text;
       return div.innerHTML;
     }
+
+    // Clean up WebRTC and socket on page unload
+    window.addEventListener('beforeunload', () => {
+      try {
+        console.log('🧹 [discussion-room] Page unloading - cleaning up...');
+        if (webrtcManager) {
+          webrtcManager.cleanup();
+        }
+        if (discussionSocket && discussionSocket.socket) {
+          discussionSocket.disconnect();
+        }
+      } catch (err) {
+        console.error('Error during unload cleanup:', err);
+      }
+    });
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', () => {
