@@ -2697,12 +2697,21 @@
           muteBtn.innerHTML = isMuted 
             ? '<i class="fas fa-microphone-slash"></i><span>Unmute</span>'
             : '<i class="fas fa-microphone"></i><span>Mute</span>';
+          console.log('🔊 [muteBtn] Toggled - isMuted:', isMuted, 'sessionData:', !!sessionData, 'socket:', !!discussionSocket?.socket?.connected);
           if (discussionSocket && discussionSocket.socket && sessionData) {
+            console.log('🔊 [muteBtn] Emitting webrtc-audio-state event:', {
+              sessionId: sessionData.sessionId,
+              from: webrtcManager.localUserId,
+              audioEnabled: !isMuted
+            });
             discussionSocket.socket.emit('webrtc-audio-state', {
               sessionId: sessionData.sessionId,
               from: webrtcManager.localUserId,
               audioEnabled: !isMuted
             });
+          } else {
+            console.warn('⚠️ [muteBtn] Cannot emit - missing sessionData or socket');
+          }
           }
         });
       }
