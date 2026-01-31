@@ -2400,6 +2400,21 @@
         }
       });
 
+      discussionSocket.on('webrtc-audio-state', (data) => {
+        console.log('🔊 [webrtc-audio-state] Audio state update:', data);
+        
+        if (data.from && participantState.has(data.from)) {
+          participantState.upsert({
+            userId: data.from,
+            audioEnabled: data.audioEnabled
+          });
+          
+          const updatedParticipants = participantState.getAll();
+          renderParticipants(updatedParticipants, { activeCount: participantState.getCount() });
+          console.log(`✅ [webrtc-audio-state] Updated participant ${data.from} audio state: ${data.audioEnabled}`);
+        }
+      });
+
       discussionSocket.on('webrtc-offer', (offerData) => {
         console.log(`📥 [webrtc-offer-listener] Listener triggered with:`, {
           from: offerData?.from,

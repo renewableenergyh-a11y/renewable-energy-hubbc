@@ -146,7 +146,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
    */
   io.on('connection', (socket) => {
     console.log(`📡 Socket connected: ${socket.id}`);
-    console.log('✅ Socket.IO handlers registered: join-session, leave-session, raise-hand, reaction, ping, admin-remove-participant, close-session, check-session-status, webrtc-ready, webrtc-offer, webrtc-answer, webrtc-ice-candidate');
+    console.log('✅ Socket.IO handlers registered: join-session, leave-session, raise-hand, reaction, ping, admin-remove-participant, close-session, check-session-status, webrtc-ready, webrtc-offer, webrtc-answer, webrtc-ice-candidate, admin-force-mute, webrtc-audio-state');
 
     /**
      * Event: join-session
@@ -1013,6 +1013,33 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         console.log(`✅ [admin-force-mute] Broadcast mute=${data.isMuted} for user ${data.targetUserId}`);
       } catch (err) {
         console.error('❌ [admin-force-mute] Error:', err);
+      }
+    });
+
+    /**
+     * Event: webrtc-audio-state
+     * Broadcast audio state changes to all participants in the session
+     */
+    socket.on('webrtc-audio-state', (data) => {
+      console.log('🔊 [webrtc-audio-state] User', data?.from, 'audio state:', data?.audioEnabled);
+      
+      if (!data || !data.sessionId || !data.from) {
+        console.warn('⚠️ [webrtc-audio-state] Invalid data structure');
+        return;
+      }
+
+      try {
+        // Broadcast audio state to all participants in the session
+        io.to(`discussion-session:${data.sessionId}`).emit('webrtc-audio-state', {
+          from: data.from,
+          audioEnabled: data.audioEnabled,
+          sessionId: data.sessionId,
+          timestamp: Date.now()
+        });
+
+        console.log(`✅ [webrtc-audio-state] Broadcasted audio=${data.audioEnabled} for user ${data.from}`);
+      } catch (err) {
+        console.error('❌ [webrtc-audio-state] Error:', err);
       }
     });
 
