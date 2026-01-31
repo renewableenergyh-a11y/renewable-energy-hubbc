@@ -964,6 +964,21 @@
           console.log(`ℹ️ [lecture-mode] Video autoplay blocked for ${peerId}: ${err.message}. Will play after user interaction.`);
         });
       }
+      
+      // Show small preview of the other instructor in bottom-right
+      const instructorPreview = document.getElementById('instructorSelfPreview');
+      const instructorVideo = document.getElementById('instructorSelfVideo');
+      const instructorLabel = document.getElementById('instructorLabel');
+      const instructorRole = document.getElementById('instructorRole');
+      
+      if (instructorPreview && instructorVideo) {
+        instructorVideo.srcObject = stream;
+        instructorLabel.textContent = peerId; // Show the other instructor's email/ID
+        instructorRole.textContent = senderRole.charAt(0).toUpperCase() + senderRole.slice(1) + ' - Presenting';
+        instructorPreview.style.display = 'block';
+        console.log(`📺 [lecture-mode] Showing other instructor preview in bottom-right`);
+      }
+      
       console.log(`✅ [lecture-mode] Admin video attached from ${peerId}`);
     }
 
@@ -2021,31 +2036,18 @@
             await webrtcManager.captureLocalMedia();
             console.log(`✅ [discussion-room] Local media captured, ready for WebRTC connections`);
             
-            // Show instructor's own video in main container if they're the only presenter
+            // Show instructor's own video in main container
             const isInstructor = ['admin', 'instructor', 'superadmin'].includes(user.role);
             if (isInstructor && webrtcManager.localStream) {
               const adminVideoContainer = document.getElementById('adminVideo');
-              const instructorPreview = document.getElementById('instructorSelfPreview');
-              const instructorVideo = document.getElementById('instructorSelfVideo');
-              const instructorLabel = document.getElementById('instructorLabel');
-              const instructorRole = document.getElementById('instructorRole');
               
-              if (instructorPreview && instructorVideo) {
-                instructorVideo.srcObject = webrtcManager.localStream;
-                instructorLabel.textContent = `${user.fullName || user.email} (You)`;
-                instructorRole.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1) + ' - Presenting';
-                instructorPreview.style.display = 'block';
-                console.log(`📺 [discussion-room] Showing instructor self-preview`);
-              }
-              
-              // Also show in main container if no other instructor is presenting
               if (adminVideoContainer && webrtcManager.localStream.getVideoTracks().length > 0) {
                 const placeholder = adminVideoContainer.querySelector('#adminVideo-placeholder');
                 if (placeholder) {
                   placeholder.style.display = 'none';
                 }
                 
-                let mainVideoEl = adminVideoContainer.querySelector('video');
+                let mainVideoEl = adminVideoContainer.querySelector('video#selfVideo');
                 if (!mainVideoEl) {
                   mainVideoEl = document.createElement('video');
                   mainVideoEl.id = 'selfVideo';
