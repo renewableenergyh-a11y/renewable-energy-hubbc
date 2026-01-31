@@ -137,6 +137,12 @@ export class DiscussionSocketService {
             console.log('💬 [socket.io] Chat message received:', data);
             this._emit('webrtc-chat', data);
           });
+
+          // Admin controls
+          this.socket.on('admin-force-mute', (data) => {
+            console.log('🔇 [socket.io] Admin force mute received:', data);
+            this._emit('admin-force-mute', data);
+          });
         };
 
         script.onerror = () => {

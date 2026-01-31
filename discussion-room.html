@@ -2467,7 +2467,7 @@
             <h3 style="margin:0;font-size:15px;font-weight:600;color:${chatText};">Chat</h3>
             <button onclick="document.getElementById('chatModal').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;padding:0;color:${isDarkMode ? '#aaa' : '#666'};">&times;</button>
           </div>
-          <div id="chatMessages" style="height:calc(100% - 130px);overflow-y:auto;padding:12px;background:${messagesBg};word-wrap:break-word;overflow-wrap:break-word;"></div>
+          <div id="chatMessages" style="flex:1;height:auto;min-height:200px;overflow-y:auto;overflow-x:hidden;padding:12px;background:${messagesBg};word-wrap:break-word;overflow-wrap:break-word;display:flex;flex-direction:column;"></div>
           <div style="padding:12px;border-top:1px solid ${chatBorder};display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;background:${chatBg};">
             <input id="chatInput" type="text" placeholder="Type a message..." style="flex:1;min-width:100px;padding:8px;border:1px solid ${isDarkMode ? '#444' : '#ddd'};border-radius:6px;font-family:inherit;color:${chatInputText};background:${chatInputBg};box-sizing:border-box;">
             <button id="chatSend" style="padding:8px 12px;background:#007bff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;">Send</button>
@@ -2918,28 +2918,42 @@
             try {
               const targetParticipant = participants.find(p => p.userId === targetUserId);
               if (!targetParticipant) {
-                console.error('Target participant not found');
+                console.error('❌ Target participant not found');
                 return;
               }
 
-              // Emit mute/unmute command via socket
-              if (discussionSocket && discussionSocket.socket && discussionSocket.socket.connected) {
-                console.log(`📢 [admin-control] Sending ${action} command for user:`, targetUserId);
-                discussionSocket.socket.emit('admin-force-mute', {
-                  sessionId: sessionData.sessionId,
-                  targetUserId: targetUserId,
-                  isMuted: !isMuted, // Send new mute state
-                  from: currentUser?.email,
-                  adminRole: userRole
-                });
+              console.log(`📢 [admin-control] Attempting to ${action} user:`, targetUserId);
 
-                // Update button UI immediately
-                btn.classList.toggle('muted', !isMuted);
-                btn.title = !isMuted ? 'Unmute participant' : 'Mute participant';
-                btn.innerHTML = !isMuted 
-                  ? '<i class="fas fa-microphone-slash"></i>'
-                  : '<i class="fas fa-microphone"></i>';
+              // Emit mute/unmute command via socket
+              if (!discussionSocket || !discussionSocket.socket || !discussionSocket.socket.connected) {
+                console.error('❌ Socket not connected', {
+                  hasService: !!discussionSocket,
+                  hasSocket: !!discussionSocket?.socket,
+                  isConnected: discussionSocket?.socket?.connected
+                });
+                alert('⚠️ Socket not connected. Cannot control audio.');
+                return;
               }
+
+              console.log('📤 [admin-control] Emitting admin-force-mute event');
+              discussionSocket.socket.emit('admin-force-mute', {
+                sessionId: sessionData.sessionId,
+                targetUserId: targetUserId,
+                isMuted: !isMuted, // Send new mute state
+                from: currentUser?.email,
+                adminRole: userRole
+              }, (ack) => {
+                console.log('✅ [admin-control] Server acknowledged:', ack);
+              });
+
+              // Update button UI immediately for visual feedback
+              btn.classList.toggle('muted', !isMuted);
+              btn.title = !isMuted ? 'Unmute participant' : 'Mute participant';
+              btn.innerHTML = !isMuted 
+                ? '<i class="fas fa-microphone-slash"></i>'
+                : '<i class="fas fa-microphone"></i>';
+              
+              console.log(`✅ [admin-control] Button updated - new state: ${action}`);
             } catch (err) {
               console.error('❌ Error controlling participant audio:', err);
             }
