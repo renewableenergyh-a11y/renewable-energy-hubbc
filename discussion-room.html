@@ -147,6 +147,7 @@
       50% { opacity: 0.5; }
     }
 
+    /* Desktop: Large screens */
     .room-content {
       flex: 1;
       padding: 32px;
@@ -161,20 +162,57 @@
       position: relative;
     }
 
-    .room-message {
-      text-align: center;
-      font-size: 18px;
-      margin-bottom: 20px;
-      color: var(--text-primary);
-      font-weight: 600;
+    #videoContainer {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      width: 100%;
+      height: auto;
+      margin-top: 20px;
     }
 
-    .room-note {
-      font-size: 14px;
-      color: var(--text-secondary);
-      max-width: 500px;
-      line-height: 1.6;
-      text-align: center;
+    #videoContainer > div {
+      aspect-ratio: 16 / 9;
+      max-height: 300px;
+    }
+
+    /* Mobile: Small screens */
+    @media (max-width: 768px) {
+      .room-content {
+        padding: 12px;
+        justify-content: flex-start;
+      }
+
+      #videoContainer {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+        height: auto;
+        margin-top: 12px;
+      }
+
+      #videoContainer > div {
+        aspect-ratio: 16 / 9;
+        max-height: 150px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .room-content {
+        padding: 8px;
+      }
+
+      #videoContainer {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        width: 100%;
+      }
+
+      #videoContainer > div {
+        max-height: 120px;
+      }
     }
 
     .room-controls {
@@ -1341,31 +1379,9 @@
         justify-content: flex-start;
       }
 
-      .media-container {
-        width: 100%;
-        height: auto;
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 12px;
-        background: #000;
-        border-radius: 12px;
-        overflow: visible;
-        padding: 12px;
-      }
-
-      /* Mobile video container styling */
-      #videoContainer {
-        display: grid !important;
-        grid-template-columns: 1fr !important;
-        gap: 12px !important;
-        width: 100% !important;
-        height: auto !important;
-      }
-
-      #videoContainer > div {
-        max-height: 200px;
-        aspect-ratio: 16 / 9;
-      }
+    .media-container {
+      display: none; /* Hide old container */
+    }
         height: auto;
         aspect-ratio: 16/9;
         object-fit: cover;
@@ -1753,8 +1769,8 @@
       const div = document.createElement('div');
       div.id = `video-${peerId}`;
       div.style.background = '#000';
-      div.style.borderRadius = '8px';
-      div.style.aspectRatio = '16/9';
+      div.style.borderRadius = '6px';
+      div.style.overflow = 'hidden';
       div.style.position = 'relative';
       
       const video = document.createElement('video');
@@ -1764,17 +1780,17 @@
       video.srcObject = stream;
       video.style.width = '100%';
       video.style.height = '100%';
-      video.style.borderRadius = '8px';
+      video.style.objectFit = 'cover';
       
       const label = document.createElement('div');
       label.style.position = 'absolute';
-      label.style.bottom = '8px';
-      label.style.left = '8px';
-      label.style.background = 'rgba(0,0,0,0.6)';
+      label.style.bottom = '4px';
+      label.style.left = '4px';
+      label.style.background = 'rgba(0,0,0,0.7)';
       label.style.color = 'white';
-      label.style.padding = '4px 8px';
-      label.style.fontSize = '12px';
-      label.style.borderRadius = '4px';
+      label.style.padding = '2px 6px';
+      label.style.fontSize = '11px';
+      label.style.borderRadius = '3px';
       label.textContent = peerId.split('@')[0];
       
       div.appendChild(video);
