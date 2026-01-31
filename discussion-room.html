@@ -1140,7 +1140,7 @@
             }
           };
           
-          // Add transceivers based on role
+          // Add transceivers based on role to negotiate media
           try {
             peerConnection.addTransceiver('audio', { direction: 'sendrecv' });
             if (isAdmin) {
@@ -1153,7 +1153,8 @@
             console.warn(`⚠️ [WebRTC-lecture] Failed to add transceivers for ${peerId}:`, err);
           }
           
-          // Add tracks BEFORE creating offer
+          // Add tracks to the connection
+          // Note: We add tracks AFTER transceivers to properly bind them
           if (this.localStream) {
             try {
               this.localStream.getTracks().forEach(track => {
@@ -1162,12 +1163,17 @@
                   console.log(`🔇 [WebRTC-lecture] NOT adding video track from student`);
                   return;
                 }
-                peerConnection.addTrack(track, this.localStream);
-                console.log(`✅ [WebRTC-lecture] Added ${track.kind} track to ${peerId}`);
+                const sender = peerConnection.addTrack(track, this.localStream);
+                console.log(`✅ [WebRTC-lecture] Added ${track.kind} track to ${peerId}`, {
+                  trackId: track.id,
+                  trackEnabled: track.enabled
+                });
               });
             } catch (err) {
               console.warn(`⚠️ [WebRTC-lecture] Failed to add local tracks for ${peerId}:`, err);
             }
+          } else {
+            console.warn(`⚠️ [WebRTC-lecture] No local stream available for ${peerId}`);
           }
           
           try {
