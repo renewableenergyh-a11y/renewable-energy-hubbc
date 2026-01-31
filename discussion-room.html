@@ -2348,18 +2348,29 @@
 
       // Chat listener - registered globally to capture all incoming messages
       discussionSocket.on('webrtc-chat', (msg) => {
-        console.log('💬 [chat-listener] Incoming message:', msg);
+        console.log('💬 [chat-listener] Received message:', msg);
         const chatMessages = document.getElementById('chatMessages');
-        if (chatMessages) {
-          const msgDiv = document.createElement('div');
-          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;border-radius:4px;font-size:13px;';
-          msgDiv.innerHTML = `<strong>${msg.userName}:</strong> ${msg.text}`;
-          chatMessages.appendChild(msgDiv);
-          chatMessages.scrollTop = chatMessages.scrollHeight;
-          console.log('✅ Chat message displayed:', msg);
-        } else {
-          console.warn('⚠️ Chat messages container not found');
+        if (!chatMessages) {
+          console.warn('⚠️ [chat-listener] Chat messages container not found yet');
+          return;
         }
+        
+        // Check if message from current user (avoid duplicates)
+        const currentUser = getLocalCurrentUser();
+        const isOwnMessage = msg.from === currentUser?.email;
+        
+        const msgDiv = document.createElement('div');
+        if (isOwnMessage) {
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;';
+          msgDiv.innerHTML = `<strong>${msg.userName} (you):</strong> ${msg.text}`;
+        } else {
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;border-radius:4px;font-size:13px;border-left:3px solid #28a745;';
+          msgDiv.innerHTML = `<strong>${msg.userName}:</strong> ${msg.text}`;
+        }
+        
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        console.log('✅ [chat-listener] Message displayed');
       });
 
       const muteBtn = document.getElementById('muteBtn');
@@ -2398,6 +2409,11 @@
           if (!text) return;
           
           const user = getLocalCurrentUser();
+          if (!user?.email) {
+            console.error('❌ Cannot send message - no user email');
+            return;
+          }
+          
           const msg = {
             sessionId: sessionData.sessionId,
             from: user?.email || 'Anonymous',
@@ -2406,18 +2422,28 @@
             timestamp: new Date().toISOString()
           };
           
+          console.log('💬 [sendMessage] Preparing to send:', msg);
+          
+          // Display message immediately for sender
           const msgDiv = document.createElement('div');
-          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;';
-          msgDiv.innerHTML = `<strong>${msg.userName}:</strong> ${text}`;
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;';
+          msgDiv.innerHTML = `<strong>${msg.userName} (you):</strong> ${text}`;
           chatMessages.appendChild(msgDiv);
           chatMessages.scrollTop = chatMessages.scrollHeight;
           
+          // Emit to all users via socket
           if (discussionSocket && discussionSocket.socket && discussionSocket.socket.connected) {
-            console.log('💬 Emitting chat message:', msg);
-            discussionSocket.socket.emit('webrtc-chat', msg);
+            console.log('📤 [sendMessage] Socket connected, emitting message');
+            discussionSocket.socket.emit('webrtc-chat', msg, (ack) => {
+              console.log('✅ [sendMessage] Server acknowledged:', ack);
+            });
           } else {
-            console.error('❌ Chat unavailable - socket disconnected');
-            alert('Chat unavailable - socket disconnected');
+            console.error('❌ [sendMessage] Socket not connected:', {
+              hasSocket: !!discussionSocket,
+              hasRawSocket: !!discussionSocket?.socket,
+              isConnected: discussionSocket?.socket?.connected
+            });
+            alert('⚠️ Cannot send - socket disconnected. Reconnecting...');
           }
           
           chatInput.value = '';

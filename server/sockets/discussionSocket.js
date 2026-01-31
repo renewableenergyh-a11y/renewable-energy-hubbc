@@ -957,6 +957,37 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     });
 
     /**
+     * Event: webrtc-chat
+     * Real-time chat messaging - broadcast to all users in the session
+     */
+    socket.on('webrtc-chat', (msg, callback) => {
+      console.log('💬 [chat] Message from', msg?.from, ':', msg?.text?.substring(0, 50));
+      
+      if (!msg || !msg.sessionId) {
+        console.warn('⚠️ [chat] Invalid message structure');
+        if (callback) callback({ success: false, error: 'Invalid message' });
+        return;
+      }
+
+      try {
+        // Broadcast to all users in this session
+        io.to(`discussion-session:${msg.sessionId}`).emit('webrtc-chat', {
+          from: msg.from,
+          userName: msg.userName,
+          text: msg.text,
+          timestamp: msg.timestamp,
+          sessionId: msg.sessionId
+        });
+
+        console.log('✅ [chat] Message broadcasted to session', msg.sessionId);
+        if (callback) callback({ success: true });
+      } catch (err) {
+        console.error('❌ [chat] Error broadcasting message:', err);
+        if (callback) callback({ success: false, error: err.message });
+      }
+    });
+
+    /**
      * Event: ping (heartbeat)
      * Keep connection alive and detect client presence
      */
