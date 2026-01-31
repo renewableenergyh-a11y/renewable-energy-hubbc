@@ -1236,6 +1236,14 @@
             console.error(`❌ [WebRTC] No peer connection for ${remotePeerEmail}`);
             return;
           }
+          
+          // Check if we have local tracks
+          if (!this.localStream) {
+            console.warn(`⚠️ [WebRTC] No local stream available for ${remotePeerEmail}, local media may not have been captured`);
+          } else {
+            console.log(`✅ [WebRTC] Local stream has ${this.localStream.getTracks().length} tracks`);
+          }
+          
           const offer = await pc.createOffer();
           await pc.setLocalDescription(offer);
           console.log(`📝 [WebRTC] Local description set for ${remotePeerEmail}`);
@@ -1248,6 +1256,8 @@
           console.log(`✅ [WebRTC] Offer sent to ${remotePeerEmail}`);
         } catch (error) {
           console.error(`❌ [WebRTC] Failed to create/send offer for ${remotePeerEmail}:`, error);
+        }
+      }
         }
       }
 
@@ -1330,36 +1340,50 @@
       }
 
       handleNewParticipant(participantEmail) {
-        console.log(`👤 [WebRTC] New participant: ${participantEmail}`);
-        if (participantEmail === this.localUserId) return;
-        if (!this.peerConnections.has(participantEmail)) {
-          const pc = this.getPeerConnection(participantEmail);
-          console.log(`📤 [WebRTC] Creating offer to ${participantEmail} (initiator: ${this.isOfferInitiator})`);
-          
-          if (!this.socketService) {
-            console.error(`❌ [WebRTC] No socket service available for ${participantEmail}`);
-            return;
-          }
-          
-          if (!this.socketService.socket || !this.socketService.connected) {
-            console.error(`❌ [WebRTC] Socket not connected for ${participantEmail}`, {
-              hasSocket: !!this.socketService.socket,
-              connected: this.socketService.connected
-            });
-            return;
-          }
+        console.log(`👤 [WebRTC] New participant: ${participantEmail}`, {
+          isOfferInitiator: this.isOfferInitiator,
+          instructorPresent: this.instructorPresent,
+          participantCount: this.allParticipants.length
+        });
+        
+        if (participantEmail === this.localUserId) {
+          console.log(`ℹ️ [WebRTC] Skipping self: ${participantEmail}`);
+          return;
+        }
+        
+        if (this.peerConnections.has(participantEmail)) {
+          console.log(`ℹ️ [WebRTC] Peer connection already exists for ${participantEmail}`);
+          return;
+        }
 
-          if (this.isOfferInitiator) {
-            this.createAndSendOffer(
-              participantEmail,
-              (data) => {
-                console.log(`📤 [WebRTC] Sending offer to ${participantEmail}`);
-                this.socketService.emitWebRTCOffer(data);
-              }
-            );
-          } else {
-            console.log(`ℹ️ [WebRTC] Not offer initiator, waiting for offer from ${participantEmail}`);
-          }
+        // Always create peer connection regardless of initiator role
+        const pc = this.getPeerConnection(participantEmail);
+        
+        if (!this.socketService) {
+          console.error(`❌ [WebRTC] No socket service available for ${participantEmail}`);
+          return;
+        }
+        
+        if (!this.socketService.socket || !this.socketService.connected) {
+          console.error(`❌ [WebRTC] Socket not connected for ${participantEmail}`, {
+            hasSocket: !!this.socketService.socket,
+            connected: this.socketService.connected
+          });
+          return;
+        }
+
+        // Send offer if initiator
+        if (this.isOfferInitiator) {
+          console.log(`📤 [WebRTC] Initiator: Creating and sending offer to ${participantEmail}`);
+          this.createAndSendOffer(
+            participantEmail,
+            (data) => {
+              console.log(`📤 [WebRTC] Emitting offer via socket to ${participantEmail}`);
+              this.socketService.emitWebRTCOffer(data);
+            }
+          );
+        } else {
+          console.log(`ℹ️ [WebRTC] Non-initiator: Peer connection created, waiting for offer from ${participantEmail}`);
         }
       }
 
@@ -1796,11 +1820,14 @@
 
           const allParticipants = participantState.getAll();
           if (allParticipants && allParticipants.length > 0) {
+            console.log(`👤 [WebRTC] Processing ${allParticipants.length} existing participants for WebRTC`);
             allParticipants.forEach(participant => {
               if (participant.userId !== user.email) {
                 webrtcManager.handleNewParticipant(participant.userId);
               }
             });
+          } else {
+            console.log(`👤 [WebRTC] No existing participants to connect to`);
           }
 
           setupListeners();
