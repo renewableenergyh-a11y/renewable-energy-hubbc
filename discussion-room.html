@@ -100,7 +100,7 @@
       }
     }
 
-    /* LEFT SIDE: Media interface (75% on desktop) */
+    /* LEFT SIDE: Media interface (75% on desktop, full width on mobile) */
     .room-content {
       flex: 1;
       display: flex;
@@ -109,6 +109,19 @@
       overflow-y: auto;
       background: var(--bg-secondary);
       min-height: 0;
+    }
+
+    @media (max-width: 768px) {
+      .room-content {
+        flex: 1;
+        min-height: auto;
+      }
+    }
+
+    @media (min-width: 769px) {
+      .room-content {
+        flex: 0 0 75%;
+      }
     }
 
     /* Local preview - small tile */
@@ -185,6 +198,14 @@
       background: var(--bg-primary);
       border-top: 1px solid var(--border-color);
       min-height: 0;
+    }
+
+    @media (max-width: 768px) {
+      .sidebars-container {
+        flex: 0 0 auto;
+        max-height: 40vh;
+        border-top: 1px solid var(--border-color);
+      }
     }
 
     @media (min-width: 769px) {
@@ -312,13 +333,14 @@
       gap: 8px;
       flex-wrap: wrap;
       justify-content: center;
+      align-items: center;
     }
 
     @media (min-width: 769px) {
       .room-controls {
         flex-direction: row;
         flex-wrap: wrap;
-        justify-content: flex-start;
+        justify-content: center;
         gap: 6px;
       }
     }
@@ -401,6 +423,11 @@
       box-shadow: 0 2px 6px rgba(244, 67, 54, 0.15);
     }
 
+    .room-controls .btn-leave {
+      padding: 6px 14px;
+      font-size: 11px;
+    }
+
     .btn-leave:hover {
       background: linear-gradient(135deg, #d32f2f, #b71c1c);
       box-shadow: 0 6px 16px rgba(244, 67, 54, 0.28);
@@ -420,6 +447,11 @@
       text-transform: uppercase;
       letter-spacing: 0.3px;
       box-shadow: 0 2px 6px rgba(255, 152, 0, 0.15);
+    }
+
+    .room-controls .btn-close-session {
+      padding: 6px 14px;
+      font-size: 11px;
     }
 
     .btn-close-session:hover {
@@ -795,7 +827,7 @@
           </button>
           
           <!-- Leave and close buttons at bottom of controls -->
-          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); width: 100%;">
+          <div style="display: flex; flex-direction: row; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); width: 100%; justify-content: center; flex-wrap: wrap;">
             <button class="btn-leave" id="leaveBtn-desktop">Leave Room</button>
             <button class="btn-close-session" id="closeBtn-desktop" style="display: none;">Close Session</button>
           </div>
