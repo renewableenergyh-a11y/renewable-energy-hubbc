@@ -2442,13 +2442,13 @@
         
         if (isMobile) {
           // Mobile: bottom-center, smaller height
-          chatModalStyle = 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:95%;max-width:100%;max-height:50vh;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.3);z-index:10000;color:#000;margin:0;overflow:hidden;';
+          chatModalStyle = 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:95%;max-width:100%;max-height:50vh;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.3);z-index:10000;color:#000;margin:0;overflow:hidden;display:flex;flex-direction:column;';
         } else if (isTablet) {
           // Tablet: bottom-center, medium height
-          chatModalStyle = 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:90%;max-width:600px;max-height:55vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:10000;color:#000;margin:0;overflow:hidden;';
+          chatModalStyle = 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:90%;max-width:600px;max-height:55vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:10000;color:#000;margin:0;overflow:hidden;display:flex;flex-direction:column;';
         } else {
           // Desktop: bottom-right
-          chatModalStyle = 'display:none;position:fixed;bottom:0;right:20px;width:380px;max-height:60vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:9999;color:#000;margin:0;overflow:hidden;';
+          chatModalStyle = 'display:none;position:fixed;bottom:0;right:20px;width:380px;max-height:60vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:9999;color:#000;margin:0;overflow:hidden;display:flex;flex-direction:column;';
         }
         
         chatModal.style.cssText = chatModalStyle;
@@ -2467,7 +2467,7 @@
             <h3 style="margin:0;font-size:15px;font-weight:600;color:${chatText};">Chat</h3>
             <button onclick="document.getElementById('chatModal').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;padding:0;color:${isDarkMode ? '#aaa' : '#666'};">&times;</button>
           </div>
-          <div id="chatMessages" style="flex:1;height:auto;min-height:200px;overflow-y:auto;overflow-x:hidden;padding:12px;background:${messagesBg};word-wrap:break-word;overflow-wrap:break-word;display:flex;flex-direction:column;"></div>
+          <div id="chatMessages" style="flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;padding:12px;background:${messagesBg};word-wrap:break-word;overflow-wrap:break-word;display:flex;flex-direction:column;gap:8px;"></div>
           <div style="padding:12px;border-top:1px solid ${chatBorder};display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;background:${chatBg};">
             <input id="chatInput" type="text" placeholder="Type a message..." style="flex:1;min-width:100px;padding:8px;border:1px solid ${isDarkMode ? '#444' : '#ddd'};border-radius:6px;font-family:inherit;color:${chatInputText};background:${chatInputBg};box-sizing:border-box;">
             <button id="chatSend" style="padding:8px 12px;background:#007bff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;">Send</button>
