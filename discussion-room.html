@@ -2500,18 +2500,14 @@
         if (!this.peerConnections.has(participantEmail)) {
           this.getPeerConnection(participantEmail);
 
-          // Simple rule: only create offer if our ID is alphabetically smaller
-          // This eliminates race conditions and works for all session types
-          if (this.localUserId < participantEmail) {
-            console.log(`📤 [WebRTC] Creating offer to ${participantEmail}`);
-            if (this.socketService && this.socketService.emitWebRTCOffer) {
-              this.createAndSendOffer(
-                participantEmail,
-                (data) => this.socketService.emitWebRTCOffer(data)
-              );
-            }
-          } else {
-            console.log(`⏳ [WebRTC] Waiting for offer from ${participantEmail}`);
+          // Create offer to every participant (bidirectional)
+          // Transceiver sendrecv direction handles simultaneous offers
+          console.log(`📤 [WebRTC] Creating offer to ${participantEmail}`);
+          if (this.socketService && this.socketService.emitWebRTCOffer) {
+            this.createAndSendOffer(
+              participantEmail,
+              (data) => this.socketService.emitWebRTCOffer(data)
+            );
           }
         }
       }
