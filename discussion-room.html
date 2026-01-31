@@ -2371,17 +2371,17 @@
       if (!document.getElementById('chatModal')) {
         const chatModal = document.createElement('div');
         chatModal.id = 'chatModal';
-        // Position: bottom-right on large screens, centered on mobile
+        // Position: bottom-right on large screens, bottom-center on mobile
         const chatModalStyle = window.innerWidth >= 1024 
-          ? 'display:none;position:fixed;bottom:0;right:0;width:350px;max-height:60vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:9999;color:#000;margin:0;'
-          : 'display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:500px;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:10000;color:#000;';
+          ? 'display:none;position:fixed;bottom:0;right:0;width:350px;max-height:50vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:9999;color:#000;margin:0;overflow:hidden;'
+          : 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:90%;max-width:500px;max-height:45vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:10000;color:#000;overflow:hidden;';
         chatModal.style.cssText = chatModalStyle;
         chatModal.innerHTML = `
           <div style="padding:16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
             <h3 style="margin:0;font-size:16px;">Chat</h3>
             <button onclick="document.getElementById('chatModal').style.display='none'" style="background:none;border:none;font-size:24px;cursor:pointer;">&times;</button>
           </div>
-          <div id="chatMessages" style="height:400px;overflow-y:auto;padding:12px;background:#f9f9f9;"></div>
+          <div id="chatMessages" style="height:250px;overflow-y:auto;padding:12px;background:#f9f9f9;"></div>
           <div style="padding:12px;border-top:1px solid #eee;display:flex;gap:8px;">
             <input id="chatInput" type="text" placeholder="Type a message..." style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:inherit;color:#000;">
             <button id="chatSend" style="padding:8px 16px;background:#007bff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Send</button>
