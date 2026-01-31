@@ -132,6 +132,12 @@ export class DiscussionSocketService {
             this._emit('webrtc-ice-candidate', data);
           });
 
+          // Audio state tracking
+          this.socket.on('webrtc-audio-state', (data) => {
+            console.log('🔊 [socket.io] WebRTC audio state received:', data);
+            this._emit('webrtc-audio-state', data);
+          });
+
           // Chat events
           this.socket.on('webrtc-chat', (data) => {
             console.log('💬 [socket.io] Chat message received:', data);
