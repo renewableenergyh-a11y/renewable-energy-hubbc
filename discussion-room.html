@@ -750,6 +750,7 @@
       background: #4caf50;
       border-radius: 2px;
       transform-origin: bottom;
+      display: block;
     }
 
     .audio-wave-bar:nth-child(1) {
@@ -2981,6 +2982,8 @@
       });
       
       const finalParticipants = Array.from(deduped.values());
+      
+      console.log('🎤 [renderParticipants] Rendering with participants:', finalParticipants.map(p => ({ userId: p.userId, audioEnabled: p.audioEnabled })));
 
       participantsList.innerHTML = finalParticipants
         .map(p => {
