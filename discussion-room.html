@@ -2347,6 +2347,9 @@
       });
 
       // Chat listener - registered globally to capture all incoming messages
+      // Track sent message timestamps to prevent duplicates from server echo
+      window.sentMessageTimestamps = window.sentMessageTimestamps || new Set();
+      
       discussionSocket.on('webrtc-chat', (msg) => {
         console.log('💬 [chat-listener] Received message:', msg);
         const chatMessages = document.getElementById('chatMessages');
@@ -2355,16 +2358,25 @@
           return;
         }
         
-        // Check if message from current user (avoid duplicates)
         const currentUser = getLocalCurrentUser();
         const isOwnMessage = msg.from === currentUser?.email;
         
+        // For own messages, check if already displayed to prevent duplicates
+        if (isOwnMessage) {
+          const msgKey = `${msg.from}:${msg.timestamp}:${msg.text}`;
+          if (window.sentMessageTimestamps.has(msgKey)) {
+            console.log('⏭️ [chat-listener] Skipping duplicate own message');
+            return;
+          }
+          window.sentMessageTimestamps.add(msgKey);
+        }
+        
         const msgDiv = document.createElement('div');
         if (isOwnMessage) {
-          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;';
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;word-wrap:break-word;overflow-wrap:break-word;';
           msgDiv.innerHTML = `<strong>${msg.userName} (you):</strong> ${msg.text}`;
         } else {
-          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;border-radius:4px;font-size:13px;border-left:3px solid #28a745;';
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;border-radius:4px;font-size:13px;border-left:3px solid #28a745;word-wrap:break-word;overflow-wrap:break-word;';
           msgDiv.innerHTML = `<strong>${msg.userName}:</strong> ${msg.text}`;
         }
         
@@ -2382,20 +2394,32 @@
       if (!document.getElementById('chatModal')) {
         const chatModal = document.createElement('div');
         chatModal.id = 'chatModal';
-        // Position: bottom-right on large screens, bottom-center on mobile
-        const chatModalStyle = window.innerWidth >= 1024 
-          ? 'display:none;position:fixed;bottom:0;right:0;width:350px;max-height:50vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:9999;color:#000;margin:0;overflow:hidden;'
-          : 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:90%;max-width:500px;max-height:45vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:10000;color:#000;overflow:hidden;';
+        // Responsive positioning and sizing
+        const isMobile = window.innerWidth < 768;
+        const isTablet = window.innerWidth < 1024;
+        let chatModalStyle;
+        
+        if (isMobile) {
+          // Mobile: bottom-center, smaller height
+          chatModalStyle = 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:95%;max-width:100%;max-height:50vh;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.3);z-index:10000;color:#000;margin:0;overflow:hidden;';
+        } else if (isTablet) {
+          // Tablet: bottom-center, medium height
+          chatModalStyle = 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:90%;max-width:600px;max-height:55vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:10000;color:#000;margin:0;overflow:hidden;';
+        } else {
+          // Desktop: bottom-right
+          chatModalStyle = 'display:none;position:fixed;bottom:0;right:20px;width:380px;max-height:60vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:9999;color:#000;margin:0;overflow:hidden;';
+        }
+        
         chatModal.style.cssText = chatModalStyle;
         chatModal.innerHTML = `
-          <div style="padding:16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
-            <h3 style="margin:0;font-size:16px;">Chat</h3>
-            <button onclick="document.getElementById('chatModal').style.display='none'" style="background:none;border:none;font-size:24px;cursor:pointer;">&times;</button>
+          <div style="padding:12px 16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;">
+            <h3 style="margin:0;font-size:15px;font-weight:600;">Chat</h3>
+            <button onclick="document.getElementById('chatModal').style.display='none'" style="background:none;border:none;font-size:22px;cursor:pointer;padding:0;color:#666;">&times;</button>
           </div>
-          <div id="chatMessages" style="height:250px;overflow-y:auto;padding:12px;background:#f9f9f9;"></div>
-          <div style="padding:12px;border-top:1px solid #eee;display:flex;gap:8px;">
-            <input id="chatInput" type="text" placeholder="Type a message..." style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:inherit;color:#000;">
-            <button id="chatSend" style="padding:8px 16px;background:#007bff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Send</button>
+          <div id="chatMessages" style="height:calc(100% - 130px);overflow-y:auto;padding:12px;background:#f9f9f9;word-wrap:break-word;overflow-wrap:break-word;"></div>
+          <div style="padding:12px;border-top:1px solid #eee;display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;">
+            <input id="chatInput" type="text" placeholder="Type a message..." style="flex:1;min-width:100px;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:inherit;color:#000;box-sizing:border-box;">
+            <button id="chatSend" style="padding:8px 12px;background:#007bff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;">Send</button>
           </div>
         `;
         document.body.appendChild(chatModal);
@@ -2424,9 +2448,14 @@
           
           console.log('💬 [sendMessage] Preparing to send:', msg);
           
+          // Track this message to prevent duplicate display
+          const msgKey = `${msg.from}:${msg.timestamp}:${msg.text}`;
+          window.sentMessageTimestamps = window.sentMessageTimestamps || new Set();
+          window.sentMessageTimestamps.add(msgKey);
+          
           // Display message immediately for sender
           const msgDiv = document.createElement('div');
-          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;';
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;word-wrap:break-word;overflow-wrap:break-word;';
           msgDiv.innerHTML = `<strong>${msg.userName} (you):</strong> ${text}`;
           chatMessages.appendChild(msgDiv);
           chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -2531,14 +2560,23 @@
       }
 
       if (chatBtn) {
-        chatBtn.addEventListener('click', () => {
-          const chatModal = document.getElementById('chatModal');
-          if (chatModal) {
-            chatModal.style.display = 'block';
-            const chatInput = document.getElementById('chatInput');
-            if (chatInput) chatInput.focus();
-          }
-        });
+        // Use a flag to ensure listener is only added once
+        if (!chatBtn.hasAttribute('data-chat-listener-added')) {
+          chatBtn.setAttribute('data-chat-listener-added', 'true');
+          chatBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const chatModal = document.getElementById('chatModal');
+            if (chatModal) {
+              // Toggle modal display
+              chatModal.style.display = chatModal.style.display === 'none' ? 'block' : 'none';
+              if (chatModal.style.display === 'block') {
+                const chatInput = document.getElementById('chatInput');
+                if (chatInput) setTimeout(() => chatInput.focus(), 100);
+              }
+            }
+          });
+          console.log('✅ Chat button listener attached');
+        }
       }
 
       if (shareBtn) {
