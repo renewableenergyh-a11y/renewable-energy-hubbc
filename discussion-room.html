@@ -47,29 +47,30 @@
       background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
     }
 
-    /* ============ LAYOUT GRID ============ */
+    /* SIMPLE LAYOUT */
     .room-container {
-      display: grid;
-      grid-template-columns: 1fr;
-      grid-template-rows: auto 1fr auto;
+      display: flex;
+      flex-direction: column;
       height: 100vh;
       gap: 0;
       padding: 0;
-      background: var(--bg-secondary);
     }
 
-    /* Large screens: 2-column layout */
     @media (min-width: 769px) {
       .room-container {
-        grid-template-columns: 1fr 320px;
-        grid-template-rows: auto 1fr;
+        flex-direction: row;
       }
     }
 
-    /* Header */
+    .room-main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--bg-secondary);
+      min-height: 0;
+    }
+
     .room-header {
-      grid-column: 1 / -1;
-      grid-row: 1;
       padding: 12px 16px;
       background: var(--bg-primary);
       border-bottom: 1px solid var(--border-color);
@@ -82,41 +83,21 @@
       font-size: 16px;
       font-weight: 700;
       margin: 0;
-      color: var(--text-primary);
     }
 
     .room-info {
       display: flex;
       gap: 8px;
       font-size: 11px;
-      color: var(--text-secondary);
       margin: 0;
-    }
-
-    /* Main content area - videos */
-    .room-main {
-      grid-column: 1;
-      grid-row: 2;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-secondary);
-      overflow: hidden;
-    }
-
-    @media (min-width: 769px) {
-      .room-main {
-        grid-column: 1;
-        grid-row: 1 / 3;
-      }
     }
 
     .room-content {
       flex: 1;
-      display: flex;
-      flex-direction: column;
       padding: 12px;
       overflow-y: auto;
-      min-height: 0;
+      display: flex;
+      flex-direction: column;
     }
 
     #webrtcPreview {
@@ -142,10 +123,7 @@
       }
     }
 
-    /* Controls - on bottom for mobile, moved to sidebar on desktop */
     .room-controls {
-      grid-column: 1;
-      grid-row: 3;
       padding: 12px;
       background: var(--bg-primary);
       border-top: 1px solid var(--border-color);
@@ -157,22 +135,14 @@
 
     @media (min-width: 769px) {
       .room-controls {
-        grid-column: 2;
-        grid-row: 2;
-        border-top: 1px solid var(--border-color);
-        border-left: none;
         padding: 12px;
-        flex-direction: column;
         display: grid;
         grid-template-columns: 1fr 1fr;
-        align-content: start;
+        gap: 6px;
       }
     }
 
-    /* Footer */
     .room-footer {
-      grid-column: 1 / -1;
-      grid-row: 3;
       padding: 12px;
       background: var(--bg-primary);
       border-top: 1px solid var(--border-color);
@@ -187,30 +157,30 @@
       }
     }
 
-    /* Sidebar container - right side on large screens */
     .sidebars-container {
       display: none;
+      flex-direction: column;
+      width: 320px;
+      background: var(--bg-primary);
+      border-left: 1px solid var(--border-color);
+      overflow: hidden;
     }
 
     @media (min-width: 769px) {
       .sidebars-container {
-        grid-column: 2;
-        grid-row: 1 / 3;
         display: flex;
-        flex-direction: column;
-        background: var(--bg-primary);
-        border-left: 1px solid var(--border-color);
-        overflow: hidden;
       }
     }
 
     .sidebar {
       flex: 1;
-      display: flex;
-      flex-direction: column;
       padding: 12px;
       overflow-y: auto;
       border-bottom: 1px solid var(--border-color);
+    }
+
+    .room-controls {
+      flex: 0 0 auto;
     }
 
     /* Button styles */
