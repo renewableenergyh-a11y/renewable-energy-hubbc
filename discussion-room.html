@@ -345,24 +345,6 @@
       }
     }
 
-    /* Footer - mobile only */
-    .room-footer {
-      flex: 0 0 auto;
-      padding: 12px;
-      background: var(--bg-primary);
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      justify-content: center;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    @media (min-width: 769px) {
-      .room-footer {
-        display: none;
-      }
-    }
-
     /* Button styles */
     .btn-control {
       padding: 8px 14px;
@@ -831,12 +813,6 @@
             <button class="btn-leave" id="leaveBtn-desktop">Leave Room</button>
             <button class="btn-close-session" id="closeBtn-desktop" style="display: none;">Close Session</button>
           </div>
-        </div>
-
-        <!-- Mobile footer (leave button) -->
-        <div class="room-footer">
-          <button class="btn-leave" id="leaveBtn">Leave Room</button>
-          <button class="btn-close-session" id="closeBtn" style="display: none;">Close Session</button>
         </div>
       </div>
 
@@ -1430,16 +1406,14 @@
     const roomTitle = document.getElementById('roomTitle');
     const participantCount = document.getElementById('participantCount');
     const participantsList = document.getElementById('participantsList');
-    const leaveBtn = document.getElementById('leaveBtn');
-    const closeBtn = document.getElementById('closeBtn');
-    const leaveBtnDesktop = document.getElementById('leaveBtn-desktop');
-    const closeBtnDesktop = document.getElementById('closeBtn-desktop');
+    const leaveBtn = document.getElementById('leaveBtn-desktop');
+    const closeBtn = document.getElementById('closeBtn-desktop');
+    const leaveBtnDesktop = leaveBtn;
+    const closeBtnDesktop = closeBtn;
     const sessionClosedOverlay = document.getElementById('sessionClosedOverlay');
     const closedReason = document.getElementById('closedReason');
     const timeInfo = document.getElementById('timeInfo');
 
-    leaveBtn.addEventListener('click', () => leaveBtnDesktop.click());
-    closeBtn.addEventListener('click', () => closeBtnDesktop.click());
     leaveBtnDesktop.addEventListener('click', handleLeave);
     closeBtnDesktop.addEventListener('click', handleCloseSession);
 
