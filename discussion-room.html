@@ -2255,9 +2255,14 @@
         console.log('📋 [discussion-room] Participant list updated from server:', data.participants.length);
         
         const previousParticipantCount = participantState.getCount();
-        participantState.replaceAll(data.participants);
+        // Ensure all participants have audioEnabled property
+        const enrichedParticipants = data.participants.map(p => ({
+          ...p,
+          audioEnabled: p.audioEnabled !== undefined ? p.audioEnabled : false
+        }));
+        participantState.replaceAll(enrichedParticipants);
         renderParticipants(participantState.getAll(), data.stats);
-        webrtcManager.updateParticipants(data.participants);
+        webrtcManager.updateParticipants(enrichedParticipants);
 
         // Only call handleNewParticipant for actually new participants (not already connected)
         if (webrtcManager.localUserId) {
@@ -2400,17 +2405,20 @@
       });
 
       discussionSocket.on('webrtc-audio-state', (data) => {
-        console.log('🔊 [webrtc-audio-state] Audio state update:', data);
+        console.log('🔊 [webrtc-audio-state] Audio state update:', data, 'Participants in state:', participantState.getCount());
         
-        if (data.from && participantState.has(data.from)) {
+        if (data.from) {
           participantState.upsert({
             userId: data.from,
             audioEnabled: data.audioEnabled
           });
           
           const updatedParticipants = participantState.getAll();
+          console.log('Updated participants:', updatedParticipants.find(p => p.userId === data.from));
           renderParticipants(updatedParticipants, { activeCount: participantState.getCount() });
           console.log(`✅ [webrtc-audio-state] Updated participant ${data.from} audio state: ${data.audioEnabled}`);
+        } else {
+          console.warn('⚠️ [webrtc-audio-state] Missing from field in data');
         }
       });
 
