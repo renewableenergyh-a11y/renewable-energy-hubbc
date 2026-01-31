@@ -2035,25 +2035,54 @@
       });
 
       discussionSocket.on('webrtc-offer', (offerData) => {
-        console.log(`📥 [webrtc-offer] Received offer from: ${offerData.from}`);
-        if (offerData && offerData.sdp && webrtcManager) {
-          webrtcManager.handleRemoteOffer(
-            offerData,
-            (data) => discussionSocket.emitWebRTCAnswer(data)
-          );
+        console.log(`📥 [webrtc-offer-listener] Listener triggered with:`, {
+          from: offerData?.from,
+          hasSdp: !!offerData?.sdp,
+          hasWebrtcManager: !!webrtcManager,
+          webrtcManagerType: typeof webrtcManager
+        });
+        
+        if (!offerData) {
+          console.error(`❌ [webrtc-offer] No offer data`);
+          return;
         }
+        
+        if (!offerData.sdp) {
+          console.error(`❌ [webrtc-offer] No SDP in offer`);
+          return;
+        }
+        
+        if (!webrtcManager) {
+          console.error(`❌ [webrtc-offer] No WebRTC manager available`);
+          return;
+        }
+        
+        console.log(`📥 [webrtc-offer] Calling handleRemoteOffer...`);
+        webrtcManager.handleRemoteOffer(
+          offerData,
+          (data) => {
+            console.log(`📤 [webrtc-offer] Callback: emitting answer...`);
+            discussionSocket.emitWebRTCAnswer(data);
+          }
+        );
       });
 
       discussionSocket.on('webrtc-answer', (answerData) => {
-        console.log(`📥 [webrtc-answer] Received answer from: ${answerData.from}`);
+        console.log(`📥 [webrtc-answer-listener] Listener triggered from: ${answerData?.from}`, {
+          from: answerData?.from,
+          hasSdp: !!answerData?.sdp,
+          hasWebrtcManager: !!webrtcManager
+        });
         if (answerData && answerData.sdp && webrtcManager) {
+          console.log(`📥 [webrtc-answer] Calling handleRemoteAnswer...`);
           webrtcManager.handleRemoteAnswer(answerData);
         }
       });
 
       discussionSocket.on('webrtc-ice-candidate', (candidateData) => {
-        console.log(`📥 [webrtc-ice-candidate] Received ICE candidate from: ${candidateData.from}`);
+        console.log(`📥 [webrtc-ice-candidate-listener] Listener triggered from: ${candidateData?.from}`);
         if (candidateData && candidateData.candidate && webrtcManager) {
+          console.log(`📥 [webrtc-ice-candidate] Calling handleRemoteIceCandidate...`);
           webrtcManager.handleRemoteIceCandidate(candidateData);
         }
       });
