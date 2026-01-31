@@ -195,7 +195,7 @@
       }
     }
 
-    /* Participants section - TOP 50% of sidebar */
+    /* Participants section - full height on desktop */
     .sidebar {
       flex: 1;
       padding: 12px;
@@ -203,14 +203,6 @@
       display: flex;
       flex-direction: column;
       min-height: 0;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    @media (min-width: 769px) {
-      .sidebar {
-        flex: 0 0 50%;
-        border-bottom: 1px solid var(--border-color);
-      }
     }
 
     .sidebar-title {
@@ -310,7 +302,7 @@
       color: var(--text-muted);
     }
 
-    /* Media controls section - BOTTOM 50% of sidebar */
+    /* Media controls section - below video on left side */
     .room-controls {
       flex: 0 0 auto;
       padding: 12px;
@@ -324,12 +316,10 @@
 
     @media (min-width: 769px) {
       .room-controls {
-        flex: 0 0 50%;
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: wrap;
         justify-content: flex-start;
         gap: 6px;
-        overflow-y: auto;
-        border-top: 1px solid var(--border-color);
       }
     }
 
@@ -745,7 +735,7 @@
       <!-- Participant notification container -->
       <div id="participantNotificationContainer" style="position: relative; height: 0;"></div>
 
-      <!-- LEFT SIDE: Media area -->
+      <!-- LEFT SIDE: Video + Controls (75% on desktop) -->
       <div class="room-content">
         <!-- Admin video (lecture mode) -->
         <div id="adminVideo">
@@ -760,78 +750,77 @@
 
         <!-- Legacy media container (kept for compatibility) -->
         <div class="media-container" id="mediaContainer"></div>
-      </div>
 
-      <!-- Reaction picker -->
-      <div class="reaction-picker" id="reactionPicker">
-        <button class="reaction-btn" data-reaction="👍">👍</button>
-        <button class="reaction-btn" data-reaction="❤️">❤️</button>
-        <button class="reaction-btn" data-reaction="😂">😂</button>
-        <button class="reaction-btn" data-reaction="🤔">🤔</button>
-        <button class="reaction-btn" data-reaction="😮">😮</button>
-        <button class="reaction-btn" data-reaction="🙌">🙌</button>
-        <button class="reaction-btn" data-reaction="🔥">🔥</button>
-        <button class="reaction-btn" data-reaction="👏">👏</button>
-        <button class="reaction-btn" data-reaction="😍">😍</button>
-        <button class="reaction-btn" data-reaction="😢">😢</button>
-        <button class="reaction-btn" data-reaction="🎉">🎉</button>
-        <button class="reaction-btn" data-reaction="✨">✨</button>
-      </div>
-
-      <!-- Mobile footer (leave button) -->
-      <div class="room-footer">
-        <button class="btn-leave" id="leaveBtn">Leave Room</button>
-        <button class="btn-close-session" id="closeBtn" style="display: none;">Close Session</button>
-      </div>
-    </div>
-
-    <!-- RIGHT SIDE: Sidebar (participants + controls) -->
-    <div class="sidebars-container" id="sidebarsContainer">
-      <!-- Participants list section (top 50%) -->
-      <div class="sidebar">
-        <div class="sidebar-title">
-          <i class="fas fa-users"></i>
-          Participants
-          <span class="participant-count" id="participantCount">0</span>
+        <!-- Reaction picker -->
+        <div class="reaction-picker" id="reactionPicker">
+          <button class="reaction-btn" data-reaction="👍">👍</button>
+          <button class="reaction-btn" data-reaction="❤️">❤️</button>
+          <button class="reaction-btn" data-reaction="😂">😂</button>
+          <button class="reaction-btn" data-reaction="🤔">🤔</button>
+          <button class="reaction-btn" data-reaction="😮">😮</button>
+          <button class="reaction-btn" data-reaction="🙌">🙌</button>
+          <button class="reaction-btn" data-reaction="🔥">🔥</button>
+          <button class="reaction-btn" data-reaction="👏">👏</button>
+          <button class="reaction-btn" data-reaction="😍">😍</button>
+          <button class="reaction-btn" data-reaction="😢">😢</button>
+          <button class="reaction-btn" data-reaction="🎉">🎉</button>
+          <button class="reaction-btn" data-reaction="✨">✨</button>
         </div>
-        <div class="participants-list" id="participantsList"></div>
-      </div>
 
-      <!-- Media controls section (bottom 50%) -->
-      <div class="room-controls">
-        <button class="btn-control" id="muteBtn" title="Mute audio">
-          <i class="fas fa-microphone"></i>
-          <span>Mute</span>
-        </button>
-        <button class="btn-control" id="cameraBtn" title="Toggle camera">
-          <i class="fas fa-video"></i>
-          <span>Camera</span>
-        </button>
-        <button class="btn-control" id="raiseHandBtn" title="Raise hand">
-          <i class="fas fa-hand-paper"></i>
-          <span>Raise Hand</span>
-        </button>
-        <button class="btn-control" id="reactionBtn" title="Send reaction">
-          <span>😊</span>
-          <span>Reactions</span>
-        </button>
-        <button class="btn-control" id="chatBtn" title="Open chat">
-          <i class="fas fa-comments"></i>
-          <span>Chat</span>
-        </button>
-        <button class="btn-control" id="shareBtn" title="Share screen">
-          <i class="fas fa-share-square"></i>
-          <span>Share</span>
-        </button>
-        
-        <!-- Leave and close buttons at bottom of controls -->
-        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); width: 100%;">
-          <button class="btn-leave" id="leaveBtn-desktop">Leave Room</button>
-          <button class="btn-close-session" id="closeBtn-desktop" style="display: none;">Close Session</button>
+        <!-- Media controls section -->
+        <div class="room-controls">
+          <button class="btn-control" id="muteBtn" title="Mute audio">
+            <i class="fas fa-microphone"></i>
+            <span>Mute</span>
+          </button>
+          <button class="btn-control" id="cameraBtn" title="Toggle camera">
+            <i class="fas fa-video"></i>
+            <span>Camera</span>
+          </button>
+          <button class="btn-control" id="raiseHandBtn" title="Raise hand">
+            <i class="fas fa-hand-paper"></i>
+            <span>Raise Hand</span>
+          </button>
+          <button class="btn-control" id="reactionBtn" title="Send reaction">
+            <span>😊</span>
+            <span>Reactions</span>
+          </button>
+          <button class="btn-control" id="chatBtn" title="Open chat">
+            <i class="fas fa-comments"></i>
+            <span>Chat</span>
+          </button>
+          <button class="btn-control" id="shareBtn" title="Share screen">
+            <i class="fas fa-share-square"></i>
+            <span>Share</span>
+          </button>
+          
+          <!-- Leave and close buttons at bottom of controls -->
+          <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); width: 100%;">
+            <button class="btn-leave" id="leaveBtn-desktop">Leave Room</button>
+            <button class="btn-close-session" id="closeBtn-desktop" style="display: none;">Close Session</button>
+          </div>
+        </div>
+
+        <!-- Mobile footer (leave button) -->
+        <div class="room-footer">
+          <button class="btn-leave" id="leaveBtn">Leave Room</button>
+          <button class="btn-close-session" id="closeBtn" style="display: none;">Close Session</button>
         </div>
       </div>
+
+      <!-- RIGHT SIDE: Sidebar with Participants (25% on desktop) -->
+      <div class="sidebars-container" id="sidebarsContainer">
+        <!-- Participants list section -->
+        <div class="sidebar">
+          <div class="sidebar-title">
+            <i class="fas fa-users"></i>
+            Participants
+            <span class="participant-count" id="participantCount">0</span>
+          </div>
+          <div class="participants-list" id="participantsList"></div>
+        </div>
+      </div>
     </div>
-  </div>
 
   <!-- Session closed overlay -->
   <div class="session-closed-overlay" id="sessionClosedOverlay">
