@@ -913,9 +913,41 @@
         return;
       }
 
-      // NOTE: Main container always shows instructor's own self video
-      // Remote instructor videos are not displayed
-      console.log(`ℹ️ [lecture-mode] Other instructor video from ${peerId} not displayed (main video reserved for self)`);
+      const adminVideoContainer = document.getElementById('adminVideo');
+      if (!adminVideoContainer) {
+        console.warn('❌ [lecture-mode] #adminVideo not found');
+        return;
+      }
+
+      // Remove placeholder if exists
+      const placeholder = adminVideoContainer.querySelector('#adminVideo-placeholder');
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+
+      // Check if video already exists
+      let videoEl = adminVideoContainer.querySelector('video');
+      if (!videoEl) {
+        videoEl = document.createElement('video');
+        videoEl.id = `video-${peerId}`;
+        videoEl.autoplay = true;
+        videoEl.playsinline = true;
+        videoEl.muted = false;
+        videoEl.style.width = '100%';
+        videoEl.style.height = '100%';
+        videoEl.style.objectFit = 'contain';
+        adminVideoContainer.appendChild(videoEl);
+        console.log(`📺 [lecture-mode] Created new video element for ${peerId}`);
+      }
+
+      videoEl.srcObject = stream;
+      const playPromise = videoEl.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.log(`ℹ️ [lecture-mode] Video autoplay blocked for ${peerId}: ${err.message}. Will play after user interaction.`);
+        });
+      }
+      console.log(`✅ [lecture-mode] Instructor video attached from ${peerId}`);
     }
 
     function attachRemoteAudio(peerId, stream) {
