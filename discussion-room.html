@@ -906,6 +906,8 @@
       // Lecture mode: only attach admin/instructor/superadmin video
       const isAdminVideo = ['admin', 'instructor', 'superadmin'].includes(senderRole);
       
+      console.log(`🎥 [lecture-mode] Attempting to attach video from ${peerId} (role: ${senderRole}, isAdmin: ${isAdminVideo})`);
+      
       if (!isAdminVideo) {
         console.log(`🔇 [lecture-mode] Ignoring video from ${peerId} (role: ${senderRole})`);
         return;
@@ -935,6 +937,7 @@
         videoEl.style.height = '100%';
         videoEl.style.objectFit = 'contain';
         adminVideoContainer.appendChild(videoEl);
+        console.log(`📺 [lecture-mode] Created new video element for ${peerId}`);
       }
 
       videoEl.srcObject = stream;
@@ -1120,14 +1123,22 @@
             audio: true
           };
           
-          // Admins capture video + audio, students capture audio only
+          // Admins/instructors/superadmins capture video + audio, students capture audio only
           if (isAdmin) {
             mediaConstraints.video = { width: { ideal: 1280 }, height: { ideal: 720 } };
           }
           
-          console.log(`📹 [WebRTC-lecture] Requesting media (role: ${this.currentSessionUserRole}, video: ${isAdmin})`);
+          console.log(`📹 [WebRTC-lecture] Requesting media`, {
+            role: this.currentSessionUserRole,
+            requestVideo: isAdmin,
+            mediaConstraints: mediaConstraints
+          });
+          
           this.localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
-          console.log('✅ [WebRTC-lecture] Local media stream obtained');
+          console.log('✅ [WebRTC-lecture] Local media stream obtained', {
+            audioTracks: this.localStream.getAudioTracks().length,
+            videoTracks: this.localStream.getVideoTracks().length
+          });
           
           // Only show video preview if admin
           if (isAdmin && this.localVideoElement) {
@@ -1208,7 +1219,13 @@
       createPeerConnection(peerId) {
         try {
           const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
-          console.log(`🔗 [WebRTC-lecture] Creating peer connection for: ${peerId} (admin: ${isAdmin})`);
+          console.log(`🔗 [WebRTC-lecture] Creating peer connection for: ${peerId}`, {
+            localRole: this.currentSessionUserRole,
+            shouldSendVideo: isAdmin,
+            hasLocalStream: !!this.localStream,
+            audioTracksAvailable: this.localStream?.getAudioTracks().length || 0,
+            videoTracksAvailable: this.localStream?.getVideoTracks().length || 0
+          });
           
           const peerConnection = new RTCPeerConnection({ iceServers: this.iceServers });
           peerConnection.__remoteStream = new MediaStream();
@@ -1485,7 +1502,8 @@
         console.log(`👤 [WebRTC] New participant: ${participantEmail}`, {
           isOfferInitiator: this.isOfferInitiator,
           instructorPresent: this.instructorPresent,
-          participantCount: this.allParticipants.length
+          participantCount: this.allParticipants.length,
+          participantRole: this.allParticipants.find(p => p.userId === participantEmail)?.role || 'UNKNOWN'
         });
         
         if (participantEmail === this.localUserId) {
