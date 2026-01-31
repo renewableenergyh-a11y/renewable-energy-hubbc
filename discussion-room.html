@@ -922,48 +922,8 @@
         return;
       }
 
-      const adminVideoContainer = document.getElementById('adminVideo');
-      if (!adminVideoContainer) {
-        console.warn('❌ [lecture-mode] #adminVideo not found');
-        return;
-      }
-
-      // Remove placeholder if exists
-      const placeholder = adminVideoContainer.querySelector('#adminVideo-placeholder');
-      if (placeholder) {
-        placeholder.style.display = 'none';
-      }
-
-      // Check if this is our own self video and replace it with the remote
-      let videoEl = adminVideoContainer.querySelector('video#selfVideo');
-      if (videoEl) {
-        // Remove self video when receiving another instructor's video
-        videoEl.remove();
-        console.log(`🔄 [lecture-mode] Replaced self video with remote instructor video from ${peerId}`);
-      }
-
-      // Check if video already exists for remote
-      videoEl = adminVideoContainer.querySelector('video');
-      if (!videoEl) {
-        videoEl = document.createElement('video');
-        videoEl.id = `video-${peerId}`;
-        videoEl.autoplay = true;
-        videoEl.playsinline = true;
-        videoEl.muted = false;
-        videoEl.style.width = '100%';
-        videoEl.style.height = '100%';
-        videoEl.style.objectFit = 'contain';
-        adminVideoContainer.appendChild(videoEl);
-        console.log(`📺 [lecture-mode] Created new video element for ${peerId}`);
-      }
-
-      videoEl.srcObject = stream;
-      const playPromise = videoEl.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(err => {
-          console.log(`ℹ️ [lecture-mode] Video autoplay blocked for ${peerId}: ${err.message}. Will play after user interaction.`);
-        });
-      }
+      // NOTE: Main container always shows instructor's own self video
+      // Remote instructor videos are shown in the small preview only
       
       // Show small preview of the other instructor in bottom-right
       const instructorPreview = document.getElementById('instructorSelfPreview');
@@ -976,10 +936,10 @@
         instructorLabel.textContent = peerId; // Show the other instructor's email/ID
         instructorRole.textContent = senderRole.charAt(0).toUpperCase() + senderRole.slice(1) + ' - Presenting';
         instructorPreview.style.display = 'block';
-        console.log(`📺 [lecture-mode] Showing other instructor preview in bottom-right`);
+        console.log(`📺 [lecture-mode] Showing other instructor preview in bottom-right for ${peerId}`);
       }
       
-      console.log(`✅ [lecture-mode] Admin video attached from ${peerId}`);
+      console.log(`✅ [lecture-mode] Other instructor video attached in preview for ${peerId}`);
     }
 
     function attachRemoteAudio(peerId, stream) {
