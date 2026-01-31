@@ -1404,6 +1404,50 @@
         }
       }
 
+      addLocalTracksToExistingConnections() {
+        try {
+          const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
+          
+          if (!this.localStream) {
+            console.warn('⚠️ [WebRTC] No local stream available to add to peer connections');
+            return;
+          }
+
+          console.log(`📡 [WebRTC] Adding local tracks to ${this.peerConnections.size} existing peer connections`);
+          
+          this.peerConnections.forEach((pc, peerId) => {
+            // Check if tracks are already added
+            const senders = pc.getSenders();
+            const audioSenderExists = senders.some(s => s.track && s.track.kind === 'audio');
+            const videoSenderExists = senders.some(s => s.track && s.track.kind === 'video');
+            
+            this.localStream.getTracks().forEach(track => {
+              // Skip video tracks for students
+              if (!isAdmin && track.kind === 'video') {
+                console.log(`🔇 [WebRTC] Skipping video track for student peer ${peerId}`);
+                return;
+              }
+
+              // Check if this track kind is already present
+              const trackExists = senders.some(s => s.track && s.track.kind === track.kind);
+              if (trackExists) {
+                console.log(`ℹ️ [WebRTC] ${track.kind} track already exists for ${peerId}, skipping`);
+                return;
+              }
+
+              try {
+                pc.addTrack(track, this.localStream);
+                console.log(`✅ [WebRTC] Added ${track.kind} track to existing peer connection for ${peerId}`);
+              } catch (err) {
+                console.warn(`⚠️ [WebRTC] Failed to add ${track.kind} track to ${peerId}:`, err);
+              }
+            });
+          });
+        } catch (error) {
+          console.error('❌ [WebRTC] Error adding local tracks:', error);
+        }
+      }
+
       handleNewParticipant(participantEmail) {
         console.log(`👤 [WebRTC] New participant: ${participantEmail}`, {
           isOfferInitiator: this.isOfferInitiator,
@@ -1878,20 +1922,28 @@
           
           await discussionSocket.joinSession(sessionId, user.token, user.email, user.role);
 
-          // Set up listeners IMMEDIATELY after joining, before any WebRTC events arrive
-          setupListeners();
-
           const localVideoElement = null; // No separate preview element, use adminVideo container
           const allParticipantsForWebRTC = participantState.getAll();
           
           webrtcManager.initialize(user.email, sessionId, localVideoElement, user.role, allParticipantsForWebRTC);
           webrtcManager.socketService = discussionSocket;
           
+          // CRITICAL: Capture local media BEFORE setting up listeners
+          // This ensures media is available when WebRTC offers arrive
+          console.log(`📹 [discussion-room] Capturing local media before setting up listeners...`);
           try {
             await webrtcManager.captureLocalMedia();
+            console.log(`✅ [discussion-room] Local media captured, ready for WebRTC connections`);
+            
+            // Add local tracks to any peer connections that may have been created
+            // while media was being captured
+            webrtcManager.addLocalTracksToExistingConnections();
           } catch (mediaError) {
             console.warn('⚠️ [discussion-room] Failed to capture local media:', mediaError.message);
           }
+
+          // Set up listeners AFTER capturing media, so peer connections can use it
+          setupListeners();
 
           // Update UI based on role (lecture mode)
           // Preview element no longer exists for students
@@ -1981,14 +2033,20 @@
       discussionSocket.on('participant-list-updated', (data) => {
         console.log('📋 [discussion-room] Participant list updated from server:', data.participants.length);
         
+        const previousParticipantCount = participantState.getCount();
         participantState.replaceAll(data.participants);
         renderParticipants(participantState.getAll(), data.stats);
         webrtcManager.updateParticipants(data.participants);
 
+        // Only call handleNewParticipant for actually new participants (not already connected)
         if (webrtcManager.localUserId) {
           data.participants.forEach(participant => {
             if (participant.userId !== webrtcManager.localUserId && participant.active) {
-              webrtcManager.handleNewParticipant(participant.userId);
+              // Only handle if not already connected
+              if (!webrtcManager.peerConnections.has(participant.userId)) {
+                console.log(`🆕 [discussion-room] Handling new participant: ${participant.userId}`);
+                webrtcManager.handleNewParticipant(participant.userId);
+              }
             }
           });
         }
