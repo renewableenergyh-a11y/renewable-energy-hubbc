@@ -1333,13 +1333,32 @@
         console.log(`👤 [WebRTC] New participant: ${participantEmail}`);
         if (participantEmail === this.localUserId) return;
         if (!this.peerConnections.has(participantEmail)) {
-          this.getPeerConnection(participantEmail);
-          console.log(`📤 [WebRTC] Creating offer to ${participantEmail}`);
-          if (this.socketService && this.socketService.emitWebRTCOffer) {
+          const pc = this.getPeerConnection(participantEmail);
+          console.log(`📤 [WebRTC] Creating offer to ${participantEmail} (initiator: ${this.isOfferInitiator})`);
+          
+          if (!this.socketService) {
+            console.error(`❌ [WebRTC] No socket service available for ${participantEmail}`);
+            return;
+          }
+          
+          if (!this.socketService.socket || !this.socketService.connected) {
+            console.error(`❌ [WebRTC] Socket not connected for ${participantEmail}`, {
+              hasSocket: !!this.socketService.socket,
+              connected: this.socketService.connected
+            });
+            return;
+          }
+
+          if (this.isOfferInitiator) {
             this.createAndSendOffer(
               participantEmail,
-              (data) => this.socketService.emitWebRTCOffer(data)
+              (data) => {
+                console.log(`📤 [WebRTC] Sending offer to ${participantEmail}`);
+                this.socketService.emitWebRTCOffer(data);
+              }
             );
+          } else {
+            console.log(`ℹ️ [WebRTC] Not offer initiator, waiting for offer from ${participantEmail}`);
           }
         }
       }
@@ -1760,7 +1779,7 @@
           
           await discussionSocket.joinSession(sessionId, user.token, user.email, user.role);
 
-          const localVideoElement = document.getElementById('localVideo');
+          const localVideoElement = null; // No separate preview element, use adminVideo container
           const allParticipantsForWebRTC = participantState.getAll();
           
           webrtcManager.initialize(user.email, sessionId, localVideoElement, user.role, allParticipantsForWebRTC);
