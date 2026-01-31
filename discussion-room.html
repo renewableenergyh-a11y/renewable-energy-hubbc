@@ -934,7 +934,12 @@
       }
 
       videoEl.srcObject = stream;
-      videoEl.play().catch(err => console.warn('Video play error:', err));
+      const playPromise = videoEl.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.log(`ℹ️ [lecture-mode] Video autoplay blocked for ${peerId}: ${err.message}. Will play after user interaction.`);
+        });
+      }
       console.log(`✅ [lecture-mode] Admin video attached from ${peerId}`);
     }
 
@@ -958,11 +963,17 @@
         console.log(`🔊 [WebRTC] Created audio element for ${peerId}`);
       }
 
-      // Set the stream and play
+      // Set the stream
       audioEl.srcObject = stream;
-      audioEl.play().catch(err => {
-        console.warn(`🔊 [WebRTC] Audio play error for ${peerId}:`, err);
-      });
+      
+      // Try to play, but don't fail if autoplay isn't allowed
+      // The browser will autoplay once user interacts with the page
+      const playPromise = audioEl.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(err => {
+          console.log(`ℹ️ [WebRTC] Audio autoplay blocked for ${peerId}: ${err.message}. Will play after user interaction.`);
+        });
+      }
       console.log(`✅ [WebRTC] Remote audio attached for ${peerId}`);
     }
 
