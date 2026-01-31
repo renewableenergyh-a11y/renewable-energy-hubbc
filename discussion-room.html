@@ -1232,47 +1232,33 @@
             }
           };
           
-          // Add transceivers with local tracks
-          // For sendrecv: we specify the send track upfront
+          // Add local tracks to enable sending media
+          // This is simpler and more compatible than addTransceiver
           const audioTracks = this.localStream?.getAudioTracks() || [];
           const videoTracks = this.localStream?.getVideoTracks() || [];
           
+          // Map to track senders so we can later replace them
+          peerConnection.__audioSenders = [];
+          peerConnection.__videoSenders = [];
+          
           try {
-            // Add audio transceiver with audio track
+            // Add audio tracks for all roles
             if (audioTracks.length > 0) {
-              const audioTransceiver = peerConnection.addTransceiver(audioTracks[0], {
-                direction: 'sendrecv',
-                streams: [this.localStream]
-              });
-              console.log(`📡 [WebRTC-lecture] Added audio transceiver with track (${audioTracks[0].id})`);
+              const audioSender = peerConnection.addTrack(audioTracks[0], this.localStream);
+              peerConnection.__audioSenders.push(audioSender);
+              console.log(`📡 [WebRTC-lecture] Added audio track using addTrack (${audioTracks[0].id})`);
             } else {
-              // No audio track available, add transceiver without track
-              peerConnection.addTransceiver('audio', { direction: 'sendrecv' });
-              console.log(`📡 [WebRTC-lecture] Added audio transceiver (no track yet)`);
+              console.warn(`⚠️ [WebRTC-lecture] No audio track available to add for ${peerId}`);
             }
             
-            // Add video transceiver only for admins
-            if (isAdmin) {
-              if (videoTracks.length > 0) {
-                const videoTransceiver = peerConnection.addTransceiver(videoTracks[0], {
-                  direction: 'sendrecv',
-                  streams: [this.localStream]
-                });
-                console.log(`📡 [WebRTC-lecture] Added video transceiver with track (${videoTracks[0].id})`);
-              } else {
-                peerConnection.addTransceiver('video', { direction: 'sendrecv' });
-                console.log(`📡 [WebRTC-lecture] Added video transceiver (no track yet)`);
-              }
+            // Add video track only for admins
+            if (isAdmin && videoTracks.length > 0) {
+              const videoSender = peerConnection.addTrack(videoTracks[0], this.localStream);
+              peerConnection.__videoSenders.push(videoSender);
+              console.log(`📡 [WebRTC-lecture] Added video track using addTrack (${videoTracks[0].id})`);
             }
           } catch (err) {
-            console.warn(`⚠️ [WebRTC-lecture] Failed to add transceivers for ${peerId}:`, err);
-          }
-          
-          // If transceivers failed but we have local tracks, try adding with addTrack as fallback
-          if (this.localStream && audioTracks.length === 0 && videoTracks.length === 0) {
-            console.warn(`⚠️ [WebRTC-lecture] No local tracks available`);
-          } else if (!this.localStream) {
-            console.warn(`⚠️ [WebRTC-lecture] No local stream available for ${peerId}`);
+            console.warn(`⚠️ [WebRTC-lecture] Failed to add tracks for ${peerId}:`, err);
           }
           
           try {
@@ -1461,50 +1447,34 @@
           const audioTracks = this.localStream.getAudioTracks();
           const videoTracks = this.localStream.getVideoTracks();
           
-          console.log(`📡 [WebRTC] Adding tracks to ${this.peerConnections.size} peer connections`, {
-            audioTracks: audioTracks.length,
-            videoTracks: videoTracks.length,
-            isAdmin
-          });
+          console.log(`📡 [WebRTC] Adding ${audioTracks.length + videoTracks.length} tracks to ${this.peerConnections.size} peer connections`);
           
           this.peerConnections.forEach((pc, peerId) => {
-            // Check if transceivers already have tracks
-            const transceivers = pc.getTransceivers();
+            const senders = pc.getSenders();
+            const audioSenderExists = senders.some(s => s.track && s.track.kind === 'audio');
+            const videoSenderExists = senders.some(s => s.track && s.track.kind === 'video');
             
-            transceivers.forEach(transceiver => {
-              if (transceiver.direction === 'sendrecv' || transceiver.direction === 'sendonly') {
-                if (transceiver.mid === null) {
-                  // Transceiver hasn't been used yet
-                  if (transceiver.receiver.track && transceiver.receiver.track.kind === 'audio') {
-                    // Audio transceiver - replace with our audio track
-                    if (audioTracks.length > 0) {
-                      try {
-                        transceiver.sender.replaceTrack(audioTracks[0]).then(() => {
-                          console.log(`✅ [WebRTC] Replaced audio track on transceiver for ${peerId}`);
-                        }).catch(err => {
-                          console.warn(`⚠️ [WebRTC] Failed to replace audio track: ${err}`);
-                        });
-                      } catch (err) {
-                        console.warn(`⚠️ [WebRTC] Error replacing audio track for ${peerId}:`, err);
-                      }
-                    }
-                  } else if (transceiver.receiver.track && transceiver.receiver.track.kind === 'video') {
-                    // Video transceiver - only for admins
-                    if (isAdmin && videoTracks.length > 0) {
-                      try {
-                        transceiver.sender.replaceTrack(videoTracks[0]).then(() => {
-                          console.log(`✅ [WebRTC] Replaced video track on transceiver for ${peerId}`);
-                        }).catch(err => {
-                          console.warn(`⚠️ [WebRTC] Failed to replace video track: ${err}`);
-                        });
-                      } catch (err) {
-                        console.warn(`⚠️ [WebRTC] Error replacing video track for ${peerId}:`, err);
-                      }
-                    }
-                  }
-                }
+            console.log(`🔍 [WebRTC] Peer ${peerId}: audio=${audioSenderExists}, video=${videoSenderExists}`);
+            
+            // Add audio track if not already present
+            if (!audioSenderExists && audioTracks.length > 0) {
+              try {
+                pc.addTrack(audioTracks[0], this.localStream);
+                console.log(`✅ [WebRTC] Added audio track to ${peerId}`);
+              } catch (err) {
+                console.warn(`⚠️ [WebRTC] Failed to add audio track to ${peerId}:`, err);
               }
-            });
+            }
+            
+            // Add video track only for admins, if not already present
+            if (isAdmin && !videoSenderExists && videoTracks.length > 0) {
+              try {
+                pc.addTrack(videoTracks[0], this.localStream);
+                console.log(`✅ [WebRTC] Added video track to ${peerId}`);
+              } catch (err) {
+                console.warn(`⚠️ [WebRTC] Failed to add video track to ${peerId}:`, err);
+              }
+            }
           });
         } catch (error) {
           console.error('❌ [WebRTC] Error adding local tracks:', error);
