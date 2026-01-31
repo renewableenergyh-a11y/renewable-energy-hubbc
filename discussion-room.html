@@ -658,6 +658,9 @@
       margin: 8px;
       font-size: 12px;
       color: var(--text-secondary);
+      pointer-events: auto;
+      display: inline-block;
+      white-space: nowrap;
     }
 
     .participant-notification.joined {
@@ -747,7 +750,7 @@
     <!-- Main content wrapper -->
     <div class="room-main">
       <!-- Participant notification container -->
-      <div id="participantNotificationContainer" style="position: relative; height: 0;"></div>
+      <div id="participantNotificationContainer" style="position: fixed; top: 70px; left: 50%; transform: translateX(-50%); z-index: 1000; pointer-events: none; max-width: 90%;"></div>
 
       <!-- LEFT SIDE: Video + Controls (75% on desktop) -->
       <div class="room-content">
