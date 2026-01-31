@@ -1824,6 +1824,9 @@
           
           await discussionSocket.joinSession(sessionId, user.token, user.email, user.role);
 
+          // Set up listeners IMMEDIATELY after joining, before any WebRTC events arrive
+          setupListeners();
+
           const localVideoElement = null; // No separate preview element, use adminVideo container
           const allParticipantsForWebRTC = participantState.getAll();
           
@@ -1850,8 +1853,6 @@
           } else {
             console.log(`👤 [WebRTC] No existing participants to connect to`);
           }
-
-          setupListeners();
         } catch (error) {
           console.error('Failed to initialize room:', error);
           try {
