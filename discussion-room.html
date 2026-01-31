@@ -2404,21 +2404,13 @@
         
         const msgDiv = document.createElement('div');
         if (isOwnMessage) {
-          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;word-wrap:break-word;overflow-wrap:break-word;';
+          msgDiv.className = 'message-own';
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;color:#000;border-radius:4px;font-size:13px;border-left:3px solid #007bff;word-wrap:break-word;overflow-wrap:break-word;';
           msgDiv.innerHTML = `<strong>${msg.userName} (you):</strong> ${msg.text}`;
         } else {
-          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;border-radius:4px;font-size:13px;border-left:3px solid #28a745;word-wrap:break-word;overflow-wrap:break-word;';
+          msgDiv.className = 'message-other';
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;color:#000;border-radius:4px;font-size:13px;border-left:3px solid #28a745;word-wrap:break-word;overflow-wrap:break-word;';
           msgDiv.innerHTML = `<strong>${msg.userName}:</strong> ${msg.text}`;
-        }
-        
-        // Apply dark mode styling if enabled
-        const isDarkMode = document.body.classList.contains('dark');
-        if (isDarkMode) {
-          if (isOwnMessage) {
-            msgDiv.style.cssText += 'background:#1a3a52;color:#e0e0e0;border-left-color:#4db8ff;';
-          } else {
-            msgDiv.style.cssText += 'background:#2d4a35;color:#e0e0e0;border-left-color:#66bb6a;';
-          }
         }
         
         chatMessages.appendChild(msgDiv);
@@ -2473,6 +2465,59 @@
             <button id="chatSend" style="padding:8px 12px;background:#007bff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;white-space:nowrap;">Send</button>
           </div>
         `;
+        
+        // Add a style tag to handle dark mode switching for the modal
+        if (!document.getElementById('chatModalDarkModeStyles')) {
+          const style = document.createElement('style');
+          style.id = 'chatModalDarkModeStyles';
+          style.textContent = `
+            #chatModal {
+              transition: background-color 0.3s, color 0.3s;
+            }
+            
+            body.dark #chatModal {
+              background: #1e1e1e;
+              color: #e0e0e0;
+            }
+            
+            body.dark #chatModal > div:first-child {
+              background: #1e1e1e;
+              border-bottom-color: #444;
+            }
+            
+            body.dark #chatMessages {
+              background: #252525;
+            }
+            
+            body.dark #chatMessages .message-own {
+              background: #1a3a52 !important;
+              color: #e0e0e0 !important;
+              border-left-color: #4db8ff !important;
+            }
+            
+            body.dark #chatMessages .message-other {
+              background: #2d4a35 !important;
+              color: #e0e0e0 !important;
+              border-left-color: #66bb6a !important;
+            }
+            
+            body.dark #chatModal > div:last-child {
+              background: #1e1e1e;
+              border-top-color: #444;
+            }
+            
+            body.dark #chatInput {
+              background: #2d2d2d !important;
+              color: #e0e0e0 !important;
+              border-color: #444 !important;
+            }
+            
+            body.dark #chatInput::placeholder {
+              color: #999;
+            }
+          `;
+          document.head.appendChild(style);
+        }
         document.body.appendChild(chatModal);
         
         const chatInput = document.getElementById('chatInput');
@@ -2506,7 +2551,8 @@
           
           // Display message immediately for sender
           const msgDiv = document.createElement('div');
-          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;word-wrap:break-word;overflow-wrap:break-word;';
+          msgDiv.className = 'message-own';
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#e7f3ff;color:#000;border-radius:4px;font-size:13px;border-left:3px solid #007bff;word-wrap:break-word;overflow-wrap:break-word;';
           msgDiv.innerHTML = `<strong>${msg.userName} (you):</strong> ${text}`;
           chatMessages.appendChild(msgDiv);
           chatMessages.scrollTop = chatMessages.scrollHeight;
