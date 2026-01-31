@@ -142,45 +142,39 @@
       object-fit: cover;
     }
 
-    /* Remote video grid - SMALL TILES */
-    #videoContainer {
+    /* Admin video - lecture mode (full display) */
+    #adminVideo {
       flex: 1;
-      display: grid;
-      gap: 8px;
-      grid-template-columns: repeat(2, 1fr);
-      min-height: 0;
-      overflow-y: auto;
-    }
-
-    @media (min-width: 769px) {
-      #videoContainer {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-      }
-    }
-
-    @media (max-width: 480px) {
-      #videoContainer {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .videoContainer {
-      position: relative;
-      width: 100%;
-      padding-bottom: 75%;
       background: #000;
       border-radius: 8px;
       overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+      position: relative;
     }
 
-    .videoContainer video {
-      position: absolute;
-      top: 0;
-      left: 0;
+    #adminVideo video {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
+    }
+
+    #adminVideo-placeholder {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: rgba(255, 255, 255, 0.5);
+      pointer-events: none;
+    }
+
+    #adminVideo-placeholder i {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 16px;
     }
 
     /* RIGHT SIDE: Sidebar (25% on desktop, 100% on mobile) */
@@ -756,19 +750,24 @@
         <!-- Local preview -->
         <div class="webrtc-preview-container" id="webrtcPreview">
           <div class="webrtc-preview-label">
-            <i class="fas fa-video"></i>
-            Local Camera Preview
+            <i class="fas fa-microphone"></i>
+            <span id="localPreviewLabel">Your Microphone</span>
           </div>
           <div class="local-video-wrapper">
             <video id="localVideo" playsinline autoplay muted></video>
           </div>
           <div class="webrtc-status-message">
-            <p>Your camera and microphone are being shared with participants.</p>
+            <p id="localMediaStatus">Your audio is being shared with the instructor.</p>
           </div>
         </div>
 
-        <!-- Remote videos grid -->
-        <div id="videoContainer"></div>
+        <!-- Admin video (lecture mode) -->
+        <div id="adminVideo">
+          <div id="adminVideo-placeholder">
+            <i class="fas fa-video-slash"></i>
+            <p>Waiting for instructor video...</p>
+          </div>
+        </div>
 
         <!-- Remote audio container (hidden) -->
         <div id="remoteAudioContainer" style="display: none;"></div>
@@ -916,64 +915,73 @@
       }
     };
 
-    function attachRemoteStream(peerId, stream) {
-      const container = document.getElementById('videoContainer');
-      if (!container) return;
-      if (document.getElementById(`video-${peerId}`)) return;
+    function attachRemoteStream(peerId, stream, senderRole) {
+      // Lecture mode: only attach admin/instructor/superadmin video
+      const isAdminVideo = ['admin', 'instructor', 'superadmin'].includes(senderRole);
+      
+      if (!isAdminVideo) {
+        console.log(`🔇 [lecture-mode] Ignoring video from ${peerId} (role: ${senderRole})`);
+        return;
+      }
 
-      const div = document.createElement('div');
-      div.id = `video-${peerId}`;
-      div.style.background = '#000';
-      div.style.borderRadius = '6px';
-      div.style.overflow = 'hidden';
-      div.style.position = 'relative';
-      
-      const video = document.createElement('video');
-      video.autoplay = true;
-      video.playsinline = true;
-      video.muted = false;
-      video.srcObject = stream;
-      video.style.width = '100%';
-      video.style.height = '100%';
-      video.style.objectFit = 'cover';
-      
-      const label = document.createElement('div');
-      label.style.position = 'absolute';
-      label.style.bottom = '4px';
-      label.style.left = '4px';
-      label.style.background = 'rgba(0,0,0,0.7)';
-      label.style.color = 'white';
-      label.style.padding = '2px 6px';
-      label.style.fontSize = '11px';
-      label.style.borderRadius = '3px';
-      label.textContent = peerId.split('@')[0];
-      
-      div.appendChild(video);
-      div.appendChild(label);
-      container.appendChild(div);
-      
-      video.play().catch(() => {});
+      const adminVideoContainer = document.getElementById('adminVideo');
+      if (!adminVideoContainer) {
+        console.warn('❌ [lecture-mode] #adminVideo not found');
+        return;
+      }
+
+      // Remove placeholder if exists
+      const placeholder = adminVideoContainer.querySelector('#adminVideo-placeholder');
+      if (placeholder) {
+        placeholder.style.display = 'none';
+      }
+
+      // Check if video already exists
+      let videoEl = adminVideoContainer.querySelector('video');
+      if (!videoEl) {
+        videoEl = document.createElement('video');
+        videoEl.id = `video-${peerId}`;
+        videoEl.autoplay = true;
+        videoEl.playsinline = true;
+        videoEl.muted = false;
+        videoEl.style.width = '100%';
+        videoEl.style.height = '100%';
+        videoEl.style.objectFit = 'contain';
+        adminVideoContainer.appendChild(videoEl);
+      }
+
+      videoEl.srcObject = stream;
+      videoEl.play().catch(err => console.warn('Video play error:', err));
+      console.log(`✅ [lecture-mode] Admin video attached from ${peerId}`);
     }
 
     function detachRemoteStream(peerId) {
       try {
-        console.log(`🧹 [detachRemoteStream] Detaching stream for ${peerId}`);
-        const videoEl = document.getElementById(`remote-video-${peerId}`);
-        if (videoEl && videoEl.srcObject) {
-          videoEl.srcObject.getTracks().forEach(track => track.stop());
+        console.log(`🧹 [lecture-mode] Detaching video for ${peerId}`);
+        const adminVideoContainer = document.getElementById('adminVideo');
+        if (!adminVideoContainer) return;
+
+        const videoEl = adminVideoContainer.querySelector('video');
+        if (videoEl) {
+          videoEl.pause();
           videoEl.srcObject = null;
+          videoEl.remove();
+          console.log(`✅ [lecture-mode] Admin video removed for ${peerId}`);
         }
-        const videoTile = document.getElementById(`video-tile-${peerId}`);
-        if (videoTile) videoTile.remove();
-        const audioEl = document.getElementById(`remote-audio-${peerId}`);
-        if (audioEl) {
-          audioEl.pause();
-          audioEl.srcObject = null;
-          audioEl.remove();
+
+        // Show placeholder again
+        const placeholder = adminVideoContainer.querySelector('#adminVideo-placeholder');
+        if (!placeholder) {
+          const placeholderDiv = document.createElement('div');
+          placeholderDiv.id = 'adminVideo-placeholder';
+          placeholderDiv.innerHTML = '<i class="fas fa-video-slash"></i><p>Waiting for instructor video...</p>';
+          placeholderDiv.style.cssText = 'position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: rgba(255, 255, 255, 0.5); pointer-events: none;';
+          adminVideoContainer.appendChild(placeholderDiv);
+        } else {
+          placeholder.style.display = 'block';
         }
-        console.log(`✅ [detachRemoteStream] Cleanup complete for ${peerId}`);
       } catch (error) {
-        console.error(`❌ [detachRemoteStream] Error:`, error);
+        console.error(`❌ [lecture-mode] Error detaching video:`, error);
       }
     }
 
@@ -1034,34 +1042,51 @@
 
       async captureLocalMedia() {
         try {
-          console.log('📹 [WebRTC] Requesting local media access...');
-          this.localStream = await navigator.mediaDevices.getUserMedia({
-            video: { width: { ideal: 640 }, height: { ideal: 480 } },
+          const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
+          const mediaConstraints = {
             audio: true
-          });
-          console.log('✅ [WebRTC] Local media stream obtained');
-          if (this.localVideoElement) {
-            this.localVideoElement.srcObject = this.localStream;
-            console.log('✅ [WebRTC] Local video preview displayed');
+          };
+          
+          // Admins capture video + audio, students capture audio only
+          if (isAdmin) {
+            mediaConstraints.video = { width: { ideal: 1280 }, height: { ideal: 720 } };
           }
+          
+          console.log(`📹 [WebRTC-lecture] Requesting media (role: ${this.currentSessionUserRole}, video: ${isAdmin})`);
+          this.localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+          console.log('✅ [WebRTC-lecture] Local media stream obtained');
+          
+          // Only show video preview if admin
+          if (isAdmin && this.localVideoElement) {
+            this.localVideoElement.srcObject = this.localStream;
+            console.log('✅ [WebRTC-lecture] Local video preview displayed');
+          } else if (!isAdmin && this.localVideoElement) {
+            // Students show black screen (audio only)
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#1a1a1a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            const canvasStream = canvas.captureStream(1);
+            const audioTracks = this.localStream.getAudioTracks();
+            audioTracks.forEach(track => canvasStream.addTrack(track));
+            this.localVideoElement.srcObject = canvasStream;
+            console.log('✅ [WebRTC-lecture] Audio-only preview displayed (student)');
+          }
+          
           return this.localStream;
         } catch (error) {
-          console.error('❌ [WebRTC] Failed to get media:', error);
+          console.error('❌ [WebRTC-lecture] Failed to get media:', error);
           if (error.name === 'NotAllowedError') {
             this.handlePermissionDenied();
           } else if (error.name === 'NotFoundError') {
             this.handleDeviceNotFound();
           }
-          console.log('🎬 [WebRTC] Creating synthetic media tracks...');
+          
+          // Create audio-only synthetic fallback
+          console.log('🎬 [WebRTC-lecture] Creating synthetic audio fallback...');
           try {
-            const canvas = document.createElement('canvas');
-            canvas.width = 640;
-            canvas.height = 480;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#000000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            const canvasStream = canvas.captureStream(30);
-            const videoTrack = canvasStream.getVideoTracks()[0];
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
@@ -1073,18 +1098,15 @@
             oscillator.connect(audioDestination);
             gainNode.connect(audioDestination);
             const audioTrack = audioDestination.stream.getAudioTracks()[0];
+            
             this.localStream = new MediaStream();
-            if (videoTrack) {
-              this.localStream.addTrack(videoTrack);
-              console.log('✅ [WebRTC] Added synthetic video track');
-            }
             if (audioTrack) {
               this.localStream.addTrack(audioTrack);
-              console.log('✅ [WebRTC] Added synthetic audio track');
+              console.log('✅ [WebRTC-lecture] Added synthetic audio track');
             }
             return this.localStream;
           } catch (syntheticError) {
-            console.error('❌ [WebRTC] Failed to create synthetic media:', syntheticError);
+            console.error('❌ [WebRTC-lecture] Failed to create synthetic media:', syntheticError);
             return null;
           }
         }
@@ -1112,57 +1134,90 @@
 
       createPeerConnection(peerId) {
         try {
-          console.log(`🔗 [WebRTC] Creating peer connection for: ${peerId}`);
+          const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
+          console.log(`🔗 [WebRTC-lecture] Creating peer connection for: ${peerId} (admin: ${isAdmin})`);
+          
           const peerConnection = new RTCPeerConnection({ iceServers: this.iceServers });
           peerConnection.__remoteStream = new MediaStream();
+          peerConnection.__senderRole = null; // Will be set when track arrives
+          
           peerConnection.ontrack = (event) => {
-            console.log('🎬 [WebRTC] ONTRACK FIRED', peerId);
-            peerConnection.__remoteStream.addTrack(event.track);
-            attachRemoteStream(peerId, peerConnection.__remoteStream);
+            const trackKind = event.track.kind;
+            console.log(`🎬 [WebRTC-lecture] ontrack fired from ${peerId}, kind: ${trackKind}`);
+            
+            if (trackKind === 'video') {
+              // Lecture mode: only attach video from admin participants
+              // We need to get the sender's role - for now, attach and let peer identify
+              peerConnection.__remoteStream.addTrack(event.track);
+              attachRemoteStream(peerId, peerConnection.__remoteStream, 'admin'); // Assume video is from admin
+            } else if (trackKind === 'audio') {
+              // All roles receive audio
+              peerConnection.__remoteStream.addTrack(event.track);
+              console.log(`✅ [WebRTC-lecture] Audio track added from ${peerId}`);
+            }
           };
+          
+          // Add transceivers based on role
           try {
             peerConnection.addTransceiver('audio', { direction: 'sendrecv' });
-            peerConnection.addTransceiver('video', { direction: 'sendrecv' });
-            console.log(`📡 [WebRTC] Added transceivers for ${peerId}`);
+            if (isAdmin) {
+              peerConnection.addTransceiver('video', { direction: 'sendrecv' });
+              console.log(`📡 [WebRTC-lecture] Added audio+video transceivers (admin)`);
+            } else {
+              console.log(`📡 [WebRTC-lecture] Added audio-only transceiver (student)`);
+            }
           } catch (err) {
-            console.warn(`⚠️ [WebRTC] Failed to add transceivers for ${peerId}`);
+            console.warn(`⚠️ [WebRTC-lecture] Failed to add transceivers for ${peerId}:`, err);
           }
+          
+          // Add tracks BEFORE creating offer
           if (this.localStream) {
             try {
               this.localStream.getTracks().forEach(track => {
+                // Students never send video
+                if (!isAdmin && track.kind === 'video') {
+                  console.log(`🔇 [WebRTC-lecture] NOT adding video track from student`);
+                  return;
+                }
                 peerConnection.addTrack(track, this.localStream);
+                console.log(`✅ [WebRTC-lecture] Added ${track.kind} track to ${peerId}`);
               });
             } catch (err) {
-              console.warn(`⚠️ [WebRTC] Failed to add local tracks for ${peerId}`);
+              console.warn(`⚠️ [WebRTC-lecture] Failed to add local tracks for ${peerId}:`, err);
             }
           }
+          
           try {
             const dummyDataChannel = peerConnection.createDataChannel('signal', { negotiated: false });
-            console.log(`📡 [WebRTC] Created dummy data channel for ${peerId}`);
+            console.log(`📡 [WebRTC-lecture] Created data channel for ${peerId}`);
           } catch (err) {
-            console.warn(`⚠️ [WebRTC] Failed to create data channel for ${peerId}`);
+            console.warn(`⚠️ [WebRTC-lecture] Failed to create data channel:`, err);
           }
+          
           peerConnection.onicecandidate = (event) => {
             if (event.candidate) {
-              console.log(`🧊 [WebRTC] ICE candidate for ${peerId}`);
+              console.log(`🧊 [WebRTC-lecture] ICE candidate for ${peerId}`);
               if (this.socketService && this.socketService.emitWebRTCICECandidate) {
                 this.socketService.emitWebRTCICECandidate(this.sessionId, this.localUserId, peerId, event.candidate);
               }
             }
           };
+          
           peerConnection.onconnectionstatechange = () => {
-            console.log(`📊 [WebRTC] Connection state for ${peerId}: ${peerConnection.connectionState}`);
+            console.log(`📊 [WebRTC-lecture] Connection state for ${peerId}: ${peerConnection.connectionState}`);
           };
+          
           peerConnection.onsignalingstatechange = () => {
-            console.log(`🔄 [WebRTC] Signaling state for ${peerId}: ${peerConnection.signalingState}`);
+            console.log(`🔄 [WebRTC-lecture] Signaling state for ${peerId}: ${peerConnection.signalingState}`);
             this.signalingState.set(peerId, { state: peerConnection.signalingState });
           };
+          
           this.peerConnections.set(peerId, peerConnection);
           this.signalingState.set(peerId, { state: 'new' });
-          console.log(`✅ [WebRTC] Peer connection created for ${peerId}`);
+          console.log(`✅ [WebRTC-lecture] Peer connection created for ${peerId}`);
           return peerConnection;
         } catch (error) {
-          console.error(`❌ [WebRTC] Failed to create peer connection for ${peerId}:`, error);
+          console.error(`❌ [WebRTC-lecture] Failed to create peer connection for ${peerId}:`, error);
           return null;
         }
       }
@@ -1215,53 +1270,53 @@
 
       async handleRemoteOffer(offerData, emitFunction) {
         try {
+          const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
           const { from, sdp } = offerData;
-          console.log(`📥 [WebRTC] Received offer from: ${from}`);
+          console.log(`📥 [WebRTC-lecture] Received offer from: ${from}`);
+          
           const pc = this.getPeerConnection(from);
           if (!pc) {
-            console.error(`❌ [WebRTC] No peer connection for ${from}`);
+            console.error(`❌ [WebRTC-lecture] No peer connection for ${from}`);
             return;
           }
-          if (this.localStream) {
-            try {
-              this.localStream.getTracks().forEach(track => {
-                pc.addTrack(track, this.localStream);
-              });
-            } catch (err) {
-              console.warn(`⚠️ [WebRTC] Failed to add local tracks (answerer) for ${from}`);
-            }
-          }
+          
+          // Set remote description FIRST
           await pc.setRemoteDescription(sdp);
-          console.log(`📝 [WebRTC] Remote description (offer) set from ${from}`);
+          console.log(`📝 [WebRTC-lecture] Remote description (offer) set from ${from}`);
+          
+          // Note: tracks are added during createPeerConnection before this is called
+          // No need to add them here again
+          
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
-          console.log(`📝 [WebRTC] Local description (answer) set for ${from}`);
+          console.log(`📝 [WebRTC-lecture] Local description (answer) set for ${from}`);
+          
           emitFunction({
             sessionId: this.sessionId,
             from: this.localUserId,
             to: from,
             sdp: answer
           });
-          console.log(`✅ [WebRTC] Answer sent to ${from}`);
+          console.log(`✅ [WebRTC-lecture] Answer sent to ${from}`);
         } catch (error) {
-          console.error(`❌ [WebRTC] Failed to handle offer:`, error);
+          console.error(`❌ [WebRTC-lecture] Failed to handle offer:`, error);
         }
       }
 
       async handleRemoteAnswer(answerData) {
         try {
           const { from, sdp } = answerData;
-          console.log(`📥 [WebRTC] Received answer from: ${from}`);
+          console.log(`📥 [WebRTC-lecture] Received answer from: ${from}`);
           const pc = this.getPeerConnection(from);
           if (!pc) {
-            console.error(`❌ [WebRTC] No peer connection for ${from}`);
+            console.error(`❌ [WebRTC-lecture] No peer connection for ${from}`);
             return;
           }
           await pc.setRemoteDescription(sdp);
-          console.log(`📝 [WebRTC] Remote description (answer) set from ${from}`);
-          console.log(`✅ [WebRTC] Signaling stable with ${from}`);
+          console.log(`📝 [WebRTC-lecture] Remote description (answer) set from ${from}`);
+          console.log(`✅ [WebRTC-lecture] Signaling stable with ${from}`);
         } catch (error) {
-          console.error(`❌ [WebRTC] Failed to handle answer:`, error);
+          console.error(`❌ [WebRTC-lecture] Failed to handle answer:`, error);
         }
       }
 
@@ -1736,6 +1791,25 @@
             console.warn('⚠️ [discussion-room] Failed to capture local media:', mediaError.message);
           }
 
+          // Update UI based on role (lecture mode)
+          const isAdmin = ['admin', 'instructor', 'superadmin'].includes(user.role);
+          const previewLabel = document.getElementById('localPreviewLabel');
+          const mediaStatus = document.getElementById('localMediaStatus');
+          const previewContainer = document.getElementById('webrtcPreview');
+          
+          if (previewContainer) {
+            previewContainer.style.display = isAdmin ? 'block' : 'none';
+          }
+          
+          if (previewLabel) {
+            previewLabel.textContent = isAdmin ? 'Your Camera' : 'Your Microphone';
+          }
+          if (mediaStatus) {
+            mediaStatus.textContent = isAdmin 
+              ? 'Your camera and microphone are being shared with students.'
+              : 'Your audio is being shared with the instructor.';
+          }
+
           const allParticipants = participantState.getAll();
           if (allParticipants && allParticipants.length > 0) {
             allParticipants.forEach(participant => {
@@ -2044,25 +2118,32 @@
       }
 
       if (cameraBtn) {
-        let cameraEnabled = true;
-        cameraBtn.addEventListener('click', () => {
-          if (!webrtcManager || !webrtcManager.localStream) return;
-          cameraEnabled = !cameraEnabled;
-          webrtcManager.localStream.getVideoTracks().forEach(track => {
-            track.enabled = cameraEnabled;
-          });
-          cameraBtn.classList.toggle('active', !cameraEnabled);
-          cameraBtn.innerHTML = !cameraEnabled 
-            ? '<i class="fas fa-video-slash"></i><span>Camera Off</span>'
-            : '<i class="fas fa-video"></i><span>Camera</span>';
-          if (discussionSocket && sessionData) {
-            discussionSocket.emit('webrtc-video-state', {
-              sessionId: sessionData.sessionId,
-              from: webrtcManager.localUserId,
-              videoEnabled: cameraEnabled
+        const isAdmin = ['admin', 'instructor', 'superadmin'].includes(currentSessionUserRole);
+        
+        // Hide camera button for students (lecture mode)
+        if (!isAdmin) {
+          cameraBtn.style.display = 'none';
+        } else {
+          let cameraEnabled = true;
+          cameraBtn.addEventListener('click', () => {
+            if (!webrtcManager || !webrtcManager.localStream) return;
+            cameraEnabled = !cameraEnabled;
+            webrtcManager.localStream.getVideoTracks().forEach(track => {
+              track.enabled = cameraEnabled;
             });
-          }
-        });
+            cameraBtn.classList.toggle('active', !cameraEnabled);
+            cameraBtn.innerHTML = !cameraEnabled 
+              ? '<i class="fas fa-video-slash"></i><span>Camera Off</span>'
+              : '<i class="fas fa-video"></i><span>Camera</span>';
+            if (discussionSocket && sessionData) {
+              discussionSocket.emit('webrtc-video-state', {
+                sessionId: sessionData.sessionId,
+                from: webrtcManager.localUserId,
+                videoEnabled: cameraEnabled
+              });
+            }
+          });
+        }
       }
 
       if (raiseHandBtn) {
@@ -2096,51 +2177,58 @@
       }
 
       if (shareBtn) {
-        let screenStream = null;
-        shareBtn.addEventListener('click', async () => {
-          try {
-            if (screenStream) {
-              screenStream.getTracks().forEach(track => track.stop());
-              screenStream = null;
-              shareBtn.classList.remove('active');
-              shareBtn.innerHTML = '<i class="fas fa-share-square"></i><span>Share</span>';
-              return;
-            }
-            
-            screenStream = await navigator.mediaDevices.getDisplayMedia({
-              video: { cursor: 'always' },
-              audio: false
-            });
-            
-            const screenTrack = screenStream.getVideoTracks()[0];
-            const allSenders = [];
-            webrtcManager.peerConnections.forEach(pc => {
-              pc.getSenders().forEach(s => allSenders.push(s));
-            });
-            const videoSender = allSenders.find(s => s.track?.kind === 'video');
-            
-            if (videoSender) {
-              await videoSender.replaceTrack(screenTrack);
-              shareBtn.classList.add('active');
-              shareBtn.innerHTML = '<i class="fas fa-window-close"></i><span>Stop Share</span>';
+        const isAdmin = ['admin', 'instructor', 'superadmin'].includes(currentSessionUserRole);
+        
+        // Hide screen share for students (lecture mode)
+        if (!isAdmin) {
+          shareBtn.style.display = 'none';
+        } else {
+          let screenStream = null;
+          shareBtn.addEventListener('click', async () => {
+            try {
+              if (screenStream) {
+                screenStream.getTracks().forEach(track => track.stop());
+                screenStream = null;
+                shareBtn.classList.remove('active');
+                shareBtn.innerHTML = '<i class="fas fa-share-square"></i><span>Share</span>';
+                return;
+              }
               
-              screenTrack.onended = async () => {
-                const originalVideoTrack = webrtcManager.localStream.getVideoTracks()[0];
-                if (originalVideoTrack && videoSender) {
-                  await videoSender.replaceTrack(originalVideoTrack);
+              screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: { cursor: 'always' },
+                audio: false
+              });
+              
+              const screenTrack = screenStream.getVideoTracks()[0];
+              const allSenders = [];
+              webrtcManager.peerConnections.forEach(pc => {
+                pc.getSenders().forEach(s => allSenders.push(s));
+              });
+              const videoSender = allSenders.find(s => s.track?.kind === 'video');
+              
+              if (videoSender) {
+                await videoSender.replaceTrack(screenTrack);
+                shareBtn.classList.add('active');
+                shareBtn.innerHTML = '<i class="fas fa-window-close"></i><span>Stop Share</span>';
+                
+                screenTrack.onended = async () => {
+                  const originalVideoTrack = webrtcManager.localStream.getVideoTracks()[0];
+                  if (originalVideoTrack && videoSender) {
+                    await videoSender.replaceTrack(originalVideoTrack);
+                  }
                   screenStream = null;
                   shareBtn.classList.remove('active');
                   shareBtn.innerHTML = '<i class="fas fa-share-square"></i><span>Share</span>';
-                }
-              };
+                };
+              }
+            } catch (error) {
+              if (error.name !== 'NotAllowedError') {
+                alert('Screen sharing failed: ' + error.message);
+              }
+              screenStream = null;
             }
-          } catch (error) {
-            if (error.name !== 'NotAllowedError') {
-              alert('Screen sharing failed: ' + error.message);
-            }
-            screenStream = null;
-          }
-        });
+          });
+        }
       }
 
       const reactionBtn = document.getElementById('reactionBtn');
