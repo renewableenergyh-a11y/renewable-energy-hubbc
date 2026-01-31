@@ -934,8 +934,16 @@
         placeholder.style.display = 'none';
       }
 
-      // Check if video already exists
-      let videoEl = adminVideoContainer.querySelector('video');
+      // Check if this is our own self video and replace it with the remote
+      let videoEl = adminVideoContainer.querySelector('video#selfVideo');
+      if (videoEl) {
+        // Remove self video when receiving another instructor's video
+        videoEl.remove();
+        console.log(`🔄 [lecture-mode] Replaced self video with remote instructor video from ${peerId}`);
+      }
+
+      // Check if video already exists for remote
+      videoEl = adminVideoContainer.querySelector('video');
       if (!videoEl) {
         videoEl = document.createElement('video');
         videoEl.id = `video-${peerId}`;
@@ -2013,9 +2021,10 @@
             await webrtcManager.captureLocalMedia();
             console.log(`✅ [discussion-room] Local media captured, ready for WebRTC connections`);
             
-            // Show instructor self-preview if applicable
+            // Show instructor's own video in main container if they're the only presenter
             const isInstructor = ['admin', 'instructor', 'superadmin'].includes(user.role);
             if (isInstructor && webrtcManager.localStream) {
+              const adminVideoContainer = document.getElementById('adminVideo');
               const instructorPreview = document.getElementById('instructorSelfPreview');
               const instructorVideo = document.getElementById('instructorSelfVideo');
               const instructorLabel = document.getElementById('instructorLabel');
@@ -2027,6 +2036,30 @@
                 instructorRole.textContent = user.role.charAt(0).toUpperCase() + user.role.slice(1) + ' - Presenting';
                 instructorPreview.style.display = 'block';
                 console.log(`📺 [discussion-room] Showing instructor self-preview`);
+              }
+              
+              // Also show in main container if no other instructor is presenting
+              if (adminVideoContainer && webrtcManager.localStream.getVideoTracks().length > 0) {
+                const placeholder = adminVideoContainer.querySelector('#adminVideo-placeholder');
+                if (placeholder) {
+                  placeholder.style.display = 'none';
+                }
+                
+                let mainVideoEl = adminVideoContainer.querySelector('video');
+                if (!mainVideoEl) {
+                  mainVideoEl = document.createElement('video');
+                  mainVideoEl.id = 'selfVideo';
+                  mainVideoEl.autoplay = true;
+                  mainVideoEl.playsinline = true;
+                  mainVideoEl.muted = true; // Mute self video to avoid echo
+                  mainVideoEl.style.width = '100%';
+                  mainVideoEl.style.height = '100%';
+                  mainVideoEl.style.objectFit = 'contain';
+                  adminVideoContainer.appendChild(mainVideoEl);
+                }
+                
+                mainVideoEl.srcObject = webrtcManager.localStream;
+                console.log(`🎥 [discussion-room] Showing instructor's own video in main container`);
               }
             }
             
