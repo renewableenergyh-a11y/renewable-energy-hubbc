@@ -2990,8 +2990,6 @@
       });
       
       const finalParticipants = Array.from(deduped.values());
-      
-      console.log('🎤 [renderParticipants] Rendering with participants:', finalParticipants.map(p => ({ userId: p.userId, audioEnabled: p.audioEnabled })));
 
       participantsList.innerHTML = finalParticipants
         .map(p => {
@@ -3016,7 +3014,9 @@
             ? `<span class="raised-hand-indicator" title="Hand raised">✋</span>`
             : '';
 
-          const audioWaveIndicator = p.audioEnabled
+          // Default audioEnabled to true (users join with mic on), only false if explicitly set
+          const isAudioEnabled = p.audioEnabled !== false;
+          const audioWaveIndicator = isAudioEnabled
             ? `<div class="audio-wave-indicator" title="Audio active">
                  <div class="audio-wave-bar"></div>
                  <div class="audio-wave-bar"></div>
@@ -3024,7 +3024,7 @@
                </div>`
             : '';
 
-          console.log(`📊 [renderParticipants] Participant ${p.userId}: audioEnabled=${p.audioEnabled}, indicator="${audioWaveIndicator ? 'PRESENT' : 'EMPTY'}"`);
+          console.log(`📊 [renderParticipants] Participant ${p.userId}: audioEnabled=${isAudioEnabled}, indicator="${audioWaveIndicator ? 'PRESENT' : 'EMPTY'}"`);
 
           return `
             <div class="participant-item">
