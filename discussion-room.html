@@ -2256,10 +2256,10 @@
         console.log('📋 [discussion-room] Participant list updated from server:', data.participants.length);
         
         const previousParticipantCount = participantState.getCount();
-        // Ensure all participants have audioEnabled property
+        // Ensure all participants have audioEnabled property (default to true)
         const enrichedParticipants = data.participants.map(p => ({
           ...p,
-          audioEnabled: p.audioEnabled !== undefined ? p.audioEnabled : false
+          audioEnabled: p.audioEnabled !== undefined ? p.audioEnabled : true
         }));
         participantState.replaceAll(enrichedParticipants);
         renderParticipants(participantState.getAll(), data.stats);
@@ -2288,7 +2288,7 @@
           role: data.role || 'student',
           active: true,
           joinTime: data.joinTime,
-          audioEnabled: ['admin', 'instructor', 'superadmin'].includes(data.role) ? true : false,
+          audioEnabled: true,
           videoEnabled: false,
           handRaised: false
         });
