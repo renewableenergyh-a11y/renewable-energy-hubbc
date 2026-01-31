@@ -3384,41 +3384,135 @@
         }
       });
 
-      // Button events
-      leaveBtn.addEventListener('click', handleLeave);
-
-      // Control button events (UI placeholders for WebRTC Phase 1)
+      // Control button events
       const muteBtn = document.getElementById('muteBtn');
       const cameraBtn = document.getElementById('cameraBtn');
       const raiseHandBtn = document.getElementById('raiseHandBtn');
       const chatBtn = document.getElementById('chatBtn');
       const shareBtn = document.getElementById('shareBtn');
+      
+      // Add chat modal and handler
+      if (!document.getElementById('chatModal')) {
+        const chatModal = document.createElement('div');
+        chatModal.id = 'chatModal';
+        chatModal.style.cssText = 'display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);width:90%;max-width:500px;background:#fff;border-radius:12px;box-shadow:0 10px 40px rgba(0,0,0,0.2);z-index:10000;color:#000;';
+        chatModal.innerHTML = `
+          <div style="padding:16px;border-bottom:1px solid #eee;display:flex;justify-content:space-between;align-items:center;">
+            <h3 style="margin:0;font-size:16px;">Chat</h3>
+            <button onclick="document.getElementById('chatModal').style.display='none'" style="background:none;border:none;font-size:24px;cursor:pointer;">&times;</button>
+          </div>
+          <div id="chatMessages" style="height:300px;overflow-y:auto;padding:12px;background:#f9f9f9;"></div>
+          <div style="padding:12px;border-top:1px solid #eee;display:flex;gap:8px;">
+            <input id="chatInput" type="text" placeholder="Type a message..." style="flex:1;padding:8px;border:1px solid #ddd;border-radius:6px;font-family:inherit;color:#000;">
+            <button id="chatSend" style="padding:8px 16px;background:#007bff;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;">Send</button>
+          </div>
+        `;
+        document.body.appendChild(chatModal);
+        
+        const chatInput = document.getElementById('chatInput');
+        const chatSend = document.getElementById('chatSend');
+        const chatMessages = document.getElementById('chatMessages');
+        
+        const sendMessage = () => {
+          const text = chatInput.value.trim();
+          if (!text) return;
+          
+          const user = getLocalCurrentUser();
+          const msg = {
+            sessionId: sessionData.sessionId,
+            from: user?.email || 'Anonymous',
+            userName: user?.name || 'Anonymous',
+            text: text,
+            timestamp: new Date().toISOString()
+          };
+          
+          // Add to local chat
+          const msgDiv = document.createElement('div');
+          msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;border-radius:4px;font-size:13px;border-left:3px solid #007bff;';
+          msgDiv.innerHTML = `<strong>${msg.userName}:</strong> ${text}`;
+          chatMessages.appendChild(msgDiv);
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+          
+          // Send to peers
+          if (discussionSocket) {
+            discussionSocket.emit('webrtc-chat', msg);
+          }
+          
+          chatInput.value = '';
+        };
+        
+        chatSend.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && sendMessage());
+        
+        // Listen for incoming messages
+        if (discussionSocket) {
+          discussionSocket.on('webrtc-chat', (msg) => {
+            const msgDiv = document.createElement('div');
+            msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;border-radius:4px;font-size:13px;';
+            msgDiv.innerHTML = `<strong>${msg.userName}:</strong> ${msg.text}`;
+            chatMessages.appendChild(msgDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          });
+        }
+      }
 
       if (muteBtn) {
-        // Phase 1: Disable with informational message
-        muteBtn.disabled = true;
-        muteBtn.title = 'Microphone control will be enabled in Phase 2';
-        muteBtn.style.opacity = '0.6';
-        muteBtn.style.cursor = 'not-allowed';
-        muteBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          showModal('Feature Coming Soon', 'Microphone control will be available in Phase 2 of WebRTC implementation.', [
-            { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
-          ]);
+        let isMuted = false;
+        muteBtn.addEventListener('click', () => {
+          if (!webrtcManager || !webrtcManager.localStream) return;
+          
+          isMuted = !isMuted;
+          webrtcManager.localStream.getAudioTracks().forEach(track => {
+            track.enabled = !isMuted;
+          });
+          
+          muteBtn.classList.toggle('active', isMuted);
+          if (isMuted) {
+            muteBtn.innerHTML = '<i class="fas fa-microphone-slash"></i><span>Unmute</span>';
+            muteBtn.style.opacity = '0.6';
+          } else {
+            muteBtn.innerHTML = '<i class="fas fa-microphone"></i><span>Mute</span>';
+            muteBtn.style.opacity = '1';
+          }
+          
+          // Notify other peers
+          if (discussionSocket && sessionData) {
+            discussionSocket.emit('webrtc-audio-state', {
+              sessionId: sessionData.sessionId,
+              from: webrtcManager.localUserId,
+              audioEnabled: !isMuted
+            });
+          }
         });
       }
 
       if (cameraBtn) {
-        // Phase 1: Disable with informational message
-        cameraBtn.disabled = true;
-        cameraBtn.title = 'Camera control will be enabled in Phase 2';
-        cameraBtn.style.opacity = '0.6';
-        cameraBtn.style.cursor = 'not-allowed';
-        cameraBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          showModal('Feature Coming Soon', 'Camera control will be available in Phase 2 of WebRTC implementation.', [
-            { text: 'OK', class: 'modal-btn-primary', callback: closeModal }
-          ]);
+        let cameraEnabled = true;
+        cameraBtn.addEventListener('click', () => {
+          if (!webrtcManager || !webrtcManager.localStream) return;
+          
+          cameraEnabled = !cameraEnabled;
+          webrtcManager.localStream.getVideoTracks().forEach(track => {
+            track.enabled = cameraEnabled;
+          });
+          
+          cameraBtn.classList.toggle('active', !cameraEnabled);
+          if (!cameraEnabled) {
+            cameraBtn.innerHTML = '<i class="fas fa-video-slash"></i><span>Camera Off</span>';
+            cameraBtn.style.opacity = '0.6';
+          } else {
+            cameraBtn.innerHTML = '<i class="fas fa-video"></i><span>Camera</span>';
+            cameraBtn.style.opacity = '1';
+          }
+          
+          // Notify other peers
+          if (discussionSocket && sessionData) {
+            discussionSocket.emit('webrtc-video-state', {
+              sessionId: sessionData.sessionId,
+              from: webrtcManager.localUserId,
+              videoEnabled: cameraEnabled
+            });
+          }
         });
       }
 
@@ -3456,19 +3550,76 @@
 
       if (chatBtn) {
         chatBtn.addEventListener('click', () => {
-          showModal('Chat', 'Chat feature will be available in the next update with real-time messaging.', [
-            { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
-          ]);
+          const chatModal = document.getElementById('chatModal');
+          if (chatModal) {
+            chatModal.style.display = 'block';
+            const chatInput = document.getElementById('chatInput');
+            if (chatInput) chatInput.focus();
+          }
         });
       }
 
       if (shareBtn) {
-        shareBtn.addEventListener('click', () => {
-          showModal('Screen Share', 'Screen sharing feature will be available in the next update with WebRTC implementation.', [
-            { text: 'Close', class: 'modal-btn-secondary', callback: closeModal }
-          ]);
+        let screenStream = null;
+        shareBtn.addEventListener('click', async () => {
+          try {
+            if (screenStream) {
+              // Stop screen sharing
+              screenStream.getTracks().forEach(track => track.stop());
+              screenStream = null;
+              shareBtn.classList.remove('active');
+              shareBtn.innerHTML = '<i class="fas fa-share-square"></i><span>Share</span>';
+              shareBtn.style.opacity = '1';
+              console.log('✅ Screen sharing stopped');
+              return;
+            }
+            
+            // Start screen sharing
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+              video: { cursor: 'always' },
+              audio: false
+            });
+            
+            const screenTrack = screenStream.getVideoTracks()[0];
+            const allSenders = [];
+            webrtcManager.peerConnections.forEach(pc => {
+              pc.getSenders().forEach(s => allSenders.push(s));
+            });
+            const videoSender = allSenders.find(s => s.track?.kind === 'video');
+            
+            if (videoSender) {
+              await videoSender.replaceTrack(screenTrack);
+              shareBtn.classList.add('active');
+              shareBtn.innerHTML = '<i class="fas fa-window-close"></i><span>Stop Share</span>';
+              shareBtn.style.opacity = '1';
+              console.log('✅ Screen sharing started');
+              
+              screenTrack.onended = async () => {
+                const originalVideoTrack = webrtcManager.localStream.getVideoTracks()[0];
+                if (originalVideoTrack && videoSender) {
+                  await videoSender.replaceTrack(originalVideoTrack);
+                  screenStream = null;
+                  shareBtn.classList.remove('active');
+                  shareBtn.innerHTML = '<i class="fas fa-share-square"></i><span>Share</span>';
+                  shareBtn.style.opacity = '1';
+                  console.log('✅ Resumed camera after screen share');
+                }
+              };
+            }
+          } catch (error) {
+            if (error.name === 'NotAllowedError') {
+              console.log('Screen share cancelled by user');
+            } else {
+              console.error('Screen share error:', error);
+              alert('Screen sharing failed: ' + error.message);
+            }
+            screenStream = null;
+          }
         });
       }
+
+      // Button events
+      leaveBtn.addEventListener('click', handleLeave);
 
       // Reaction buttons
       const reactionBtn = document.getElementById('reactionBtn');
