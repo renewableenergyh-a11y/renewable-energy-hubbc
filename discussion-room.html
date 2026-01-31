@@ -1795,6 +1795,11 @@
           const isAdmin = ['admin', 'instructor', 'superadmin'].includes(user.role);
           const previewLabel = document.getElementById('localPreviewLabel');
           const mediaStatus = document.getElementById('localMediaStatus');
+          const previewContainer = document.getElementById('webrtcPreview');
+          
+          if (previewContainer) {
+            previewContainer.style.display = isAdmin ? 'block' : 'none';
+          }
           
           if (previewLabel) {
             previewLabel.textContent = isAdmin ? 'Your Camera' : 'Your Microphone';
