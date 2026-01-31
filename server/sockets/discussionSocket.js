@@ -988,6 +988,33 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
     });
 
     /**
+     * Event: admin-force-mute
+     * Admin forces a participant to mute/unmute their audio
+     */
+    socket.on('admin-force-mute', (data) => {
+      console.log('🔇 [admin-force-mute] Admin', data?.from, 'controlling audio for', data?.targetUserId);
+      
+      if (!data || !data.sessionId || !data.targetUserId) {
+        console.warn('⚠️ [admin-force-mute] Invalid data structure');
+        return;
+      }
+
+      try {
+        // Broadcast mute command to the target user and the entire session
+        io.to(`discussion-session:${data.sessionId}`).emit('admin-force-mute', {
+          targetUserId: data.targetUserId,
+          isMuted: data.isMuted,
+          from: data.from,
+          sessionId: data.sessionId
+        });
+
+        console.log(`✅ [admin-force-mute] Broadcast mute=${data.isMuted} for user ${data.targetUserId}`);
+      } catch (err) {
+        console.error('❌ [admin-force-mute] Error:', err);
+      }
+    });
+
+    /**
      * Event: ping (heartbeat)
      * Keep connection alive and detect client presence
      */
