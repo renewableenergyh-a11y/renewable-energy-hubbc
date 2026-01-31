@@ -938,6 +938,34 @@
       console.log(`✅ [lecture-mode] Admin video attached from ${peerId}`);
     }
 
+    function attachRemoteAudio(peerId, stream) {
+      // Create or reuse audio element for remote audio
+      const remoteAudioContainer = document.getElementById('remoteAudioContainer');
+      if (!remoteAudioContainer) {
+        console.warn('❌ [WebRTC] remoteAudioContainer not found');
+        return;
+      }
+
+      // Check if audio element already exists for this peer
+      let audioEl = document.getElementById(`audio-${peerId}`);
+      if (!audioEl) {
+        audioEl = document.createElement('audio');
+        audioEl.id = `audio-${peerId}`;
+        audioEl.autoplay = true;
+        audioEl.playsinline = true;
+        audioEl.muted = false;
+        remoteAudioContainer.appendChild(audioEl);
+        console.log(`🔊 [WebRTC] Created audio element for ${peerId}`);
+      }
+
+      // Set the stream and play
+      audioEl.srcObject = stream;
+      audioEl.play().catch(err => {
+        console.warn(`🔊 [WebRTC] Audio play error for ${peerId}:`, err);
+      });
+      console.log(`✅ [WebRTC] Remote audio attached for ${peerId}`);
+    }
+
     function detachRemoteStream(peerId) {
       try {
         console.log(`🧹 [lecture-mode] Detaching video for ${peerId}`);
@@ -965,6 +993,19 @@
         }
       } catch (error) {
         console.error(`❌ [lecture-mode] Error detaching video:`, error);
+      }
+
+      // Also detach audio
+      try {
+        const audioEl = document.getElementById(`audio-${peerId}`);
+        if (audioEl) {
+          audioEl.pause();
+          audioEl.srcObject = null;
+          audioEl.remove();
+          console.log(`✅ [WebRTC] Audio removed for ${peerId}`);
+        }
+      } catch (error) {
+        console.error(`❌ [WebRTC] Error detaching audio:`, error);
       }
     }
 
@@ -1137,6 +1178,8 @@
               // All roles receive audio
               peerConnection.__remoteStream.addTrack(event.track);
               console.log(`✅ [WebRTC-lecture] Audio track added from ${peerId}`);
+              // Attach audio to playback element
+              attachRemoteAudio(peerId, peerConnection.__remoteStream);
             }
           };
           
@@ -2169,8 +2212,8 @@
           muteBtn.innerHTML = isMuted 
             ? '<i class="fas fa-microphone-slash"></i><span>Unmute</span>'
             : '<i class="fas fa-microphone"></i><span>Mute</span>';
-          if (discussionSocket && sessionData) {
-            discussionSocket.emit('webrtc-audio-state', {
+          if (discussionSocket && discussionSocket.socket && sessionData) {
+            discussionSocket.socket.emit('webrtc-audio-state', {
               sessionId: sessionData.sessionId,
               from: webrtcManager.localUserId,
               audioEnabled: !isMuted
@@ -2197,8 +2240,8 @@
             cameraBtn.innerHTML = !cameraEnabled 
               ? '<i class="fas fa-video-slash"></i><span>Camera Off</span>'
               : '<i class="fas fa-video"></i><span>Camera</span>';
-            if (discussionSocket && sessionData) {
-              discussionSocket.emit('webrtc-video-state', {
+            if (discussionSocket && discussionSocket.socket && sessionData) {
+              discussionSocket.socket.emit('webrtc-video-state', {
                 sessionId: sessionData.sessionId,
                 from: webrtcManager.localUserId,
                 videoEnabled: cameraEnabled
