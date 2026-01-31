@@ -1241,21 +1241,30 @@
           if (!this.localStream) {
             console.warn(`⚠️ [WebRTC] No local stream available for ${remotePeerEmail}, local media may not have been captured`);
           } else {
-            console.log(`✅ [WebRTC] Local stream has ${this.localStream.getTracks().length} tracks`);
+            const audioTracks = this.localStream.getAudioTracks();
+            const videoTracks = this.localStream.getVideoTracks();
+            console.log(`✅ [WebRTC] Local stream ready: ${audioTracks.length} audio, ${videoTracks.length} video`);
           }
           
           const offer = await pc.createOffer();
+          console.log(`📤 [WebRTC] Offer created, setting local description for ${remotePeerEmail}`);
           await pc.setLocalDescription(offer);
           console.log(`📝 [WebRTC] Local description set for ${remotePeerEmail}`);
-          emitFunction({
+          
+          const offerData = {
             sessionId: this.sessionId,
             from: this.localUserId,
             to: remotePeerEmail,
             sdp: offer
-          });
+          };
+          
+          console.log(`📤 [WebRTC] Calling emitFunction to send offer...`, offerData);
+          emitFunction(offerData);
           console.log(`✅ [WebRTC] Offer sent to ${remotePeerEmail}`);
         } catch (error) {
           console.error(`❌ [WebRTC] Failed to create/send offer for ${remotePeerEmail}:`, error);
+        }
+      }
         }
       }
         }
@@ -1378,8 +1387,18 @@
           this.createAndSendOffer(
             participantEmail,
             (data) => {
-              console.log(`📤 [WebRTC] Emitting offer via socket to ${participantEmail}`);
-              this.socketService.emitWebRTCOffer(data);
+              console.log(`📤 [WebRTC] Offer callback - emitting via socket...`, {
+                to: data.to,
+                sessionId: data.sessionId,
+                hasSocketService: !!this.socketService,
+                socketConnected: this.socketService?.socket?.connected
+              });
+              if (this.socketService && typeof this.socketService.emitWebRTCOffer === 'function') {
+                const result = this.socketService.emitWebRTCOffer(data);
+                console.log(`📤 [WebRTC] emitWebRTCOffer returned:`, result);
+              } else {
+                console.error(`❌ [WebRTC] emitWebRTCOffer not available on socket service`);
+              }
             }
           );
         } else {
