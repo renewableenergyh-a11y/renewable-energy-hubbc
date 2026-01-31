@@ -2507,45 +2507,88 @@
           shareBtn.addEventListener('click', async () => {
             try {
               if (screenStream) {
+                // Stop screen share: restore original video track
                 screenStream.getTracks().forEach(track => track.stop());
                 screenStream = null;
+                
+                const originalVideoTrack = webrtcManager.localStream.getVideoTracks()[0];
+                if (originalVideoTrack) {
+                  // Replace track in ALL peer connections
+                  webrtcManager.peerConnections.forEach((pc, peerId) => {
+                    const senders = pc.getSenders();
+                    const videoSender = senders.find(s => s.track?.kind === 'video');
+                    if (videoSender) {
+                      videoSender.replaceTrack(originalVideoTrack).then(() => {
+                        console.log(`✅ [screen-share] Restored original video for ${peerId}`);
+                      }).catch(err => {
+                        console.error(`❌ [screen-share] Failed to restore video for ${peerId}:`, err);
+                      });
+                    }
+                  });
+                }
+                
                 shareBtn.classList.remove('active');
                 shareBtn.innerHTML = '<i class="fas fa-share-square"></i><span>Share</span>';
                 return;
               }
               
+              // Start screen share
               screenStream = await navigator.mediaDevices.getDisplayMedia({
                 video: { cursor: 'always' },
                 audio: false
               });
               
               const screenTrack = screenStream.getVideoTracks()[0];
-              const allSenders = [];
-              webrtcManager.peerConnections.forEach(pc => {
-                pc.getSenders().forEach(s => allSenders.push(s));
-              });
-              const videoSender = allSenders.find(s => s.track?.kind === 'video');
+              console.log(`📺 [screen-share] Started screen share, replacing track in ${webrtcManager.peerConnections.size} peer connections`);
               
-              if (videoSender) {
-                await videoSender.replaceTrack(screenTrack);
-                shareBtn.classList.add('active');
-                shareBtn.innerHTML = '<i class="fas fa-window-close"></i><span>Stop Share</span>';
-                
-                screenTrack.onended = async () => {
-                  const originalVideoTrack = webrtcManager.localStream.getVideoTracks()[0];
-                  if (originalVideoTrack && videoSender) {
-                    await videoSender.replaceTrack(originalVideoTrack);
-                  }
-                  screenStream = null;
-                  shareBtn.classList.remove('active');
-                  shareBtn.innerHTML = '<i class="fas fa-share-square"></i><span>Share</span>';
-                };
-              }
+              // Replace track in ALL peer connections
+              webrtcManager.peerConnections.forEach((pc, peerId) => {
+                const senders = pc.getSenders();
+                const videoSender = senders.find(s => s.track?.kind === 'video');
+                if (videoSender) {
+                  videoSender.replaceTrack(screenTrack).then(() => {
+                    console.log(`✅ [screen-share] Replaced video with screen for ${peerId}`);
+                  }).catch(err => {
+                    console.error(`❌ [screen-share] Failed to replace video for ${peerId}:`, err);
+                  });
+                }
+              });
+              
+              shareBtn.classList.add('active');
+              shareBtn.innerHTML = '<i class="fas fa-window-close"></i><span>Stop Share</span>';
+              
+              // Handle screen share stop (user closes share dialog)
+              screenTrack.onended = async () => {
+                console.log(`📺 [screen-share] User stopped screen share`);
+                const originalVideoTrack = webrtcManager.localStream.getVideoTracks()[0];
+                if (originalVideoTrack) {
+                  webrtcManager.peerConnections.forEach((pc, peerId) => {
+                    const senders = pc.getSenders();
+                    const videoSender = senders.find(s => s.track?.kind === 'video');
+                    if (videoSender) {
+                      videoSender.replaceTrack(originalVideoTrack).then(() => {
+                        console.log(`✅ [screen-share] Auto-restored video for ${peerId}`);
+                      }).catch(err => {
+                        console.error(`❌ [screen-share] Failed to auto-restore video for ${peerId}:`, err);
+                      });
+                    }
+                  });
+                }
+                screenStream = null;
+                shareBtn.classList.remove('active');
+                shareBtn.innerHTML = '<i class="fas fa-share-square"></i><span>Share</span>';
+              };
             } catch (error) {
-              if (error.name !== 'NotAllowedError') {
+              if (error.name === 'NotAllowedError') {
+                console.log('ℹ️ [screen-share] User cancelled screen share');
+              } else if (error.name === 'NotFoundError') {
+                alert('Screen sharing not supported on this device or browser');
+              } else {
                 alert('Screen sharing failed: ' + error.message);
               }
               screenStream = null;
+              shareBtn.classList.remove('active');
+              shareBtn.innerHTML = '<i class="fas fa-share-square"></i><span>Share</span>';
             }
           });
         }
