@@ -413,60 +413,10 @@
       color: var(--text-secondary);
     }
 
-    /* Remote Videos Grid (NEW) */
+    /* Remote Videos Container - Simple */
     .remote-videos-container {
-      margin: 20px 0;
-      padding: 15px;
-      background: rgba(0, 0, 0, 0.3);
-      border-radius: 8px;
+      display: none; /* Hide old container */
     }
-
-    .remote-videos-label {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 15px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .video-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-      width: 100%;
-    }
-
-    .video-grid > div {
-      aspect-ratio: 16 / 9;
-      background: #000;
-      border-radius: 8px;
-      overflow: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-    }
-
-    .video-grid video {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: cover;
-      display: block !important;
-    }
-
-    .video-tile-name {
-      position: absolute;
-      bottom: 8px;
-      left: 8px;
-      background: rgba(0, 0, 0, 0.6);
-      color: white;
-      padding: 4px 8px;
-      font-size: 12px;
-      border-radius: 4px;
     }
 
     .video-tile-placeholder {
@@ -1627,14 +1577,10 @@
         </div>
 
         <!-- Remote Participants Video Grid (NEW) -->
-        <div class="remote-videos-container">
-          <div class="remote-videos-label">
-            <i class="fas fa-users"></i>
-            Participants
-          </div>
-          <div class="video-grid" id="videoGrid">
-            <!-- Remote video tiles will be dynamically added here -->
-          </div>
+        <!-- Simple Remote Videos Section -->
+        <div style="width: 100%; margin-top: 20px;">
+          <h3 style="color: var(--text-secondary); font-size: 14px; margin-bottom: 12px; text-transform: uppercase;">Remote Participants</h3>
+          <div id="videoContainer" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 12px; width: 100%;"></div>
         </div>
 
         <!-- Remote Audio Container (hidden) (NEW) -->
@@ -1792,28 +1738,41 @@
      * @param {MediaStream} stream - Remote media stream
      */
     function attachRemoteStream(peerId, stream) {
-      const videoGrid = document.getElementById('videoGrid');
-      if (!videoGrid) return;
-      if (document.getElementById(`tile-${peerId}`)) return;
+      const container = document.getElementById('videoContainer');
+      if (!container) return;
+      if (document.getElementById(`video-${peerId}`)) return;
 
-      const tile = document.createElement('div');
-      tile.id = `tile-${peerId}`;
+      const div = document.createElement('div');
+      div.id = `video-${peerId}`;
+      div.style.background = '#000';
+      div.style.borderRadius = '8px';
+      div.style.aspectRatio = '16/9';
+      div.style.position = 'relative';
       
       const video = document.createElement('video');
       video.autoplay = true;
       video.playsinline = true;
       video.muted = false;
       video.srcObject = stream;
+      video.style.width = '100%';
+      video.style.height = '100%';
+      video.style.borderRadius = '8px';
       
       const label = document.createElement('div');
-      label.className = 'video-tile-name';
+      label.style.position = 'absolute';
+      label.style.bottom = '8px';
+      label.style.left = '8px';
+      label.style.background = 'rgba(0,0,0,0.6)';
+      label.style.color = 'white';
+      label.style.padding = '4px 8px';
+      label.style.fontSize = '12px';
+      label.style.borderRadius = '4px';
       label.textContent = peerId.split('@')[0];
       
-      tile.appendChild(video);
-      tile.appendChild(label);
-      videoGrid.appendChild(tile);
+      div.appendChild(video);
+      div.appendChild(label);
+      container.appendChild(div);
       
-      console.log(`✅ Video: ${peerId}`);
       video.play().catch(() => {});
     }
 
