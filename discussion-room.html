@@ -287,7 +287,7 @@
     .participant-controls {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 8px;
     }
 
     .participant-status {
@@ -2288,7 +2288,7 @@
           role: data.role || 'student',
           active: true,
           joinTime: data.joinTime,
-          audioEnabled: false,
+          audioEnabled: ['admin', 'instructor', 'superadmin'].includes(data.role) ? true : false,
           videoEnabled: false,
           handRaised: false
         });
@@ -3037,10 +3037,12 @@
               </div>
               <div class="participant-controls">
                 ${audioWaveIndicator}
-                ${raisedHandIndicator}
-                <div class="participant-status">${p.active ? '🟢 Active' : '⚫ Away'}</div>
-                ${micBtn}
-                ${removeBtn}
+                <div style="display:flex;align-items:center;gap:4px;flex:1">
+                  ${raisedHandIndicator}
+                  <div class="participant-status">${p.active ? '🟢 Active' : '⚫ Away'}</div>
+                  ${micBtn}
+                  ${removeBtn}
+                </div>
               </div>
             </div>
           `;
