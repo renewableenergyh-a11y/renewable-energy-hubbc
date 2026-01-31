@@ -747,20 +747,6 @@
 
       <!-- LEFT SIDE: Media area -->
       <div class="room-content">
-        <!-- Local preview -->
-        <div class="webrtc-preview-container" id="webrtcPreview">
-          <div class="webrtc-preview-label">
-            <i class="fas fa-microphone"></i>
-            <span id="localPreviewLabel">Your Microphone</span>
-          </div>
-          <div class="local-video-wrapper">
-            <video id="localVideo" playsinline autoplay muted></video>
-          </div>
-          <div class="webrtc-status-message">
-            <p id="localMediaStatus">Your audio is being shared with the instructor.</p>
-          </div>
-        </div>
-
         <!-- Admin video (lecture mode) -->
         <div id="adminVideo">
           <div id="adminVideo-placeholder">
@@ -1792,23 +1778,7 @@
           }
 
           // Update UI based on role (lecture mode)
-          const isAdmin = ['admin', 'instructor', 'superadmin'].includes(user.role);
-          const previewLabel = document.getElementById('localPreviewLabel');
-          const mediaStatus = document.getElementById('localMediaStatus');
-          const previewContainer = document.getElementById('webrtcPreview');
-          
-          if (previewContainer) {
-            previewContainer.style.display = isAdmin ? 'block' : 'none';
-          }
-          
-          if (previewLabel) {
-            previewLabel.textContent = isAdmin ? 'Your Camera' : 'Your Microphone';
-          }
-          if (mediaStatus) {
-            mediaStatus.textContent = isAdmin 
-              ? 'Your camera and microphone are being shared with students.'
-              : 'Your audio is being shared with the instructor.';
-          }
+          // Preview element no longer exists for students
 
           const allParticipants = participantState.getAll();
           if (allParticipants && allParticipants.length > 0) {
