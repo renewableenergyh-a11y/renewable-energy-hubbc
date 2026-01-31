@@ -807,6 +807,10 @@
             <i class="fas fa-share-square"></i>
             <span>Share</span>
           </button>
+          <button class="btn-control" id="unmuteAudioBtn" title="Unmute audio (if blocked)" style="display: none; background-color: rgba(255,107,107,0.3); border-color: #ff6b6b;">
+            <i class="fas fa-volume-up"></i>
+            <span>Unmute</span>
+          </button>
           
           <!-- Leave and close buttons at bottom of controls -->
           <div style="display: flex; flex-direction: row; gap: 8px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); width: 100%; justify-content: center; flex-wrap: wrap;">
@@ -959,6 +963,7 @@
         audioEl.autoplay = true;
         audioEl.playsinline = true;
         audioEl.muted = false;
+        audioEl.controls = false;
         remoteAudioContainer.appendChild(audioEl);
         console.log(`🔊 [WebRTC] Created audio element for ${peerId}`);
       }
@@ -966,13 +971,46 @@
       // Set the stream
       audioEl.srcObject = stream;
       
-      // Try to play, but don't fail if autoplay isn't allowed
-      // The browser will autoplay once user interacts with the page
+      // Try to play immediately
       const playPromise = audioEl.play();
       if (playPromise !== undefined) {
-        playPromise.catch(err => {
-          console.log(`ℹ️ [WebRTC] Audio autoplay blocked for ${peerId}: ${err.message}. Will play after user interaction.`);
-        });
+        playPromise
+          .then(() => {
+            console.log(`✅ [WebRTC] Audio playing for ${peerId}`);
+            // Hide unmute button if audio is playing
+            const unmuteBtn = document.getElementById('unmuteAudioBtn');
+            if (unmuteBtn) {
+              unmuteBtn.style.display = 'none';
+            }
+          })
+          .catch(err => {
+            console.warn(`⚠️ [WebRTC] Audio autoplay blocked for ${peerId}: ${err.message}`);
+            // Show unmute button as fallback
+            const unmuteBtn = document.getElementById('unmuteAudioBtn');
+            if (unmuteBtn) {
+              unmuteBtn.style.display = 'flex';
+            }
+            // Setup play on user interaction
+            const playOnInteraction = () => {
+              audioEl.play().then(() => {
+                console.log(`✅ [WebRTC] Audio started after user interaction for ${peerId}`);
+                const unmuteBtn = document.getElementById('unmuteAudioBtn');
+                if (unmuteBtn) {
+                  unmuteBtn.style.display = 'none';
+                }
+              }).catch(e => {
+                console.error(`❌ [WebRTC] Failed to play audio after interaction: ${e}`);
+              });
+              // Remove listeners after first successful play
+              document.removeEventListener('click', playOnInteraction);
+              document.removeEventListener('touchstart', playOnInteraction);
+              document.removeEventListener('keydown', playOnInteraction);
+            };
+            document.addEventListener('click', playOnInteraction, { once: true });
+            document.addEventListener('touchstart', playOnInteraction, { once: true });
+            document.addEventListener('keydown', playOnInteraction, { once: true });
+            console.log(`ℹ️ [WebRTC] Audio will play after user interaction for ${peerId}`);
+          });
       }
       console.log(`✅ [WebRTC] Remote audio attached for ${peerId}`);
     }
@@ -1597,12 +1635,30 @@
     const closeBtn = document.getElementById('closeBtn-desktop');
     const leaveBtnDesktop = leaveBtn;
     const closeBtnDesktop = closeBtn;
+    const unmuteAudioBtn = document.getElementById('unmuteAudioBtn');
     const sessionClosedOverlay = document.getElementById('sessionClosedOverlay');
     const closedReason = document.getElementById('closedReason');
     const timeInfo = document.getElementById('timeInfo');
 
     leaveBtnDesktop.addEventListener('click', handleLeave);
     closeBtnDesktop.addEventListener('click', handleCloseSession);
+    
+    // Handle unmute audio button click
+    if (unmuteAudioBtn) {
+      unmuteAudioBtn.addEventListener('click', () => {
+        console.log('🔊 [discussion-room] Manual unmute audio triggered');
+        const audioElements = document.querySelectorAll('#remoteAudioContainer audio');
+        audioElements.forEach(audioEl => {
+          audioEl.play().then(() => {
+            console.log(`✅ [discussion-room] Audio resumed for ${audioEl.id}`);
+          }).catch(err => {
+            console.error(`❌ [discussion-room] Failed to play audio: ${err}`);
+          });
+        });
+        // Hide the button after clicking
+        unmuteAudioBtn.style.display = 'none';
+      });
+    }
 
     function initThemeToggle() {
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
