@@ -409,6 +409,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
         socket.to(`discussion-session:${sessionId}`).emit('participant-left', {
           userId: userId,
           userName: socket.userName,
+          role: socket.userRole,
           participantCount: 0
         });
 
@@ -462,6 +463,7 @@ function initializeDiscussionSocket(io, db, discussionSessionService, participan
           io.to(`discussion-session:${sessionId}`).emit('participant-left', {
             userId: userId,
             userName: socket.userName,
+            role: socket.userRole,
             participantCount: participantCount
           });
 

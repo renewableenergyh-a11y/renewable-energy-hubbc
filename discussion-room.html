@@ -2138,13 +2138,15 @@
       }
     }
 
-    function showParticipantNotification(userName, type) {
+    function showParticipantNotification(userName, type, role) {
       const container = document.getElementById('participantNotificationContainer');
       if (!container) return;
 
+      // Show 'Instructor' for admin/instructor/superadmin roles
+      const displayName = ['admin', 'instructor', 'superadmin'].includes(role) ? 'Instructor' : escapeHtml(userName);
       const message = type === 'joined' 
-        ? `${escapeHtml(userName)} has joined the discussion`
-        : `${escapeHtml(userName)} has left the room`;
+        ? `${displayName} has joined the discussion`
+        : `${displayName} has left the room`;
 
       const notification = document.createElement('div');
       notification.className = `participant-notification ${type}`;
@@ -2215,7 +2217,7 @@
         const updatedParticipants = participantState.getAll();
         renderParticipants(updatedParticipants, { activeCount: participantState.getCount() });
         
-        showParticipantNotification(data.name, 'joined');
+        showParticipantNotification(data.name, 'joined', data.role);
 
         webrtcManager.updateParticipants(updatedParticipants);
 
@@ -2233,7 +2235,7 @@
         }
         
         if (data.userName) {
-          showParticipantNotification(data.userName, 'left');
+          showParticipantNotification(data.userName, 'left', data.role);
         }
         
         const updatedParticipants = participantState.getAll();
@@ -2434,16 +2436,16 @@
         
         if (isMobile) {
           // Mobile: bottom-center, smaller height
-          chatModalStyle = 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:95%;max-width:100%;max-height:50vh;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.3);z-index:10000;color:#000;margin:0;overflow:hidden;display:flex;flex-direction:column;';
+          chatModalStyle = 'position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:95%;max-width:100%;max-height:50vh;background:#fff;border-radius:16px 16px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.3);z-index:10000;color:#000;margin:0;overflow:hidden;flex-direction:column;';
         } else if (isTablet) {
           // Tablet: bottom-center, medium height
-          chatModalStyle = 'display:none;position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:90%;max-width:600px;max-height:55vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:10000;color:#000;margin:0;overflow:hidden;display:flex;flex-direction:column;';
+          chatModalStyle = 'position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:90%;max-width:600px;max-height:55vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:10000;color:#000;margin:0;overflow:hidden;flex-direction:column;';
         } else {
           // Desktop: bottom-right
-          chatModalStyle = 'display:none;position:fixed;bottom:0;right:20px;width:380px;max-height:60vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:9999;color:#000;margin:0;overflow:hidden;display:flex;flex-direction:column;';
+          chatModalStyle = 'position:fixed;bottom:0;right:20px;width:380px;max-height:60vh;background:#fff;border-radius:12px 12px 0 0;box-shadow:0 -5px 30px rgba(0,0,0,0.2);z-index:9999;color:#000;margin:0;overflow:hidden;flex-direction:column;';
         }
         
-        chatModal.style.cssText = chatModalStyle;
+        chatModal.style.cssText = 'display:none;' + chatModalStyle;
         
         // Apply dark mode colors if enabled
         const isDarkMode = document.body.classList.contains('dark');
@@ -2665,8 +2667,8 @@
             const chatModal = document.getElementById('chatModal');
             if (chatModal) {
               // Toggle modal display
-              chatModal.style.display = chatModal.style.display === 'none' ? 'block' : 'none';
-              if (chatModal.style.display === 'block') {
+              chatModal.style.display = chatModal.style.display === 'none' ? 'flex' : 'none';
+              if (chatModal.style.display === 'flex') {
                 const chatInput = document.getElementById('chatInput');
                 if (chatInput) setTimeout(() => chatInput.focus(), 100);
               }
