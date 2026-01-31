@@ -2256,10 +2256,11 @@
         console.log('📋 [discussion-room] Participant list updated from server:', data.participants.length);
         
         const previousParticipantCount = participantState.getCount();
-        // Ensure all participants have audioEnabled property (default to true)
+        // Always default audioEnabled to true on initial load (users join with mic on)
+        // Only webrtc-audio-state events can change it
         const enrichedParticipants = data.participants.map(p => ({
           ...p,
-          audioEnabled: p.audioEnabled !== undefined ? p.audioEnabled : true
+          audioEnabled: true
         }));
         participantState.replaceAll(enrichedParticipants);
         renderParticipants(participantState.getAll(), data.stats);
