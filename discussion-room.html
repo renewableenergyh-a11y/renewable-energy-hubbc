@@ -1532,9 +1532,45 @@
           return;
         }
 
-        // Send offer if initiator
+        // Send offer logic:
+        // 1. If you're the initiator (admin), send to everyone
+        // 2. If you're a non-initiator (student), send to other non-initiators based on alphabetical order
+        // This ensures all participants get connected to each other
+        
+        const remoteParticipant = this.allParticipants.find(p => p.userId === participantEmail);
+        const remoteIsAdmin = remoteParticipant && ['admin', 'instructor', 'superadmin'].includes(remoteParticipant.role);
+        const localIsAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
+        
+        let shouldSendOffer = false;
+        
         if (this.isOfferInitiator) {
-          console.log(`📤 [WebRTC] Initiator: Creating and sending offer to ${participantEmail}`);
+          // Admins always send offers
+          shouldSendOffer = true;
+          console.log(`📤 [WebRTC] Admin initiator: sending offer to ${participantEmail}`);
+        } else if (!localIsAdmin && !remoteIsAdmin) {
+          // Two students: use alphabetical order to decide who sends offer
+          // Whoever has lower ID sends the offer
+          if (this.localUserId < participantEmail) {
+            shouldSendOffer = true;
+            console.log(`📤 [WebRTC] Student-to-student: I have lower ID, sending offer to ${participantEmail}`);
+          } else {
+            console.log(`📤 [WebRTC] Student-to-student: ${participantEmail} has lower ID, waiting for their offer`);
+          }
+        } else if (localIsAdmin && remoteIsAdmin) {
+          // Both admins: use alphabetical order
+          if (this.localUserId < participantEmail) {
+            shouldSendOffer = true;
+            console.log(`📤 [WebRTC] Admin-to-admin: I have lower ID, sending offer to ${participantEmail}`);
+          } else {
+            console.log(`📤 [WebRTC] Admin-to-admin: ${participantEmail} has lower ID, waiting for their offer`);
+          }
+        } else {
+          // One is admin, one is student: only non-initiator admin sends
+          console.log(`ℹ️ [WebRTC] Student-to-admin connection: waiting for offer`);
+        }
+        
+        if (shouldSendOffer) {
+          console.log(`📤 [WebRTC] Creating and sending offer to ${participantEmail}`);
           this.createAndSendOffer(
             participantEmail,
             (data) => {
@@ -1552,8 +1588,6 @@
               }
             }
           );
-        } else {
-          console.log(`ℹ️ [WebRTC] Non-initiator: Peer connection created, waiting for offer from ${participantEmail}`);
         }
       }
 
