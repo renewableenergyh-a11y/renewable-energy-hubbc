@@ -2392,9 +2392,11 @@
           chatMessages.appendChild(msgDiv);
           chatMessages.scrollTop = chatMessages.scrollHeight;
           
-          if (discussionSocket && discussionSocket.socket) {
+          if (discussionSocket && discussionSocket.socket && discussionSocket.socket.connected) {
+            console.log('💬 Emitting chat message:', msg);
             discussionSocket.socket.emit('webrtc-chat', msg);
           } else {
+            console.error('❌ Chat unavailable - socket disconnected');
             alert('Chat unavailable - socket disconnected');
           }
           
@@ -2403,16 +2405,21 @@
         
         chatSend.addEventListener('click', sendMessage);
         chatInput.addEventListener('keypress', (e) => e.key === 'Enter' && sendMessage());
-        
-        if (discussionSocket && discussionSocket.socket) {
-          discussionSocket.socket.on('webrtc-chat', (msg) => {
+      }
+
+      // Register chat listener - separated from modal creation to ensure it's always active
+      if (discussionSocket && typeof discussionSocket.on === 'function') {
+        discussionSocket.on('webrtc-chat', (msg) => {
+          const chatMessages = document.getElementById('chatMessages');
+          if (chatMessages) {
             const msgDiv = document.createElement('div');
             msgDiv.style.cssText = 'margin:8px 0;padding:8px;background:#fff;border-radius:4px;font-size:13px;';
             msgDiv.innerHTML = `<strong>${msg.userName}:</strong> ${msg.text}`;
             chatMessages.appendChild(msgDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
-          });
-        }
+            console.log('💬 Chat message displayed:', msg);
+          }
+        });
       }
 
       if (muteBtn) {

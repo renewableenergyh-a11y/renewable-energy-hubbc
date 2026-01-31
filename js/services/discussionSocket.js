@@ -131,6 +131,12 @@ export class DiscussionSocketService {
             console.log('📥 [socket.io] WebRTC ICE candidate (Phase 1 placeholder):', data);
             this._emit('webrtc-ice-candidate', data);
           });
+
+          // Chat events
+          this.socket.on('webrtc-chat', (data) => {
+            console.log('💬 [socket.io] Chat message received:', data);
+            this._emit('webrtc-chat', data);
+          });
         };
 
         script.onerror = () => {
