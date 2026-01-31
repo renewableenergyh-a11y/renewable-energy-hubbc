@@ -1528,7 +1528,18 @@
       handleParticipantLeft(participantEmail) {
         if (this.peerConnections.has(participantEmail)) {
           try {
-            detachRemoteStream(participantEmail);
+            // Get the participant info to check if they were sending video
+            const participant = this.allParticipants.find(p => p.userId === participantEmail);
+            const wasInstructor = participant && ['admin', 'instructor', 'superadmin'].includes(participant.role);
+            
+            // Only detach video if the leaving participant was an instructor
+            if (wasInstructor) {
+              detachRemoteStream(participantEmail);
+              console.log(`🎥 [WebRTC] Instructor left, detaching video for ${participantEmail}`);
+            } else {
+              console.log(`🔇 [WebRTC] Student left (no video to detach) - ${participantEmail}`);
+            }
+            
             const pc = this.peerConnections.get(participantEmail);
             pc.close();
             this.peerConnections.delete(participantEmail);
