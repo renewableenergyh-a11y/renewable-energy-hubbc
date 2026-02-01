@@ -941,20 +941,21 @@ app.post('/api/admin/chat/sessions/:id/delete', async (req, res) => {
   try {
     const id = req.params.id;
     const sessions = loadSessions();
-    if (!sessions[id]) return res.status(404).json({ error: 'Session not found' });
+    const help = loadHelp();
     
-    // Delete the session from cache
-    delete sessions[id];
-    saveSessions(sessions);
+    // Delete from sessions cache if it exists
+    if (sessions[id]) {
+      delete sessions[id];
+      saveSessions(sessions);
+    }
+    
+    // Always delete from help data (even if not in sessions cache)
+    const filtered = help.filter(msg => (msg.sessionId || 'default') !== id);
+    saveHelp(filtered);
     
     // Delete from MongoDB if available
     const { deleteOne } = require('./storage.js');
     await deleteOne('Session', { sessionId: id }).catch(err => console.warn('MongoDB delete warning:', err.message));
-    
-    // Also delete all messages for this session from help data
-    const help = loadHelp();
-    const filtered = help.filter(msg => (msg.sessionId || 'default') !== id);
-    saveHelp(filtered);
     
     // Delete from MongoDB help records if available
     const db = require('./db.js');
