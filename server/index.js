@@ -2840,7 +2840,7 @@ app.post('/api/send-test-email', async (req, res) => {
     const { email } = req.body;
     if (!email) return res.status(400).json({ error: 'Email required' });
 
-      const siteUrl = process.env.SITE_URL || `http://127.0.0.1:${PORT}`;
+      const siteUrl = process.env.SITE_URL || 'https://renewable-energy-hubbc.onrender.com';
       const subject = 'Aubie RET Hub — Test Email';
       const text = `This is a test email sent to ${email} to verify SMTP configuration.`;
       const html = `
@@ -2989,7 +2989,7 @@ app.post('/api/auth/register-request', async (req, res) => {
     saveUsers(users);
 
     // send code via email (HTML + text)
-    const siteUrl = process.env.SITE_URL || `http://127.0.0.1:${PORT}`;
+    const siteUrl = process.env.SITE_URL || 'https://renewable-energy-hubbc.onrender.com';
     const verificationEmail = buildVerificationEmail({ code, name, siteUrl });
     await sendEmail(email, verificationEmail.subject, verificationEmail.text, verificationEmail.html);
 
@@ -3068,7 +3068,7 @@ app.post('/api/auth/forgot-password-request', async (req, res) => {
     inMemoryResetCodes[email] = { code, expiresAt };
 
     // Send code via email (HTML + text) or console fallback
-    const siteUrl = process.env.SITE_URL || `http://127.0.0.1:${PORT}`;
+    const siteUrl = process.env.SITE_URL || 'https://renewable-energy-hubbc.onrender.com';
     // Use the stored user's name when available so the email greets them personally.
     // If no name is stored, fall back to the email local-part (before the @).
     let userName = '';

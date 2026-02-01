@@ -247,7 +247,7 @@ class NotificationTriggers {
   }
 
   /**
-   * Check for special offers
+   * Check for special offers - only for new members, shown once
    */
   async checkSpecialOffers() {
     try {
@@ -256,19 +256,22 @@ class NotificationTriggers {
       
       if (!token || hasPremium) return;
 
-      const lastOffer = localStorage.getItem('lastOfferTime');
-      const now = new Date();
+      // Only show once per user
+      if (this.triggers.courseOffer) return;
 
-      // Show offer once every 3 days
-      if (lastOffer) {
-        const last = new Date(lastOffer);
-        if (now - last < 3 * 24 * 60 * 60 * 1000) return;
-      }
+      // Check if user is newly registered (within 7 days)
+      const createdAt = localStorage.getItem('userCreatedAt');
+      if (!createdAt) return;
+
+      const created = new Date(createdAt);
+      const now = new Date();
+      const daysElapsed = (now - created) / (1000 * 60 * 60 * 24);
+
+      // Only show to users created within 7 days
+      if (daysElapsed > 7) return;
 
       const offers = [
-        { title: '🎉 Limited Time Offer!', message: 'Get 30% off Premium membership. Unlock all courses and features today!' },
-        { title: '⚡ Flash Sale!', message: 'Premium access is now 50% off! Exclusive offer for you this weekend.' },
-        { title: '🚀 Special Promotion', message: 'New members get 1 month free Premium! Start your journey now.' }
+        { title: '🚀 Special Promotion', message: 'New members get 2 days free Premium! Start your journey now.' }
       ];
 
       const offer = offers[Math.floor(Math.random() * offers.length)];
@@ -281,7 +284,7 @@ class NotificationTriggers {
         actionUrl: '/billing.html'
       });
 
-      localStorage.setItem('lastOfferTime', now.toISOString());
+      this.triggers.courseOffer = true;
     } catch (err) {
       console.warn('Special offer check failed:', err);
     }
