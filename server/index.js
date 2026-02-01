@@ -4658,11 +4658,11 @@ app.get('/api/certificates/:certId/download', (req, res) => {
     }
 
     // Generate HTML certificate content
-    // Parse the ISO date string and adjust for timezone to get the correct local date
+    // Parse the ISO date string and get the correct local date
     const completedDate = new Date(certificate.completedDate);
-    const year = completedDate.getUTCFullYear();
-    const month = String(completedDate.getUTCMonth() + 1).padStart(2, '0');
-    const day = String(completedDate.getUTCDate()).padStart(2, '0');
+    const year = completedDate.getFullYear();
+    const month = String(completedDate.getMonth() + 1).padStart(2, '0');
+    const day = String(completedDate.getDate()).padStart(2, '0');
     const dateString = `${year}-${month}-${day}`;
     const localDate = new Date(dateString + 'T00:00:00');
     const htmlContent = `
