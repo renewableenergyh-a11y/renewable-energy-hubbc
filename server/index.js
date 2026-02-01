@@ -4658,7 +4658,13 @@ app.get('/api/certificates/:certId/download', (req, res) => {
     }
 
     // Generate HTML certificate content
+    // Parse the ISO date string and adjust for timezone to get the correct local date
     const completedDate = new Date(certificate.completedDate);
+    const year = completedDate.getUTCFullYear();
+    const month = String(completedDate.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(completedDate.getUTCDate()).padStart(2, '0');
+    const dateString = `${year}-${month}-${day}`;
+    const localDate = new Date(dateString + 'T00:00:00');
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -4930,7 +4936,7 @@ app.get('/api/certificates/:certId/download', (req, res) => {
           <div class="details">
             <div class="detail-item">
               <div class="detail-label">Completion Date</div>
-              <div class="detail-value">${completedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+              <div class="detail-value">${localDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
             </div>
           </div>
           
