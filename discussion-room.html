@@ -200,6 +200,16 @@
       -webkit-transform: scaleX(-1) !important;
     }
 
+    /* Remote video hidden by default (admins see self-video only) */
+    #adminVideo video.remote-video {
+      display: none;
+    }
+
+    /* Show remote video when self-video is not present */
+    #adminVideo:not(:has(video.self-video)) video.remote-video {
+      display: block;
+    }
+
     #adminVideo-placeholder {
       position: absolute;
       top: 50%;
@@ -1042,6 +1052,7 @@
       if (!videoEl) {
         videoEl = document.createElement('video');
         videoEl.id = `video-${peerId}`;
+        videoEl.className = 'remote-video'; // Mark as remote video for CSS control
         videoEl.autoplay = true;
         videoEl.playsinline = true;
         videoEl.muted = false;
