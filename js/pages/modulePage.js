@@ -486,7 +486,13 @@ document.addEventListener("DOMContentLoaded", async () => {
             isSpeaking = false;
             readAloudToggle.style.color = '';
             readAloudToggle.style.opacity = '';
-            showVoiceNotification('Error reading aloud: ' + error.error);
+            
+            // Only show error notification if it's not an intentional interruption
+            if (error.error !== 'interrupted') {
+              showVoiceNotification('Error reading aloud: ' + error.error);
+            } else {
+              showVoiceNotification('Read aloud off');
+            }
           };
 
           // Start speaking
