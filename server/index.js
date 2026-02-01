@@ -6403,6 +6403,7 @@ app.post('/api/notifications/create', (req, res) => {
   try {
     const token = req.headers['authorization']?.split(' ')[1];
     if (!token) {
+      console.log('❌ Notification create: No token provided');
       return res.status(401).json({ error: 'No token provided' });
     }
 
@@ -6411,13 +6412,14 @@ app.post('/api/notifications/create', (req, res) => {
     
     // Find user by token
     for (const [email, user] of Object.entries(users)) {
-      if (user.token === token) {
+      if (user && user.token === token) {
         userEmail = email;
         break;
       }
     }
 
     if (!userEmail) {
+      console.log('❌ Notification create: Invalid token, could not find user');
       return res.status(401).json({ error: 'Invalid token' });
     }
 
@@ -6427,6 +6429,8 @@ app.post('/api/notifications/create', (req, res) => {
     if (!type || !title || !message) {
       return res.status(400).json({ error: 'Missing required fields: type, title, message' });
     }
+
+    console.log(`📬 Creating notification for ${userEmail}:`, { type, title });
 
     (async () => {
       try {
@@ -6438,6 +6442,18 @@ app.post('/api/notifications/create', (req, res) => {
           actionUrl,
           data
         });
+        console.log(`✅ Notification created for ${userEmail}`);
+      } catch (err) {
+        console.error('Failed to create notification in DB:', err);
+      }
+    })();
+
+    res.json({ success: true, message: 'Notification created' });
+  } catch (err) {
+    console.error('Error in /api/notifications/create:', err);
+    res.status(500).json({ error: 'Failed to create notification' });
+  }
+});
 
         res.json({
           success: true,
