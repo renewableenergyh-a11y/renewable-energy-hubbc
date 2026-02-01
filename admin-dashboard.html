@@ -5585,12 +5585,18 @@
       let currentTab = 'new'; // Track which tab is active
       const ADMIN_NAME_KEY = 'chat_admin_name';
       const OPENED_CHATS_KEY = 'openedChats';
-      const CHAT_EXPIRY_TIME = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+      const CHAT_EXPIRY_TIME = 1 * 60 * 60 * 1000; // 1 hour in milliseconds
 
       // Tab switching
       const tabNewChats = document.getElementById('tab-new-chats');
       const tabAttendedChats = document.getElementById('tab-attended-chats');
       let currentSessions = []; // Store sessions for re-rendering on tab switch
+      
+      // Auto-cleanup expired chats every 5 minutes
+      setInterval(() => {
+        cleanupExpiredChats(currentSessions);
+        renderSessions(currentSessions);
+      }, 5 * 60 * 1000);
       
       if (tabNewChats) {
         tabNewChats.addEventListener('click', () => {
