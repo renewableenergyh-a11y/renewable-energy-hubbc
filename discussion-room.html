@@ -1629,14 +1629,6 @@
         this.iceQueues.set(peerEmail, []);
         console.log(`✅ [WebRTC-DETERMINISTIC] ICE queue processed for ${peerEmail}`);
       }
-          }
-          await pc.setRemoteDescription(sdp);
-          console.log(`📝 [WebRTC-lecture] Remote description (answer) set from ${from}`);
-          console.log(`✅ [WebRTC-lecture] Signaling stable with ${from}`);
-        } catch (error) {
-          console.error(`❌ [WebRTC-lecture] Failed to handle answer:`, error);
-        }
-      }
 
       cleanup() {
         try {
