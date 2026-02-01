@@ -422,11 +422,12 @@ Your premium subscription to Aubie RET Hub is now active!
 
 Subscription Details:
 - Plan: Premium Access
-- Cost: MWK 16,000 / USD 8
+- Cost: MWK 16,000
 - Valid: 1 month (30 days) from activation
 
 You now have full access to:
 ✓ All premium modules (Solar, Wind, Hydro, Biomass, Geothermal)
+✓ All video lessons and materials
 ✓ Advanced quizzes and progress tracking
 ✓ Projects and assignments
 ✓ Certificates and verification
@@ -4673,113 +4674,138 @@ app.get('/api/certificates/:certId/download', (req, res) => {
             padding: 0;
           }
           body { 
-            font-family: 'Segoe UI', 'Trebuchet MS', sans-serif; 
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Poppins', 'Segoe UI', 'Trebuchet MS', sans-serif; 
+            background: linear-gradient(135deg, #00796b 0%, #0d8b7f 50%, #005a4f 100%);
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            min-height: 100vh;
           }
           .certificate {
             width: 100%;
             max-width: 950px;
-            background: linear-gradient(135deg, #ffffff 0%, #f8f9ff 100%);
-            border: 3px solid #00796b;
-            border-radius: 20px;
-            padding: 40px 50px;
+            background: linear-gradient(to bottom right, #ffffff 0%, #f0f9f8 100%);
+            border: 4px solid #00796b;
+            border-radius: 24px;
+            padding: 50px 60px;
             text-align: center;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            box-shadow: 
+              0 25px 70px rgba(0, 121, 107, 0.4),
+              0 0 0 1px rgba(0, 121, 107, 0.1) inset,
+              inset 0 1px 0 rgba(255, 255, 255, 0.8);
             position: relative;
             overflow: visible;
             display: flex;
             flex-direction: column;
             min-height: auto;
+            background-image: 
+              radial-gradient(circle at 15% 85%, rgba(0, 185, 138, 0.03) 0%, transparent 50%),
+              radial-gradient(circle at 85% 15%, rgba(0, 121, 107, 0.03) 0%, transparent 50%),
+              linear-gradient(to bottom right, #ffffff 0%, #f0f9f8 100%);
           }
           
           .certificate::before {
             content: '';
             position: absolute;
-            top: -50%;
-            right: -50%;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(0, 121, 107, 0.05) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 15px;
+            background: linear-gradient(90deg, transparent 0%, #00796b 25%, #00796b 75%, transparent 100%);
+            border-radius: 50% 50% 0 0;
+            z-index: 2;
           }
           
           .certificate::after {
             content: '';
             position: absolute;
-            bottom: -50%;
-            left: -50%;
-            width: 400px;
-            height: 400px;
-            background: radial-gradient(circle, rgba(118, 75, 162, 0.05) 0%, transparent 70%);
-            border-radius: 50%;
-            pointer-events: none;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            height: 15px;
+            background: linear-gradient(90deg, transparent 0%, #00796b 25%, #00796b 75%, transparent 100%);
+            border-radius: 0 0 50% 50%;
+            z-index: 2;
           }
           
           .seal {
             position: absolute;
-            top: 25px;
-            right: 35px;
-            width: 90px;
-            height: 90px;
-            background: conic-gradient(from 0deg, #00796b, #00a88f, #00796b);
+            top: 30px;
+            right: 45px;
+            width: 100px;
+            height: 100px;
+            background: conic-gradient(from 0deg, #00796b 0deg, #00a88f 90deg, #005a4f 180deg, #00796b 270deg, #00796b 360deg);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            border: 3px solid #00796b;
-            box-shadow: 0 5px 15px rgba(0, 121, 107, 0.3);
+            border: 4px solid #00796b;
+            box-shadow: 
+              0 8px 20px rgba(0, 121, 107, 0.5),
+              0 0 0 8px rgba(0, 185, 138, 0.1);
             z-index: 10;
             flex-shrink: 0;
+            animation: sealGlow 3s ease-in-out infinite;
+          }
+          
+          @keyframes sealGlow {
+            0%, 100% { box-shadow: 0 8px 20px rgba(0, 121, 107, 0.5), 0 0 0 8px rgba(0, 185, 138, 0.1); }
+            50% { box-shadow: 0 8px 25px rgba(0, 121, 107, 0.7), 0 0 0 12px rgba(0, 185, 138, 0.2); }
           }
           
           .seal-inner {
-            width: 80px;
-            height: 80px;
+            width: 88px;
+            height: 88px;
             background: white;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 36px;
+            font-size: 40px;
             color: #00796b;
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
           }
           
           .header-line {
-            height: 3px;
-            background: linear-gradient(90deg, #00796b, #00a88f, #00796b);
-            margin-bottom: 25px;
-            border-radius: 2px;
+            height: 4px;
+            background: linear-gradient(90deg, transparent 0%, #00796b 25%, #0d8b7f 50%, #00796b 75%, transparent 100%);
+            margin-bottom: 30px;
+            border-radius: 3px;
             z-index: 1;
             position: relative;
           }
           
           h1 { 
-            font-size: 48px; 
+            font-size: 52px; 
             color: #00796b; 
-            margin-bottom: 5px; 
-            letter-spacing: 3px;
-            font-weight: 300;
+            margin-bottom: 8px; 
+            letter-spacing: 4px;
+            font-weight: 700;
             text-transform: uppercase;
             z-index: 1;
             position: relative;
+            background: linear-gradient(135deg, #00796b 0%, #0d8b7f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
           }
           
           .subtitle { 
             font-size: 18px; 
-            color: #764ba2; 
-            margin-bottom: 25px;
-            font-weight: 500;
+            color: #00a88f; 
+            margin-bottom: 30px;
+            font-weight: 600;
             z-index: 1;
             position: relative;
+            letter-spacing: 1px;
+            text-transform: uppercase;
           }
           
           .content { 
-            margin: 25px 0;
+            margin: 30px 0;
             z-index: 1;
             position: relative;
             flex-grow: 1;
@@ -4788,71 +4814,107 @@ app.get('/api/certificates/:certId/download', (req, res) => {
           .certifies {
             font-size: 15px;
             color: #555;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             font-style: italic;
-            letter-spacing: 1px;
+            letter-spacing: 1.5px;
+            font-weight: 500;
           }
           
           .student-name { 
-            font-size: 36px; 
-            font-weight: bold; 
+            font-size: 42px; 
+            font-weight: 700; 
             color: #00796b; 
-            margin: 20px 0;
-            border-bottom: 2px solid #00796b;
-            padding-bottom: 8px;
+            margin: 25px 0;
+            border-bottom: 3px solid #00a88f;
+            padding-bottom: 12px;
             text-transform: capitalize;
-          }
-          
-          .completion-text {
-            font-size: 15px;
-            color: #555;
-            margin: 15px 0;
             letter-spacing: 1px;
           }
           
+          .completion-text {
+            font-size: 16px;
+            color: #555;
+            margin: 18px 0;
+            letter-spacing: 1px;
+            line-height: 1.6;
+            font-weight: 500;
+          }
+          
           .course-name { 
-            font-size: 22px; 
-            color: #764ba2;
-            margin: 15px 0;
-            font-weight: 600;
+            font-size: 26px; 
+            color: #00796b;
+            margin: 18px 0;
+            font-weight: 700;
             font-style: italic;
+            background: linear-gradient(135deg, #00796b 0%, #0d8b7f 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            padding: 8px 0;
           }
           
           .details { 
-            font-size: 12px; 
+            font-size: 13px; 
             color: #666; 
-            margin-top: 20px;
+            margin-top: 25px;
             z-index: 1;
             position: relative;
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            flex-wrap: wrap;
+          }
+          
+          .detail-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+          
+          .detail-label {
+            font-size: 11px;
+            color: #00796b;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+          }
+          
+          .detail-value {
+            font-size: 13px;
+            color: #333;
+            font-weight: 600;
           }
           
           .footer { 
-            margin-top: 25px; 
-            border-top: 2px dashed #00796b; 
-            padding-top: 12px;
+            margin-top: 35px; 
+            border-top: 3px dashed #00a88f; 
+            padding-top: 15px;
             z-index: 1;
             position: relative;
           }
           
           .org-name {
-            font-size: 13px;
+            font-size: 14px;
             color: #00796b;
-            font-weight: 600;
-            margin-bottom: 6px;
+            font-weight: 700;
+            margin-bottom: 8px;
             letter-spacing: 2px;
+            text-transform: uppercase;
           }
           
           .cert-number { 
-            font-size: 10px; 
+            font-size: 11px; 
             color: #999; 
-            margin-top: 6px;
-            letter-spacing: 1px;
-            font-family: 'Courier New', monospace;
+            margin-top: 8px;
+            letter-spacing: 1.5px;
+            font-weight: 500;
+            font-family: 'Monaco', 'Courier New', monospace;
           }
           
           @media print {
             body { background: white; padding: 0; }
-            .certificate { box-shadow: none; }
+            .certificate { box-shadow: none; border-radius: 0; }
           }
         </style>
       </head>
@@ -4875,12 +4937,15 @@ app.get('/api/certificates/:certId/download', (req, res) => {
           </div>
           
           <div class="details">
-            <p>Completed on <strong>${completedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</strong></p>
+            <div class="detail-item">
+              <div class="detail-label">Completion Date</div>
+              <div class="detail-value">${completedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+            </div>
           </div>
           
           <div class="footer">
-            <div class="org-name">Aubie Renewable Energy Hub</div>
-            <div class="cert-number">Certificate ID: ${certificate.certificateNumber}</div>
+            <div class="org-name">🌍 Aubie Renewable Energy Hub</div>
+            <div class="cert-number">ID: ${certificate.certificateNumber}</div>
           </div>
         </div>
       </body>
