@@ -112,8 +112,8 @@ function showModal(options) {
         background: white;
         border-radius: 16px;
         box-shadow: 0 25px 70px rgba(0, 0, 0, 0.35);
-        padding: 40px;
-        max-width: 480px;
+        padding: 28px;
+        max-width: 380px;
         text-align: center;
         animation: slideUp 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         border: 1px solid rgba(0, 0, 0, 0.05);
