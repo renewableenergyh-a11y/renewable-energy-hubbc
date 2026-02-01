@@ -4748,12 +4748,11 @@ app.get('/api/certificates/:certId/download', (req, res) => {
               0 0 0 8px rgba(0, 185, 138, 0.1);
             z-index: 10;
             flex-shrink: 0;
-            animation: sealGlow 3s ease-in-out infinite;
           }
           
-          @keyframes sealGlow {
-            0%, 100% { box-shadow: 0 8px 20px rgba(0, 121, 107, 0.5), 0 0 0 8px rgba(0, 185, 138, 0.1); }
-            50% { box-shadow: 0 8px 25px rgba(0, 121, 107, 0.7), 0 0 0 12px rgba(0, 185, 138, 0.2); }
+          @keyframes fadeIn {
+            0% { opacity: 0.8; }
+            100% { opacity: 1; }
           }
           
           .seal-inner {
@@ -4771,7 +4770,7 @@ app.get('/api/certificates/:certId/download', (req, res) => {
           
           .header-line {
             height: 4px;
-            background: linear-gradient(90deg, transparent 0%, #00796b 25%, #0d8b7f 50%, #00796b 75%, transparent 100%);
+            background: #00796b;
             margin-bottom: 30px;
             border-radius: 3px;
             z-index: 1;
@@ -4787,15 +4786,11 @@ app.get('/api/certificates/:certId/download', (req, res) => {
             text-transform: uppercase;
             z-index: 1;
             position: relative;
-            background: linear-gradient(135deg, #00796b 0%, #0d8b7f 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
           }
           
           .subtitle { 
             font-size: 18px; 
-            color: #00a88f; 
+            color: #00796b; 
             margin-bottom: 30px;
             font-weight: 600;
             z-index: 1;
@@ -4846,10 +4841,6 @@ app.get('/api/certificates/:certId/download', (req, res) => {
             margin: 18px 0;
             font-weight: 700;
             font-style: italic;
-            background: linear-gradient(135deg, #00796b 0%, #0d8b7f 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
             padding: 8px 0;
           }
           
