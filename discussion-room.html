@@ -172,6 +172,7 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
+      transform: none;
     }
 
     #adminVideo-placeholder {
@@ -2307,6 +2308,24 @@
 
         if (webrtcManager.localUserId && data.userId !== webrtcManager.localUserId) {
           webrtcManager.handleNewParticipant(data.userId);
+
+          // ISSUE 1 FIX: If current user is instructor/admin AND has active video stream,
+          // create and send a NEW offer to this late-joining participant
+          const isCurrentUserAdmin = ['admin', 'instructor', 'superadmin'].includes(currentSessionUserRole);
+          const hasActiveVideoStream = webrtcManager.localStream && webrtcManager.localStream.getVideoTracks().length > 0 && webrtcManager.localStream.getVideoTracks()[0].enabled;
+          
+          if (isCurrentUserAdmin && hasActiveVideoStream) {
+            console.log(`📹 [ISSUE-1-FIX] Instructor has active video, creating new offer for late-joining student: ${data.userId}`);
+            webrtcManager.createAndSendOffer(
+              data.userId,
+              (offerData) => {
+                console.log(`📤 [ISSUE-1-FIX] Sending offer to late-joined participant: ${data.userId}`);
+                if (webrtcManager.socketService && typeof webrtcManager.socketService.emitWebRTCOffer === 'function') {
+                  webrtcManager.socketService.emitWebRTCOffer(offerData);
+                }
+              }
+            );
+          }
         }
       });
 
@@ -2393,6 +2412,17 @@
             track.enabled = !data.isMuted;
             console.log(`🔊 [admin-force-mute] Applied: audio=${!data.isMuted}`);
           });
+
+          // ISSUE 2 FIX: Update local user's audio state so waves update immediately
+          if (currentUser?.email) {
+            participantState.upsert({
+              userId: currentUser.email,
+              audioEnabled: !data.isMuted
+            });
+            const updatedParticipants = participantState.getAll();
+            renderParticipants(updatedParticipants, { activeCount: participantState.getCount() });
+            console.log(`🔊 [admin-force-mute-ISSUE2] Updated local user audio state: audioEnabled=${!data.isMuted}`);
+          }
 
           // Update local UI if we have mute button
           const muteBtn = document.getElementById('muteBtn');
@@ -2703,6 +2733,19 @@
             ? '<i class="fas fa-microphone-slash"></i><span>Unmute</span>'
             : '<i class="fas fa-microphone"></i><span>Mute</span>';
           console.log('🔊 [muteBtn] Toggled - isMuted:', isMuted, 'sessionData:', !!sessionData, 'socket:', !!discussionSocket?.socket?.connected);
+          
+          // ISSUE 2 FIX: Update local user's audio state immediately so waves update
+          const currentUser = getLocalCurrentUser();
+          if (currentUser?.email) {
+            participantState.upsert({
+              userId: currentUser.email,
+              audioEnabled: !isMuted
+            });
+            const updatedParticipants = participantState.getAll();
+            renderParticipants(updatedParticipants, { activeCount: participantState.getCount() });
+            console.log(`🔊 [muteBtn-ISSUE2] Updated local user audio state: audioEnabled=${!isMuted}`);
+          }
+          
           if (discussionSocket && discussionSocket.socket && sessionData) {
             console.log('🔊 [muteBtn] Emitting webrtc-audio-state event:', {
               sessionId: sessionData.sessionId,
