@@ -309,8 +309,8 @@ module.exports = function(db, discussionSessionService, participantService, io =
       }
 
       // Only admins, instructors, and superadmins can delete sessions (use role hierarchy)
-      if (!roles.hasAtLeastRole(req.user, 'instructor')) {
-        return res.status(403).json({ error: 'Only admins and instructors can delete sessions' });
+      if (!roles.hasAtLeastRole(req.user, 'instructor') && req.user.role !== 'superadmin') {
+        return res.status(403).json({ error: 'Only superadmins, admins, and instructors can delete sessions' });
       }
 
       console.log('🗑️ [DELETE] Session deletion requested:', { sessionId, userId: req.user.id, role: req.user.role });
