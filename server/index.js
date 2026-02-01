@@ -6455,6 +6455,43 @@ app.post('/api/notifications/create', (req, res) => {
   }
 });
 
+app.post('/api/notifications', (req, res) => {
+  try {
+    const token = req.headers['authorization']?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const users = loadUsers();
+    let userEmail = null;
+    
+    for (const [email, user] of Object.entries(users)) {
+      if (user && user.token === token) {
+        userEmail = email;
+        break;
+      }
+    }
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const { type, title, message, icon, actionUrl, data } = req.body;
+
+    if (!type || !title || !message) {
+      return res.status(400).json({ error: 'Missing required fields: type, title, message' });
+    }
+
+    (async () => {
+      try {
+        const notification = await createNotification(userEmail, {
+          type,
+          title,
+          message,
+          icon,
+          actionUrl,
+          data
+        });
         res.json({
           success: true,
           notification
