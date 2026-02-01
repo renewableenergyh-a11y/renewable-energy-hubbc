@@ -4658,13 +4658,10 @@ app.get('/api/certificates/:certId/download', (req, res) => {
     }
 
     // Generate HTML certificate content
-    // Parse the ISO date string and get the correct local date
-    const completedDate = new Date(certificate.completedDate);
-    const year = completedDate.getFullYear();
-    const month = String(completedDate.getMonth() + 1).padStart(2, '0');
-    const day = String(completedDate.getDate()).padStart(2, '0');
-    const dateString = `${year}-${month}-${day}`;
-    const localDate = new Date(dateString + 'T00:00:00');
+    // Extract date directly from ISO string to avoid timezone shifts
+    const isoDate = certificate.completedDate.split('T')[0]; // e.g., "2026-02-02"
+    const [isoYear, isoMonth, isoDay] = isoDate.split('-');
+    const localDate = new Date(parseInt(isoYear), parseInt(isoMonth) - 1, parseInt(isoDay));
     const htmlContent = `
       <!DOCTYPE html>
       <html>
@@ -4740,7 +4737,7 @@ app.get('/api/certificates/:certId/download', (req, res) => {
           .seal {
             position: absolute;
             top: 30px;
-            right: 45px;
+            right: 30px;
             width: 100px;
             height: 100px;
             background: conic-gradient(from 0deg, #00796b 0deg, #00a88f 90deg, #005a4f 180deg, #00796b 270deg, #00796b 360deg);
@@ -4786,7 +4783,8 @@ app.get('/api/certificates/:certId/download', (req, res) => {
           h1 { 
             font-size: 52px; 
             color: #00796b; 
-            margin-bottom: 8px; 
+            margin-bottom: 8px;
+            margin-right: 120px;
             letter-spacing: 4px;
             font-weight: 700;
             text-transform: uppercase;
