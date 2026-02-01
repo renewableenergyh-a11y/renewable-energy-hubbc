@@ -719,8 +719,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       progressFill.style.width = percent + "%";
       progressText.textContent = percent + "% completed";
 
-      // Save progress overall
-      const lessonKey = `module-progress-${courseId}-${moduleId}`;
+      // Save progress overall - include user email to isolate per user
+      const userEmail = JSON.parse(localStorage.getItem('currentUser') || '{}').email || 'guest';
+      const lessonKey = `module-progress-${courseId}-${moduleId}-${userEmail}`;
       localStorage.setItem(lessonKey, percent);
 
       // Unlock quiz if all sections are completed
@@ -748,7 +749,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       const btn = e.target;
       const sections = Array.from(container.querySelectorAll('.lesson-section'));
       const sectionIndex = sections.indexOf(section);
-      const completeKey = `module-${courseId}-${moduleId}-section-${sectionIndex}-completed`;
+      const userEmail = JSON.parse(localStorage.getItem('currentUser') || '{}').email || 'guest';
+      const completeKey = `module-${courseId}-${moduleId}-section-${sectionIndex}-completed-${userEmail}`;
 
       const isCompleted = section.classList.toggle('completed');
 
@@ -769,6 +771,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Restore section completed state and open all sections by default
     const sections = Array.from(container.querySelectorAll('.lesson-section'));
+    const userEmail = JSON.parse(localStorage.getItem('currentUser') || '{}').email || 'guest';
     sections.forEach((section, index) => {
       const h3 = section.querySelector('.section-header');
       const body = section.querySelector('.section-body');
@@ -780,7 +783,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       h3.classList.add('active');
 
       // Completed state
-      const completeKey = `module-${courseId}-${moduleId}-section-${index}-completed`;
+      const completeKey = `module-${courseId}-${moduleId}-section-${index}-completed-${userEmail}`;
       const isCompleted = localStorage.getItem(completeKey) === 'yes';
       if (isCompleted) {
         section.classList.add('completed');
@@ -793,7 +796,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     // Restore progress from localStorage
-    const lessonKey = `module-progress-${courseId}-${moduleId}`;
+    const lessonKey = `module-progress-${courseId}-${moduleId}-${userEmail}`;
     const savedProgress = localStorage.getItem(lessonKey);
     if (savedProgress) {
       progressFill.style.width = savedProgress + "%";
