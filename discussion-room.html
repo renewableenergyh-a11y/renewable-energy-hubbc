@@ -139,6 +139,13 @@
       border: 1px solid var(--border-color);
       border-radius: 8px;
       padding: 8px;
+      width: 150px;
+      display: none;
+    }
+    
+    #webrtcPreview.admin-only {
+      display: flex;
+      flex-direction: column;
     }
 
     .webrtc-preview-label {
@@ -2146,6 +2153,16 @@
           
           webrtcManager.initialize(user.email, sessionId, localVideoElement, user.role, allParticipantsForWebRTC);
           webrtcManager.socketService = discussionSocket;
+
+          // Show preview only to admins/instructors
+          const isAdminUser = ['admin', 'instructor', 'superadmin'].includes(user.role);
+          if (previewContainer) {
+            if (isAdminUser) {
+              previewContainer.classList.add('admin-only');
+            } else {
+              previewContainer.style.display = 'none';
+            }
+          }
           
           // CRITICAL: Capture local media BEFORE setting up listeners
           // This ensures media is available when WebRTC offers arrive
