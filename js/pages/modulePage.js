@@ -319,6 +319,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     const readAloudToggle = document.getElementById('module-read-aloud-toggle');
     let isSpeaking = false;
     const speechSynthesis = window.speechSynthesis;
+    
+    // Check if Speech Synthesis API is available
+    if (!speechSynthesis) {
+      console.error('❌ Speech Synthesis API not available on this browser');
+      if (readAloudToggle) {
+        readAloudToggle.disabled = true;
+        readAloudToggle.title = 'Speech synthesis not supported on this device';
+        readAloudToggle.style.opacity = '0.5';
+        readAloudToggle.style.cursor = 'not-allowed';
+      }
+    } else {
+      console.log('✅ Speech Synthesis API is available');
+    }
+    
     let currentUtterance = null;
     let selectedVoiceIndex = 0;
     let availableVoices = [];
@@ -358,6 +372,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Get available voices when they load
     function populateVoices() {
       const allVoices = speechSynthesis.getVoices();
+      console.log(`📢 Speech Synthesis available voices: ${allVoices.length}`);
+      allVoices.forEach((v, i) => console.log(`  [${i}] ${v.name} (lang: ${v.lang})`));
+      
       availableVoices = [];
 
       // Filter to get only light male and female voices
@@ -392,20 +409,28 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Build final two-voice array - store voice objects directly
       if (lightMale) {
         availableVoices.push({ type: 'Light Male', voiceObj: lightMale });
+        console.log(`✓ Using Light Male voice: ${lightMale.name}`);
       }
       if (female) {
         availableVoices.push({ type: 'Female', voiceObj: female });
+        console.log(`✓ Using Female voice: ${female.name}`);
       }
 
       if (availableVoices.length > 0) {
         selectedVoiceIndex = 0;
+        console.log(`📢 Voice initialization complete: ${availableVoices.length} voices available`);
+      } else {
+        console.warn('⚠️ No voices available for speech synthesis!');
       }
     }
 
-    speechSynthesis.onvoiceschanged = populateVoices;
-    populateVoices();
+    // Only set up event handlers if speechSynthesis is available
+    if (speechSynthesis && readAloudToggle) {
+      speechSynthesis.onvoiceschanged = populateVoices;
+      populateVoices();
+    }
 
-    if (readAloudToggle) {
+    if (readAloudToggle && speechSynthesis) {
       // Mobile vs Desktop detection and handlers
       let longPressTimer = null;
       const longPressDuration = 500;
@@ -461,30 +486,65 @@ document.addEventListener("DOMContentLoaded", async () => {
             isSpeaking = false;
             readAloudToggle.style.color = '';
             readAloudToggle.style.opacity = '';
+            showVoiceNotification('Error reading aloud: ' + error.error);
           };
 
           // Start speaking
           isSpeaking = true;
           readAloudToggle.style.color = 'var(--green-main)';
           readAloudToggle.style.opacity = '1';
-          speechSynthesis.speak(currentUtterance);
+          
+          // Cancel any ongoing speech before starting new one
+          speechSynthesis.cancel();
+          
+          // Use setTimeout to ensure speech starts (helps with mobile browsers)
+          setTimeout(() => {
+            try {
+              speechSynthesis.speak(currentUtterance);
+              showVoiceNotification('Reading aloud...');
+            } catch (err) {
+              console.error('Failed to start speech synthesis:', err);
+              isSpeaking = false;
+              readAloudToggle.style.color = '';
+              readAloudToggle.style.opacity = '';
+              showVoiceNotification('Speech synthesis not supported');
+            }
+          }, 100);
         }
       };
 
       // Function to change voice
       const changeVoice = () => {
-        if (availableVoices.length > 0) {
-          selectedVoiceIndex = (selectedVoiceIndex + 1) % availableVoices.length;
-          const voiceInfo = availableVoices[selectedVoiceIndex];
-          showVoiceNotification(`Voice: ${voiceInfo.type}`);
+        console.log(`🎤 changeVoice called. Available voices: ${availableVoices.length}, isSpeaking: ${isSpeaking}`);
+        
+        if (availableVoices.length === 0) {
+          showVoiceNotification('No voices available');
+          return;
+        }
+        
+        if (availableVoices.length === 1) {
+          showVoiceNotification(`Only one voice available: ${availableVoices[0].type}`);
+          return;
+        }
 
-          // If currently speaking, switch voice immediately
-          if (isSpeaking && currentUtterance) {
+        selectedVoiceIndex = (selectedVoiceIndex + 1) % availableVoices.length;
+        const voiceInfo = availableVoices[selectedVoiceIndex];
+        console.log(`🎤 Switching to voice: ${voiceInfo.type} (index ${selectedVoiceIndex})`);
+        showVoiceNotification(`Voice: ${voiceInfo.type}`);
+
+        // If currently speaking, switch voice immediately
+        if (isSpeaking && currentUtterance) {
+          try {
             const contentElement = document.getElementById('module-content');
             let textToSpeak = contentElement ? (contentElement.innerText || contentElement.textContent) : '';
             
             // Remove button text
             textToSpeak = textToSpeak.replace(/✓?\s*Mark as Complete/gi, '').replace(/Complete Module/gi, '');
+            
+            if (!textToSpeak.trim()) {
+              showVoiceNotification('No content to read');
+              return;
+            }
             
             // Cancel current speech
             speechSynthesis.cancel();
@@ -503,40 +563,51 @@ document.addEventListener("DOMContentLoaded", async () => {
             };
 
             currentUtterance.onerror = (error) => {
-              console.error('Voice error:', error);
+              console.error('Voice change error:', error);
               isSpeaking = false;
               readAloudToggle.style.color = '';
               readAloudToggle.style.opacity = '';
             };
 
-            // Resume speaking with new voice after a brief delay
+            // Resume speaking with new voice
             setTimeout(() => {
               if (isSpeaking) {
                 speechSynthesis.speak(currentUtterance);
+                console.log(`🎤 Resumed speech with new voice: ${voiceInfo.type}`);
               }
-            }, 10);
+            }, 50);
+          } catch (err) {
+            console.error('Error changing voice:', err);
+            showVoiceNotification('Error changing voice');
           }
+        } else {
+          showVoiceNotification(`Ready to use: ${voiceInfo.type}`);
         }
       };
 
       // Touch event handlers for mobile
       readAloudToggle.addEventListener('touchstart', (e) => {
+        console.log('📱 touchstart on read-aloud button');
         isTouchDevice = true;
         longPressTimer = setTimeout(() => {
+          console.log('📱 Long press detected (500ms)');
           e.preventDefault();
           changeVoice();
         }, longPressDuration);
       }, { passive: true });
 
       readAloudToggle.addEventListener('touchend', (e) => {
+        console.log('📱 touchend on read-aloud button');
         if (longPressTimer) {
           clearTimeout(longPressTimer);
           // Short tap = toggle read aloud
+          console.log('📱 Short tap detected');
           toggleReadAloud();
         }
       }, { passive: true });
 
       readAloudToggle.addEventListener('touchcancel', () => {
+        console.log('📱 touchcancel on read-aloud button');
         if (longPressTimer) {
           clearTimeout(longPressTimer);
         }
@@ -544,6 +615,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       // Click handler for desktop (ignores touch if isTouchDevice is true)
       readAloudToggle.addEventListener('click', (e) => {
+        console.log('🖱️ click on read-aloud button (isTouchDevice: ' + isTouchDevice + ')');
         if (isTouchDevice) {
           isTouchDevice = false;
           return;
