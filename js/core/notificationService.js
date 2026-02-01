@@ -157,6 +157,95 @@ class NotificationService {
   }
 
   /**
+   * Show a toast notification popup
+   */
+  showToastNotification(title, message, type = 'info', duration = 5000) {
+    try {
+      // Create toast container if it doesn't exist
+      let toastContainer = document.getElementById('toast-notification-container');
+      if (!toastContainer) {
+        toastContainer = document.createElement('div');
+        toastContainer.id = 'toast-notification-container';
+        toastContainer.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 9999;
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        `;
+        document.body.appendChild(toastContainer);
+      }
+
+      // Create toast element
+      const toast = document.createElement('div');
+      const bgColor = type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3';
+      const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
+      
+      toast.style.cssText = `
+        background: ${bgColor};
+        color: white;
+        padding: 16px 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        max-width: 400px;
+        animation: slideInRight 0.3s ease-out;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      `;
+
+      toast.innerHTML = `
+        <div style="display: flex; align-items: flex-start; gap: 12px;">
+          <span style="font-size: 20px; font-weight: bold; flex-shrink: 0;">${icon}</span>
+          <div style="flex: 1;">
+            <div style="font-weight: 600; margin-bottom: 4px;">${title}</div>
+            <div style="font-size: 14px; opacity: 0.9;">${message}</div>
+          </div>
+        </div>
+      `;
+
+      toastContainer.appendChild(toast);
+
+      // Add animation styles if not already added
+      if (!document.querySelector('style[data-toast-styles]')) {
+        const style = document.createElement('style');
+        style.setAttribute('data-toast-styles', 'true');
+        style.textContent = `
+          @keyframes slideInRight {
+            from {
+              transform: translateX(400px);
+              opacity: 0;
+            }
+            to {
+              transform: translateX(0);
+              opacity: 1;
+            }
+          }
+          @keyframes slideOutRight {
+            from {
+              transform: translateX(0);
+              opacity: 1;
+            }
+            to {
+              transform: translateX(400px);
+              opacity: 0;
+            }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      // Auto-remove after duration
+      setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-out';
+        setTimeout(() => toast.remove(), 300);
+      }, duration);
+    } catch (err) {
+      console.warn('Error showing toast notification:', err);
+    }
+  }
+
+  /**
    * Show the notification modal
    */
   showModal() {

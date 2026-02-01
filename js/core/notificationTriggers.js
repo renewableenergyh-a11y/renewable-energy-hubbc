@@ -344,6 +344,13 @@ class NotificationTriggers {
         return;
       }
 
+      // Show toast notification immediately
+      if (typeof notificationService !== 'undefined' && notificationService.showToastNotification) {
+        const toastType = notif.type === 'achievement' ? 'success' : 
+                         notif.type === 'error' ? 'error' : 'info';
+        notificationService.showToastNotification(notif.title, notif.message, toastType, 6000);
+      }
+
       // If notification service is initialized, refresh notifications
       if (typeof notificationService !== 'undefined' && notificationService.fetchNotifications) {
         await notificationService.fetchNotifications();
