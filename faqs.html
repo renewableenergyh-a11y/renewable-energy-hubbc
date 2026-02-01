@@ -257,126 +257,131 @@
 <script src="js/main.js"></script>
 <script>
   const faqData = [
-    {
-      category: 'courses',
-      question: 'How do I start a course?',
-      answer: 'To start a course, navigate to the Courses page, select your desired renewable energy topic (Solar, Wind, Hydro, Biomass, or Geothermal), and click "Start Course". You\'ll have access to video lessons, interactive modules, and quizzes.'
-    },
-    {
-      category: 'courses',
-      question: 'Can I access courses offline?',
-      answer: 'Currently, all courses require an internet connection to access. However, you can take notes and save your progress, which will be available whenever you log back in.'
-    },
-    {
-      category: 'courses',
-      question: 'What happens after I complete a course?',
-      answer: 'After completing a course, you\'ll receive a certificate of completion. You can download it from your Account page and share it on your resume or social media. You\'ll also earn achievement badges!'
-    },
-    {
-      category: 'courses',
-      question: 'How do I use the Read Aloud feature?',
-      answer: 'The Read Aloud feature lets you listen to course content. Look for the speaker icon (🔊) in your module. Click it to start listening, and long-press (mobile) or click again to switch between different voices. This is great for learning while commuting or multitasking.'
-    },
-    {
-      category: 'account',
-      question: 'How do I reset my password?',
-      answer: 'Click on "Login" and then select "Forgot Password?". Enter your email address, and we\'ll send you a code to reset your password. Check your spam folder if you don\'t see the email.'
-    },
-    {
-      category: 'account',
-      question: 'Can I change my email address?',
-      answer: 'Yes! Go to your Account settings and click on "Edit Profile". You can update your email address there. A verification email will be sent to confirm the change.'
-    },
-    {
-      category: 'account',
-      question: 'How do I delete my account?',
-      answer: 'You can request to delete your account from your Account settings under "Irreversible Actions". Please note that this action is permanent and cannot be undone.'
-    },
-    {
-      category: 'premium',
-      question: 'What does Premium include?',
-      answer: 'Premium membership gives you access to all courses, video lessons, the Aubie RET AI Assistant for instant help, ad-free learning experience, offline course materials, advanced quizzes, projects & assignments, certificates, and priority support.'
-    },
-    {
-      category: 'premium',
-      question: 'How much does Premium cost?',
-      answer: 'Premium is $8.00 / MWK16,000 per month. You can cancel your subscription anytime from your billing page without penalties.'
-    },
-    {
-      category: 'premium',
-      question: 'Is there a free trial for Premium?',
-      answer: 'Yes! New users get a 2-day free trial of Premium. Your credit card information is required to start the trial, but you won\'t be charged until the trial ends.'
-    },
-    {
-      category: 'discussion',
-      question: 'What is the Discussion System?',
-      answer: 'The Discussion System allows you to connect with other learners in real-time using WebRTC video and audio. Join live study sessions, ask questions, and collaborate with peers to deepen your understanding of renewable energy topics.'
-    },
-    {
-      category: 'discussion',
-      question: 'How do I join a discussion room?',
-      answer: 'Go to the Discussions page and click on an active discussion room or start a new one. Enter the room with your webcam and microphone enabled (with your permission). You\'ll see other participants and can interact in real-time.'
-    },
-    {
-      category: 'discussion',
-      question: 'Do I need a premium account to use discussions?',
-      answer: 'Basic discussions are available to all users. Premium members enjoy priority access to discussion rooms, longer session times, and access to moderated expert discussions with instructors.'
-    },
-    {
-      category: 'discussion',
-      question: 'Is my webcam video recorded in discussions?',
-      answer: 'No, discussions are peer-to-peer and your video is not recorded or stored on our servers. Your privacy is important to us. Discussions end when you leave the room.'
-    },
-    {
-      category: 'discussion',
-      question: 'What should I do if my microphone or camera isn\'t working in discussions?',
-      answer: 'First, check that you\'ve given Renewable Energy Hub permission to access your camera and microphone in your browser settings. Try refreshing the page, restarting your browser, or rebooting your device. If the issue persists, contact our support team.'
-    },
-    {
-      category: 'accessibility',
-      question: 'I can\'t hear the Read Aloud feature on mobile. What should I do?',
-      answer: 'Read Aloud uses your device\'s text-to-speech engine. Make sure: 1) Your device volume is turned up, 2) System sounds are enabled in your device settings, 3) You\'re not in silent/mute mode, 4) You have an internet connection. Try a different browser if issues continue. Desktop browsers typically have better voice support.'
-    },
-    {
-      category: 'accessibility',
-      question: 'What voices are available for Read Aloud?',
-      answer: 'Available voices depend on your device and browser. Most devices offer multiple voices with different genders and accents. You can switch between voices by long-pressing the Read Aloud button (mobile) or clicking it repeatedly (desktop). The system will use the best available voice for your device.'
-    },
-    {
-      category: 'accessibility',
-      question: 'Does the platform support dark mode?',
-      answer: 'Yes! Enable dark mode by clicking the theme toggle in the navigation menu (usually a sun/moon icon). Dark mode is easier on your eyes during evening study sessions and saves battery on OLED screens.'
-    },
-    {
-      category: 'accessibility',
-      question: 'Can I adjust text size for better readability?',
-      answer: 'Yes! Use your browser\'s zoom controls (Ctrl + Plus/Minus on Windows, Cmd + Plus/Minus on Mac) to adjust text size. Your preference will be saved. You can also use browser accessibility extensions for additional customization.'
-    },
-    {
-      category: 'technical',
-      question: 'Why are videos not loading?',
-      answer: 'This could be due to a slow internet connection. Try clearing your browser cache, disabling browser extensions, or switching to a different browser. You can also try refreshing the page.'
-    },
-    {
-      category: 'technical',
-      question: 'Which browsers are supported?',
-      answer: 'We support Chrome, Firefox, Safari, and Edge (latest versions). For the best experience with discussions and Read Aloud, we recommend Chrome or Firefox. Please keep your browser updated.'
-    },
-    {
-      category: 'technical',
-      question: 'How do I report a bug?',
-      answer: 'If you encounter a bug or technical issue, please visit our Get Help page and use the live chat to contact our support team with details about the issue.'
-    },
-    {
-      category: 'technical',
-      question: 'Why am I having connection issues in discussions?',
-      answer: 'Connection issues can be caused by: 1) Slow or unstable internet connection, 2) Browser cache problems - try clearing cache and cookies, 3) Firewall/VPN interference - try disabling temporarily, 4) Too many browser tabs open. Close other tabs and try again. If issues persist, restart your router and device.'
-    },
-    {
-      category: 'technical',
-      question: 'Why is my discussion connection dropping?',
-      answer: 'Discussion connections can drop due to: 1) Unstable WiFi - try moving closer to your router or using a wired connection, 2) Network congestion - close background apps using bandwidth (downloads, streaming, etc.), 3) Device overheating - restart your device if it feels warm, 4) Too many browser tabs open. Close other tabs and try reconnecting.'
-    }
+  {
+    category: 'courses',
+    question: 'How do I start a course?',
+    answer: 'To start a course, go to the Courses page, choose a renewable energy topic such as Solar, Wind, Hydro, Biomass, or Geothermal, and click "Start Course". You’ll gain access to structured modules, lessons, and interactive content designed to guide you from fundamentals to completion.'
+  },
+  {
+    category: 'courses',
+    question: 'Can I access courses offline?',
+    answer: 'Currently, courses require an internet connection to access. However, your progress is saved automatically, so you can continue from where you left off whenever you log back in.'
+  },
+  {
+    category: 'courses',
+    question: 'What happens after I complete a course?',
+    answer: 'Once you complete all modules in a course, a certificate of completion is automatically generated. You can download it instantly, and you’ll also receive an in-app notification confirming that your certificate is ready.'
+  },
+  {
+    category: 'courses',
+    question: 'How do I use the Read Aloud feature?',
+    answer: 'The Read Aloud feature allows you to listen to course content instead of reading it. Look for the speaker icon (🔊) within supported modules and click it to start. Available voices depend on your device and browser.'
+  },
+  {
+    category: 'account',
+    question: 'How do I reset my password?',
+    answer: 'Click on "Login" and select "Forgot Password?". Enter your registered email address, and we’ll send you instructions to reset your password. Be sure to check your spam folder if you don’t see the email.'
+  },
+  {
+    category: 'account',
+    question: 'Can I change my email address?',
+    answer: 'Yes. Go to your Account settings and select "Edit Profile". After updating your email address, a verification step may be required to confirm the change.'
+  },
+  {
+    category: 'account',
+    question: 'How do I delete my account?',
+    answer: 'You can request account deletion from your Account settings under irreversible actions. Please note that this action is permanent and cannot be undone.'
+  },
+  {
+    category: 'premium',
+    question: 'What does Premium include?',
+    answer: 'Premium membership unlocks full access to all courses, certificates, instructor-led discussions, advanced learning tools, the Aubie RET AI Assistant, ad-free experience, and priority support.'
+  },
+  {
+    category: 'premium',
+    question: 'How much does Premium cost?',
+    answer: 'Premium costs $8.00 per month (approximately MWK 16,000). You can manage or cancel your subscription anytime from your billing page.'
+  },
+  {
+    category: 'premium',
+    question: 'Is there a free trial for Premium?',
+    answer: 'Yes. Newly registered users receive a 2-day free trial of Premium. This allows you to explore all premium features before deciding whether to subscribe.'
+  },
+  {
+    category: 'premium',
+    question: 'What is the Aubie RET AI Assistant?',
+    answer: 'The Aubie RET AI Assistant is an intelligent learning companion designed to help Premium users with course-related questions, explanations, and guidance. The assistant is actively evolving, with more advanced capabilities being added over time.'
+  },
+  {
+    category: 'discussion',
+    question: 'What is the Discussion System?',
+    answer: 'The Discussion System is a real-time learning space designed for live instructor-led and peer discussions. In instructor-led sessions, learners watch the instructor’s live video and interact using audio, reactions, chat, and raise-hand features. In peer discussions, participants communicate using audio and collaboration tools. The system focuses on clarity, stability, and guided learning rather than multi-user video grids.'
+  },
+  {
+    category: 'discussion',
+    question: 'How do I join a discussion room?',
+    answer: 'Go to the Discussions page and click on an active discussion session. If you are already logged in, you will join automatically without being asked to log in again. Your browser may ask for microphone (and camera if you are an instructor) permission before entering the room.'
+  },
+  {
+    category: 'discussion',
+    question: 'Who can use video in discussions?',
+    answer: 'Only instructors, admins, or super admins broadcast video in instructor-led discussions. Students do not send video. This design ensures stable sessions, better performance, and a focused teaching experience.'
+  },
+  {
+    category: 'discussion',
+    question: 'Do students need a premium account to participate?',
+    answer: 'No. All logged-in users can participate in discussions they have access to. Available controls depend on your role (student, instructor, admin), not on a premium subscription.'
+  },
+  {
+    category: 'discussion',
+    question: 'Is video or audio recorded during discussions?',
+    answer: 'No. Discussions are live, real-time sessions. Video and audio streams are not recorded, stored, or saved on our servers. Once you leave the discussion, the media connection ends.'
+  },
+  {
+    category: 'discussion',
+    question: 'What should I do if my microphone or camera is not working?',
+    answer: 'Check that your browser has permission to access your microphone (and camera if you are an instructor). You can verify this in your browser’s site settings. Try refreshing the page or restarting your browser. If the issue continues, make sure no other application is using your microphone or camera.'
+  },
+  {
+    category: 'accessibility',
+    question: 'I can’t hear the Read Aloud feature on mobile. What should I do?',
+    answer: 'Read Aloud uses your device’s built-in text-to-speech system. Ensure your device volume is turned up, silent mode is off, and system sounds are enabled. Mobile browsers may vary in voice support, so trying a different browser can help.'
+  },
+  {
+    category: 'accessibility',
+    question: 'What voices are available for Read Aloud?',
+    answer: 'Available voices depend on your device and browser. The platform automatically uses the best voice provided by your system. Voice options and accents vary by operating system.'
+  },
+  {
+    category: 'accessibility',
+    question: 'Does the platform support dark mode?',
+    answer: 'Yes. You can enable dark mode using the theme toggle in the navigation menu. Dark mode helps reduce eye strain, especially during long study sessions.'
+  },
+  {
+    category: 'accessibility',
+    question: 'Can I adjust text size for better readability?',
+    answer: 'Yes. You can adjust text size using your browser’s zoom controls. This works across the entire platform and does not affect functionality.'
+  },
+  {
+    category: 'technical',
+    question: 'Why is the instructor video not showing?',
+    answer: 'If the instructor video is not showing, it may be due to network issues, browser permission problems, or the instructor not having started their camera yet. Try refreshing the page and ensure you have a stable internet connection.'
+  },
+  {
+    category: 'technical',
+    question: 'Which browsers are supported?',
+    answer: 'The platform works best on modern versions of Chrome, Firefox, Edge, and Safari. For real-time discussions, Chrome and Firefox are recommended.'
+  },
+  {
+    category: 'technical',
+    question: 'Why am I experiencing connection issues during discussions?',
+    answer: 'Connection issues can occur due to unstable internet, VPN or firewall interference, or heavy background network usage. Closing other tabs, disabling VPNs temporarily, and using a stable connection can improve performance.'
+  },
+  {
+    category: 'technical',
+    question: 'Why does audio sometimes cut out during discussions?',
+    answer: 'Audio interruptions may be caused by network instability, device microphone conflicts, or background applications using audio resources. Restarting your browser or device usually resolves the issue.'
+  }
   ];
 
   const faqList = document.getElementById('faq-list');
