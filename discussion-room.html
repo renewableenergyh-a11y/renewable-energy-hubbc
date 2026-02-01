@@ -641,6 +641,41 @@
       background: rgba(0, 121, 107, 0.08);
     }
 
+    /* Mobile responsive - reduce modal size */
+    @media (max-width: 480px) {
+      .modal-content {
+        max-width: 85vw;
+        padding: 0;
+      }
+
+      .modal-header {
+        padding: 12px;
+      }
+
+      .modal-header h3 {
+        font-size: 16px;
+      }
+
+      .modal-close-btn {
+        font-size: 20px;
+      }
+
+      .modal-body {
+        padding: 12px;
+        font-size: 13px;
+      }
+
+      .modal-footer {
+        padding: 12px;
+        gap: 6px;
+      }
+
+      .modal-btn {
+        padding: 8px 14px;
+        font-size: 12px;
+      }
+    }
+
     /* Session closed overlay */
     .session-closed-overlay {
       display: none;

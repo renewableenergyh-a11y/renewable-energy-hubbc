@@ -242,6 +242,37 @@ function showModal(options) {
         border-color: rgba(255, 255, 255, 0.25) !important;
         transform: translateY(-2px);
       }
+      
+      /* Mobile responsive - reduce modal size */
+      @media (max-width: 480px) {
+        .modal-content, .modal-content.edit-modal-inner {
+          max-width: 85vw;
+          padding: 20px;
+          margin: 16px;
+        }
+        .modal-icon {
+          width: 60px;
+          height: 60px;
+          font-size: 28px;
+          margin: 0 auto 16px;
+        }
+        .modal-title { 
+          font-size: 18px; 
+          margin-bottom: 10px;
+        }
+        .modal-message { 
+          font-size: 14px; 
+          margin-bottom: 20px;
+        }
+        .modal-buttons { 
+          gap: 8px; 
+        }
+        .modal-btn { 
+          padding: 10px 16px; 
+          font-size: 13px;
+          min-width: 80px;
+        }
+      }
     `;
     document.head.appendChild(style);
   }
