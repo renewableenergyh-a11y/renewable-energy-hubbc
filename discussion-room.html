@@ -1190,12 +1190,15 @@
         this.localVideoElement = null;
         this.peerConnections = new Map();
         this.signalingState = new Map();
+        this.iceQueues = new Map(); // ICE queue per peer (CRITICAL)
         this.localUserId = null;
         this.sessionId = null;
         this.currentSessionUserRole = null;
         this.allParticipants = [];
         this.instructorPresent = false;
         this.isOfferInitiator = false;
+        this.sessionMode = null; // 'INSTRUCTOR_LED' or 'PEER'
+        this.canCreateOffers = false; // Strict offer authority gate (CRITICAL)
         this.iceServers = [
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' }
@@ -1208,16 +1211,40 @@
         this.localVideoElement = videoElement;
         this.currentSessionUserRole = userRole;
         this.allParticipants = participants || [];
+        
+        // STEP 1: Determine session mode (INSTRUCTOR_LED or PEER)
         this.instructorPresent = this.allParticipants.some(p => ['instructor', 'admin', 'superadmin'].includes(p.role));
+        this.sessionMode = this.instructorPresent ? 'INSTRUCTOR_LED' : 'PEER';
+        
+        // STEP 2: Determine offer authority (CRITICAL GATE)
+        const isInstructor = ['admin', 'superadmin', 'instructor'].includes(userRole);
+        let isPeerInitiator = false;
+        
         if (!this.instructorPresent && this.allParticipants.length > 0) {
-          const firstParticipant = this.allParticipants[0];
-          this.isOfferInitiator = (userId === firstParticipant.userId);
-        } else {
-          this.isOfferInitiator = (userRole === 'instructor' || userRole === 'admin' || userRole === 'superadmin');
+          const firstParticipantEmail = this.allParticipants[0].userId; // Email-based identity ONLY
+          isPeerInitiator = (userId === firstParticipantEmail);
         }
-        console.log('🎥 [WebRTC] Initialized Phase 2.2 Manager:', {
-          userId, sessionId, role: userRole, instructorPresent: this.instructorPresent,
-          isOfferInitiator: this.isOfferInitiator, participantCount: this.allParticipants.length
+        
+        // STEP 3: Set strict offer authority
+        this.canCreateOffers = isInstructor || isPeerInitiator;
+        this.isOfferInitiator = this.canCreateOffers;
+        
+        // Initialize ICE queues for all participants
+        this.allParticipants.forEach(p => {
+          if (p.userId !== userId) {
+            this.iceQueues.set(p.userId, []);
+          }
+        });
+        
+        console.log(`🎥 [WebRTC-DETERMINISTIC] Initialized with authority model:`, {
+          userId, sessionId, role: userRole,
+          sessionMode: this.sessionMode,
+          instructorPresent: this.instructorPresent,
+          isInstructor: isInstructor,
+          isPeerInitiator: isPeerInitiator,
+          canCreateOffers: this.canCreateOffers,
+          participantCount: this.allParticipants.length
+        });
         });
       }
 
@@ -1446,41 +1473,63 @@
       async handleRemoteIceCandidate(candidateData) {
         try {
           const { from, candidate } = candidateData;
-          console.log(`📥 [WebRTC] Received ICE candidate from ${from}`);
+          console.log(`📥 [WebRTC-DETERMINISTIC] Received ICE candidate from ${from}`);
+          
           const pc = this.getPeerConnection(from);
           if (!pc) {
-            console.warn(`⚠️ [WebRTC] No peer connection for incoming ICE candidate from ${from}`);
+            console.warn(`⚠️ [WebRTC-DETERMINISTIC] No peer connection for incoming ICE candidate from ${from}`);
             return;
           }
-          await pc.addIceCandidate(new RTCIceCandidate(candidate));
-          console.log(`✅ [WebRTC] ICE candidate added for ${from}`);
+          
+          // STEP 8: ICE QUEUE SAFETY - queue until remoteDescription exists
+          if (pc.remoteDescription) {
+            // Remote description is set, add candidate immediately
+            try {
+              await pc.addIceCandidate(new RTCIceCandidate(candidate));
+              console.log(`✅ [WebRTC-DETERMINISTIC] ICE candidate added immediately for ${from}`);
+            } catch (err) {
+              console.warn(`⚠️ [WebRTC-DETERMINISTIC] Failed to add ICE candidate for ${from}:`, err);
+            }
+          } else {
+            // Remote description not yet set, queue the candidate
+            const queue = this.iceQueues.get(from) || [];
+            queue.push(new RTCIceCandidate(candidate));
+            this.iceQueues.set(from, queue);
+            console.log(`📥 [WebRTC-DETERMINISTIC] ICE candidate queued for ${from} (${queue.length} total queued)`);
+          }
         } catch (error) {
-          console.error(`❌ [WebRTC] Failed to add ICE candidate:`, error);
+          console.error(`❌ [WebRTC-DETERMINISTIC] Failed to handle ICE candidate:`, error);
         }
       }
 
       async createAndSendOffer(remotePeerEmail, emitFunction) {
+        // STEP 3: STRICT OFFER PERMISSION GATE (CRITICAL)
+        if (!this.canCreateOffers) {
+          console.error(`❌ [WebRTC-DETERMINISTIC] BLOCKED: User ${this.localUserId} cannot create offers (not instructor/peer-initiator)`);
+          return;
+        }
+
         try {
-          console.log(`📤 [WebRTC] Creating offer for: ${remotePeerEmail}`);
+          console.log(`📤 [WebRTC-DETERMINISTIC] Creating offer for: ${remotePeerEmail}`);
           const pc = this.getPeerConnection(remotePeerEmail);
           if (!pc) {
-            console.error(`❌ [WebRTC] No peer connection for ${remotePeerEmail}`);
+            console.error(`❌ [WebRTC-DETERMINISTIC] No peer connection for ${remotePeerEmail}`);
             return;
           }
           
-          // Check if we have local tracks
-          if (!this.localStream) {
-            console.warn(`⚠️ [WebRTC] No local stream available for ${remotePeerEmail}, local media may not have been captured`);
+          // STEP 5: Verify tracks were added BEFORE offer
+          const senders = pc.getSenders();
+          if (senders.length === 0) {
+            console.warn(`⚠️ [WebRTC-DETERMINISTIC] No tracks in peer connection for ${remotePeerEmail} - TRACKS MUST BE ADDED BEFORE OFFER`);
           } else {
-            const audioTracks = this.localStream.getAudioTracks();
-            const videoTracks = this.localStream.getVideoTracks();
-            console.log(`✅ [WebRTC] Local stream ready: ${audioTracks.length} audio, ${videoTracks.length} video`);
+            console.log(`✅ [WebRTC-DETERMINISTIC] Tracks verified before offer for ${remotePeerEmail}: ${senders.length} senders`);
           }
           
+          // STEP 6: ALWAYS SEND OFFER TO NEW PARTICIPANTS
           const offer = await pc.createOffer();
-          console.log(`📤 [WebRTC] Offer created, setting local description for ${remotePeerEmail}`);
+          console.log(`📤 [WebRTC-DETERMINISTIC] Offer created for ${remotePeerEmail}`);
           await pc.setLocalDescription(offer);
-          console.log(`📝 [WebRTC] Local description set for ${remotePeerEmail}`);
+          console.log(`📝 [WebRTC-DETERMINISTIC] Local description set for ${remotePeerEmail}`);
           
           const offerData = {
             sessionId: this.sessionId,
@@ -1489,36 +1538,33 @@
             sdp: offer
           };
           
-          console.log(`📤 [WebRTC] Calling emitFunction to send offer...`, offerData);
+          console.log(`📤 [WebRTC-DETERMINISTIC] Sending offer to ${remotePeerEmail}`);
           emitFunction(offerData);
-          console.log(`✅ [WebRTC] Offer sent to ${remotePeerEmail}`);
+          console.log(`✅ [WebRTC-DETERMINISTIC] Offer sent to ${remotePeerEmail}`);
         } catch (error) {
-          console.error(`❌ [WebRTC] Failed to create/send offer for ${remotePeerEmail}:`, error);
+          console.error(`❌ [WebRTC-DETERMINISTIC] Failed to create/send offer for ${remotePeerEmail}:`, error);
         }
       }
 
       async handleRemoteOffer(offerData, emitFunction) {
         try {
-          const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
           const { from, sdp } = offerData;
-          console.log(`📥 [WebRTC-lecture] Received offer from: ${from}`);
+          console.log(`📥 [WebRTC-DETERMINISTIC] Received offer from: ${from}`);
           
           const pc = this.getPeerConnection(from);
           if (!pc) {
-            console.error(`❌ [WebRTC-lecture] No peer connection for ${from}`);
+            console.error(`❌ [WebRTC-DETERMINISTIC] No peer connection for ${from}`);
             return;
           }
           
-          // Set remote description FIRST
+          // Set remote description (offer)
           await pc.setRemoteDescription(sdp);
-          console.log(`📝 [WebRTC-lecture] Remote description (offer) set from ${from}`);
+          console.log(`📝 [WebRTC-DETERMINISTIC] Remote description (offer) set from ${from}`);
           
-          // Note: tracks are added during createPeerConnection before this is called
-          // No need to add them here again
-          
+          // STEP 7: STUDENTS — ANSWER ONLY (BOTH MODES)
           const answer = await pc.createAnswer();
           await pc.setLocalDescription(answer);
-          console.log(`📝 [WebRTC-lecture] Local description (answer) set for ${from}`);
+          console.log(`📝 [WebRTC-DETERMINISTIC] Local description (answer) set for ${from}`);
           
           emitFunction({
             sessionId: this.sessionId,
@@ -1526,20 +1572,64 @@
             to: from,
             sdp: answer
           });
-          console.log(`✅ [WebRTC-lecture] Answer sent to ${from}`);
+          console.log(`✅ [WebRTC-DETERMINISTIC] Answer sent to ${from}`);
+          
+          // STEP 8: ICE QUEUE SAFETY - process queued candidates after answer
+          this.processIceQueue(from);
         } catch (error) {
-          console.error(`❌ [WebRTC-lecture] Failed to handle offer:`, error);
+          console.error(`❌ [WebRTC-DETERMINISTIC] Failed to handle offer:`, error);
         }
       }
 
       async handleRemoteAnswer(answerData) {
         try {
           const { from, sdp } = answerData;
-          console.log(`📥 [WebRTC-lecture] Received answer from: ${from}`);
+          console.log(`📥 [WebRTC-DETERMINISTIC] Received answer from: ${from}`);
           const pc = this.getPeerConnection(from);
           if (!pc) {
-            console.error(`❌ [WebRTC-lecture] No peer connection for ${from}`);
+            console.error(`❌ [WebRTC-DETERMINISTIC] No peer connection for ${from}`);
             return;
+          }
+          
+          await pc.setRemoteDescription(sdp);
+          console.log(`📝 [WebRTC-DETERMINISTIC] Remote description (answer) set from ${from}`);
+          console.log(`✅ [WebRTC-DETERMINISTIC] Answer received from ${from}`);
+          
+          // STEP 8: ICE QUEUE SAFETY - process queued candidates after answer
+          this.processIceQueue(from);
+        } catch (error) {
+          console.error(`❌ [WebRTC-DETERMINISTIC] Failed to handle answer:`, error);
+        }
+      }
+
+      // STEP 8: ICE QUEUE SAFETY (CRITICAL)
+      processIceQueue(peerEmail) {
+        const queue = this.iceQueues.get(peerEmail) || [];
+        const pc = this.peerConnections.get(peerEmail);
+        
+        if (!pc) {
+          console.warn(`⚠️ [WebRTC-DETERMINISTIC] No peer connection for ${peerEmail} when processing ICE queue`);
+          return;
+        }
+        
+        if (queue.length === 0) {
+          console.log(`✅ [WebRTC-DETERMINISTIC] ICE queue empty for ${peerEmail}`);
+          return;
+        }
+        
+        console.log(`📥 [WebRTC-DETERMINISTIC] Processing ${queue.length} queued ICE candidates for ${peerEmail}`);
+        
+        queue.forEach(candidate => {
+          try {
+            pc.addIceCandidate(candidate);
+          } catch (err) {
+            console.warn(`⚠️ [WebRTC-DETERMINISTIC] Failed to add queued ICE candidate for ${peerEmail}:`, err);
+          }
+        });
+        
+        this.iceQueues.set(peerEmail, []);
+        console.log(`✅ [WebRTC-DETERMINISTIC] ICE queue processed for ${peerEmail}`);
+      }
           }
           await pc.setRemoteDescription(sdp);
           console.log(`📝 [WebRTC-lecture] Remote description (answer) set from ${from}`);
@@ -1622,100 +1712,55 @@
       }
 
       handleNewParticipant(participantEmail) {
-        console.log(`👤 [WebRTC] New participant: ${participantEmail}`, {
-          isOfferInitiator: this.isOfferInitiator,
-          instructorPresent: this.instructorPresent,
+        // STEP 4: CREATE PEER CONNECTION PER PARTICIPANT (DETERMINISTIC)
+        console.log(`👤 [WebRTC-DETERMINISTIC] New participant: ${participantEmail}`, {
+          canCreateOffers: this.canCreateOffers,
+          sessionMode: this.sessionMode,
           participantCount: this.allParticipants.length,
           participantRole: this.allParticipants.find(p => p.userId === participantEmail)?.role || 'UNKNOWN'
         });
         
         if (participantEmail === this.localUserId) {
-          console.log(`ℹ️ [WebRTC] Skipping self: ${participantEmail}`);
+          console.log(`ℹ️ [WebRTC-DETERMINISTIC] Skipping self: ${participantEmail}`);
           return;
         }
         
         if (this.peerConnections.has(participantEmail)) {
-          console.log(`ℹ️ [WebRTC] Peer connection already exists for ${participantEmail}`);
+          console.log(`ℹ️ [WebRTC-DETERMINISTIC] Peer connection already exists for ${participantEmail}`);
           return;
         }
 
-        // Always create peer connection regardless of initiator role
+        // Create peer connection for this participant
         const pc = this.getPeerConnection(participantEmail);
+        console.log(`✅ [WebRTC-DETERMINISTIC] PeerConnection created for ${participantEmail}`);
         
         if (!this.socketService) {
-          console.error(`❌ [WebRTC] No socket service available for ${participantEmail}`);
+          console.error(`❌ [WebRTC-DETERMINISTIC] No socket service available for ${participantEmail}`);
           return;
         }
         
         if (!this.socketService.socket || !this.socketService.connected) {
-          console.error(`❌ [WebRTC] Socket not connected for ${participantEmail}`, {
-            hasSocket: !!this.socketService.socket,
-            connected: this.socketService.connected
-          });
+          console.error(`❌ [WebRTC-DETERMINISTIC] Socket not connected for ${participantEmail}`);
           return;
         }
 
-        // Send offer logic:
-        // 1. If you're the initiator (admin), send to everyone
-        // 2. If you're a non-initiator (student), send to other non-initiators based on alphabetical order
-        // This ensures all participants get connected to each other
-        
-        const remoteParticipant = this.allParticipants.find(p => p.userId === participantEmail);
-        const remoteIsAdmin = remoteParticipant && ['admin', 'instructor', 'superadmin'].includes(remoteParticipant.role);
-        const localIsAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
-        
-        let shouldSendOffer = false;
-        
-        if (this.isOfferInitiator) {
-          // Admins always send offers
-          shouldSendOffer = true;
-          console.log(`📤 [WebRTC] Admin initiator: sending offer to ${participantEmail}`);
-        } else if (!localIsAdmin && !remoteIsAdmin) {
-          // Two students: use alphabetical order to decide who sends offer
-          // Whoever has lower ID sends the offer
-          if (this.localUserId < participantEmail) {
-            shouldSendOffer = true;
-            console.log(`📤 [WebRTC] Student-to-student: I have lower ID, sending offer to ${participantEmail}`);
-          } else {
-            console.log(`📤 [WebRTC] Student-to-student: ${participantEmail} has lower ID, waiting for their offer`);
-          }
-        } else if (localIsAdmin && remoteIsAdmin) {
-          // Both admins: use alphabetical order
-          if (this.localUserId < participantEmail) {
-            shouldSendOffer = true;
-            console.log(`📤 [WebRTC] Admin-to-admin: I have lower ID, sending offer to ${participantEmail}`);
-          } else {
-            console.log(`📤 [WebRTC] Admin-to-admin: ${participantEmail} has lower ID, waiting for their offer`);
-          }
-        } else if (remoteIsAdmin && !localIsAdmin) {
-          // Remote is admin, I'm a student: ADMIN sends offer to student
-          // So student waits here
-          console.log(`ℹ️ [WebRTC] Student-to-admin connection: waiting for offer from admin`);
-        } else {
-          // Local is admin, remote is student: I (admin) send offer
-          shouldSendOffer = true;
-          console.log(`📤 [WebRTC] Admin-to-student: sending offer to ${participantEmail}`);
-        }
-        
-        if (shouldSendOffer) {
-          console.log(`📤 [WebRTC] Creating and sending offer to ${participantEmail}`);
+        // STEP 6: ALWAYS SEND OFFER TO NEW PARTICIPANTS (if authorized)
+        if (this.canCreateOffers) {
+          console.log(`📤 [WebRTC-DETERMINISTIC] Creating and sending offer to ${participantEmail}`);
           this.createAndSendOffer(
             participantEmail,
             (data) => {
-              console.log(`📤 [WebRTC] Offer callback - emitting via socket...`, {
-                to: data.to,
-                sessionId: data.sessionId,
-                hasSocketService: !!this.socketService,
-                socketConnected: this.socketService?.socket?.connected
-              });
+              console.log(`📤 [WebRTC-DETERMINISTIC] Emitting offer to ${participantEmail}...`);
               if (this.socketService && typeof this.socketService.emitWebRTCOffer === 'function') {
-                const result = this.socketService.emitWebRTCOffer(data);
-                console.log(`📤 [WebRTC] emitWebRTCOffer returned:`, result);
+                this.socketService.emitWebRTCOffer(data);
               } else {
-                console.error(`❌ [WebRTC] emitWebRTCOffer not available on socket service`);
+                console.error(`❌ [WebRTC-DETERMINISTIC] emitWebRTCOffer not available`);
               }
             }
           );
+        } else {
+          // No offer authority - this client must wait to receive an offer
+          console.log(`ℹ️ [WebRTC-DETERMINISTIC] Waiting to receive offer from ${participantEmail} (no offer authority)`);
         }
       }
 
