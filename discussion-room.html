@@ -1641,9 +1641,14 @@
           } else {
             console.log(`📤 [WebRTC] Admin-to-admin: ${participantEmail} has lower ID, waiting for their offer`);
           }
+        } else if (remoteIsAdmin && !localIsAdmin) {
+          // Remote is admin, I'm a student: ADMIN sends offer to student
+          // So student waits here
+          console.log(`ℹ️ [WebRTC] Student-to-admin connection: waiting for offer from admin`);
         } else {
-          // One is admin, one is student: only non-initiator admin sends
-          console.log(`ℹ️ [WebRTC] Student-to-admin connection: waiting for offer`);
+          // Local is admin, remote is student: I (admin) send offer
+          shouldSendOffer = true;
+          console.log(`📤 [WebRTC] Admin-to-student: sending offer to ${participantEmail}`);
         }
         
         if (shouldSendOffer) {
