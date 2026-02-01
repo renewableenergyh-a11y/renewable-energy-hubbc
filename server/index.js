@@ -4096,7 +4096,7 @@ app.post('/api/auth/cancel-premium', (req, res) => {
 
       // Send cancellation email
       try {
-        const siteUrl = process.env.SITE_URL || 'https://aubieret.netlify.app';
+        const siteUrl = process.env.SITE_URL || 'https://renewable-energy-hubbc.onrender.com';
         const cancellationEmail = buildPremiumCancellationEmail({
           name: user.name,
           email: targetEmail,
@@ -4128,7 +4128,7 @@ app.post('/api/auth/send-premium-email', async (req, res) => {
       return res.status(400).json({ error: 'Email address is required' });
     }
 
-    const siteUrl = process.env.SITE_URL || 'https://aubieret.netlify.app';
+    const siteUrl = process.env.SITE_URL || 'https://renewable-energy-hubbc.onrender.com';
     const premiumEmail = buildPremiumConfirmationEmail({
       name: name || '',
       email,
@@ -4216,7 +4216,7 @@ app.post('/api/auth/update-profile', async (req, res) => {
 
       // Send verification email
       try {
-        const siteUrl = process.env.SITE_URL || 'https://aubieret.netlify.app';
+        const siteUrl = process.env.SITE_URL || 'https://renewable-energy-hubbc.onrender.com';
         const verificationCode = Math.random().toString().slice(2, 8);
         user.emailVerificationCode = verificationCode;
         user.emailVerificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
