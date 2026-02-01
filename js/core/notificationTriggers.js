@@ -31,25 +31,21 @@ class NotificationTriggers {
       
       if (!token || !createdAt) return;
 
-      // Only show once per session
-      if (this.triggers.welcome) return;
+      // Only show once per user (check localStorage, not session)
+      if (localStorage.getItem('welcomeNotificationShown')) return;
       
-      const created = new Date(createdAt);
-      const now = new Date();
-      const minutesElapsed = (now - created) / (1000 * 60);
-
-      // Show welcome notification within 5 minutes of account creation
-      if (minutesElapsed < 5) {
-        const user = JSON.parse(localStorage.getItem('userInfo') || '{}');
-        await this.createNotification({
-          type: 'welcome',
-          title: `Welcome to Renewable Energy Hub, ${user.name || 'Learner'}! 🎉`,
-          message: 'We\'re excited to have you here. Start exploring our courses to begin your renewable energy journey.',
-          icon: 'fa-hand-paper',
-          actionUrl: '/courses.html'
-        });
-        this.triggers.welcome = true;
-      }
+      const user = JSON.parse(localStorage.getItem('userInfo') || '{}');
+      await this.createNotification({
+        type: 'welcome',
+        title: `Welcome to Renewable Energy Hub, ${user.name || 'Learner'}! 🎉`,
+        message: 'We\'re excited to have you here. Start exploring our courses to begin your renewable energy journey.',
+        icon: 'fa-hand-paper',
+        actionUrl: '/courses.html'
+      });
+      
+      // Mark as shown so it only appears once
+      localStorage.setItem('welcomeNotificationShown', 'true');
+      this.triggers.welcome = true;
     } catch (err) {
       console.warn('Welcome notification check failed:', err);
     }
@@ -256,8 +252,8 @@ class NotificationTriggers {
       
       if (!token || hasPremium) return;
 
-      // Only show once per user
-      if (this.triggers.courseOffer) return;
+      // Only show once per user (check localStorage, not session)
+      if (localStorage.getItem('premiumOfferShown')) return;
 
       // Check if user is newly registered (within 7 days)
       const createdAt = localStorage.getItem('userCreatedAt');
@@ -284,6 +280,8 @@ class NotificationTriggers {
         actionUrl: '/billing.html'
       });
 
+      // Mark as shown so it only appears once
+      localStorage.setItem('premiumOfferShown', 'true');
       this.triggers.courseOffer = true;
     } catch (err) {
       console.warn('Special offer check failed:', err);
@@ -369,11 +367,11 @@ class NotificationTriggers {
 
     console.log('✅ NotificationTriggers: Starting to monitor for notifications');
 
-    // Check various triggers periodically
+    // Check various triggers immediately on login
     this.checkWelcome();
+    this.checkSpecialOffers();
     this.checkMotivationalMessage();
     this.checkNewContent();
-    this.checkSpecialOffers();
 
     // Check every 5 minutes for new triggers
     setInterval(() => {
