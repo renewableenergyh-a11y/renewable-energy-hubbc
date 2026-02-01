@@ -52,6 +52,13 @@
       background: linear-gradient(135deg, #1a1a1a 0%, #252525 100%);
     }
 
+    /* VIDEO MIRRORING FIX: All video elements behave like phone camera (no mirroring) */
+    video {
+      transform: none !important;
+      -webkit-transform: none !important;
+      scale: 1 !important;
+    }
+
     /* ============ ZOOM-LIKE LAYOUT ============ */
     
     .room-container {
@@ -153,6 +160,9 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
+      transform: none;
+      -webkit-transform: none;
+      scale: 1;
     }
 
     /* Admin video - lecture mode (full display) */
@@ -172,7 +182,9 @@
       width: 100%;
       height: 100%;
       object-fit: contain;
-      transform: none;
+      transform: none !important;
+      -webkit-transform: none !important;
+      scale: 1 !important;
     }
 
     #adminVideo-placeholder {
