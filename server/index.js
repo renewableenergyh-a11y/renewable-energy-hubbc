@@ -4691,7 +4691,7 @@ app.get('/api/certificates/:certId/download', (req, res) => {
             background: linear-gradient(to bottom right, #ffffff 0%, #f0f9f8 100%);
             border: 4px solid #00796b;
             border-radius: 24px;
-            padding: 50px 60px;
+            padding: 80px 60px 50px 60px;
             text-align: center;
             box-shadow: 
               0 25px 70px rgba(0, 121, 107, 0.4),
