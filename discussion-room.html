@@ -2256,11 +2256,10 @@
         console.log('📋 [discussion-room] Participant list updated from server:', data.participants.length);
         
         const previousParticipantCount = participantState.getCount();
-        // Always default audioEnabled to true on initial load (users join with mic on)
-        // Only webrtc-audio-state events can change it
+        // Respect audioEnabled from server, default to true only if undefined
         const enrichedParticipants = data.participants.map(p => ({
           ...p,
-          audioEnabled: true
+          audioEnabled: p.audioEnabled !== undefined ? p.audioEnabled : true
         }));
         participantState.replaceAll(enrichedParticipants);
         renderParticipants(participantState.getAll(), data.stats);
@@ -3015,9 +3014,8 @@
             ? `<span class="raised-hand-indicator" title="Hand raised">✋</span>`
             : '';
 
-          // Default audioEnabled to true (users join with mic on), only false if explicitly set
-          const isAudioEnabled = p.audioEnabled !== false;
-          const audioWaveIndicator = isAudioEnabled
+          // Show waves only if audioEnabled is explicitly true
+          const audioWaveIndicator = p.audioEnabled === true
             ? `<div class="audio-wave-indicator" title="Audio active">
                  <div class="audio-wave-bar"></div>
                  <div class="audio-wave-bar"></div>
@@ -3025,7 +3023,7 @@
                </div>`
             : '';
 
-          console.log(`📊 [renderParticipants] Participant ${p.userId}: audioEnabled=${isAudioEnabled}, indicator="${audioWaveIndicator ? 'PRESENT' : 'EMPTY'}"`);
+          console.log(`📊 [renderParticipants] Participant ${p.userId}: audioEnabled=${p.audioEnabled}, indicator="${audioWaveIndicator ? 'PRESENT' : 'EMPTY'}"`);
 
           return `
             <div class="participant-item">
