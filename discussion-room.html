@@ -194,6 +194,12 @@
       scale: 1 !important;
     }
 
+    /* Self-video (admin viewing their own stream) should be mirrored */
+    #adminVideo video.self-video {
+      transform: scaleX(-1) !important;
+      -webkit-transform: scaleX(-1) !important;
+    }
+
     #adminVideo-placeholder {
       position: absolute;
       top: 50%;
@@ -2186,10 +2192,7 @@
                 if (!mainVideoEl) {
                   mainVideoEl = document.createElement('video');
                   mainVideoEl.id = 'selfVideo';
-                  mainVideoEl.autoplay = true;
-                  mainVideoEl.playsinline = true;
-                  mainVideoEl.muted = true; // Mute self video to avoid echo
-                  mainVideoEl.style.width = '100%';
+              mainVideoEl.className = 'self-video'; // Mark as self-video for CSS mirroring
                   mainVideoEl.style.height = '100%';
                   mainVideoEl.style.objectFit = 'contain';
                   adminVideoContainer.appendChild(mainVideoEl);
