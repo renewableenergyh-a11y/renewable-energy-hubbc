@@ -7429,34 +7429,46 @@ async function startServer() {
     console.warn(`⚠️ [Startup] Participant migration failed (non-critical):`, err.message);
   }
   
-  // MIGRATION: Initialize reactions on all news articles that don't have them
+  // MIGRATION: Initialize reactions on all news articles that don't have proper structure
   try {
     console.log('🧹 [Startup] Running news reactions migration...');
     const News = db.models?.News;
     if (News) {
-      // Find all news articles without reactions
-      const articlesWithoutReactions = await News.find({
-        $or: [
-          { reactions: { $exists: false } },
-          { reactions: null },
-          { reactions: {} }
-        ]
-      });
+      // Find ALL articles and check their reactions structure
+      const allArticles = await News.find({});
+      console.log(`📊 [Startup] Found ${allArticles.length} total news articles`);
       
-      console.log(`📊 [Startup] Found ${articlesWithoutReactions.length} articles without proper reactions structure`);
+      const articlesToFix = [];
       
-      if (articlesWithoutReactions.length > 0) {
-        for (const article of articlesWithoutReactions) {
+      for (const article of allArticles) {
+        // Check if reactions is missing, null, an empty array [], or an empty object {}
+        const isArray = Array.isArray(article.reactions);
+        const isEmpty = !article.reactions || 
+                       (isArray && article.reactions.length === 0) ||
+                       (typeof article.reactions === 'object' && !isArray && Object.keys(article.reactions).length === 0);
+        const isNotObject = !isArray && typeof article.reactions === 'object' && article.reactions !== null && !article.reactions.like;
+        
+        if (!article.reactions || isArray || isEmpty || isNotObject) {
+          articlesToFix.push(article);
+        }
+      }
+      
+      console.log(`🔍 [Startup] Found ${articlesToFix.length} articles with improper reactions structure`);
+      
+      if (articlesToFix.length > 0) {
+        for (const article of articlesToFix) {
+          console.log(`  - Fixing: "${article.title}" - reactions type: ${Array.isArray(article.reactions) ? 'array' : typeof article.reactions}`);
           article.reactions = {
             like: [],
             love: [],
             insightful: [],
             celebrate: []
           };
+          article.markModified('reactions');
           await article.save();
           console.log(`  ✅ Initialized reactions for: "${article.title}" (ID: ${article._id})`);
         }
-        console.log(`✅ [Startup] Initialized reactions on ${articlesWithoutReactions.length} articles`);
+        console.log(`✅ [Startup] Fixed reactions on ${articlesToFix.length} articles`);
       } else {
         console.log('✅ [Startup] All articles have proper reactions structure');
       }
