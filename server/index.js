@@ -1994,6 +1994,20 @@ app.post('/api/modules/:courseId', (req, res) => {
 // PUBLIC: Get all news (paginated, sorted by date)
 app.get('/api/news', async (req, res) => {
   try {
+    const token = req.headers.authorization?.split(' ')[1];
+    let currentUserId = null;
+
+    // Get current user if authenticated
+    if (token) {
+      const users = loadUsers();
+      for (const [email, user] of Object.entries(users)) {
+        if (user.token === token) {
+          currentUserId = email;
+          break;
+        }
+      }
+    }
+
     const db = require('./db.js');
     if (!db?.models?.News) {
       return res.status(503).json({ error: 'News service unavailable' });
@@ -2007,13 +2021,50 @@ app.get('/api/news', async (req, res) => {
     const news = await db.models.News.find({ published: true })
       .sort({ publishedAt: sort })
       .skip(skip)
-      .limit(limit)
-      .select('id slug title excerpt coverImage author publishedAt likes reactions');
+      .limit(limit);
 
     const total = await db.models.News.countDocuments({ published: true });
 
+    // Compute counts and userReaction for each article
+    const newsWithCounts = news.map(article => {
+      const data = article.toJSON ? article.toJSON() : article;
+
+      // Ensure reactions object has correct format
+      if (!data.reactions || typeof data.reactions !== 'object' || Array.isArray(data.reactions)) {
+        data.reactions = {
+          like: [],
+          love: [],
+          insightful: [],
+          celebrate: []
+        };
+      }
+
+      // Compute counts
+      const counts = {
+        like: (data.reactions.like || []).length,
+        love: (data.reactions.love || []).length,
+        insightful: (data.reactions.insightful || []).length,
+        celebrate: (data.reactions.celebrate || []).length
+      };
+
+      // Determine user's current reaction
+      let userReaction = null;
+      if (currentUserId) {
+        if ((data.reactions.like || []).includes(currentUserId)) userReaction = 'like';
+        else if ((data.reactions.love || []).includes(currentUserId)) userReaction = 'love';
+        else if ((data.reactions.insightful || []).includes(currentUserId)) userReaction = 'insightful';
+        else if ((data.reactions.celebrate || []).includes(currentUserId)) userReaction = 'celebrate';
+      }
+
+      data.counts = counts;
+      data.userReaction = userReaction;
+      data.reactions = undefined; // Remove raw array from response
+
+      return data;
+    });
+
     res.json({
-      news: news || [],
+      news: newsWithCounts,
       total,
       page,
       pages: Math.ceil(total / limit)
@@ -2027,6 +2078,20 @@ app.get('/api/news', async (req, res) => {
 // PUBLIC: Get single news article by slug
 app.get('/api/news/:slug', async (req, res) => {
   try {
+    const token = req.headers.authorization?.split(' ')[1];
+    let currentUserId = null;
+
+    // Get current user if authenticated
+    if (token) {
+      const users = loadUsers();
+      for (const [email, user] of Object.entries(users)) {
+        if (user.token === token) {
+          currentUserId = email;
+          break;
+        }
+      }
+    }
+
     const db = require('./db.js');
     if (!db?.models?.News) {
       return res.status(503).json({ error: 'News service unavailable' });
@@ -2037,28 +2102,53 @@ app.get('/api/news/:slug', async (req, res) => {
       return res.status(404).json({ error: 'News not found' });
     }
 
-    console.log(`📰 Fetching news slug ${req.params.slug}:`, {
-      likes: news.likes ? news.likes.length : 0,
-      reactions: news.reactions ? news.reactions.length : 0
-    });
+    // Ensure reactions object has correct format
+    if (!news.reactions || typeof news.reactions !== 'object' || Array.isArray(news.reactions)) {
+      news.reactions = {
+        like: [],
+        love: [],
+        insightful: [],
+        celebrate: []
+      };
+    }
 
-    res.json(news);
+    // Compute counts
+    const counts = {
+      like: (news.reactions.like || []).length,
+      love: (news.reactions.love || []).length,
+      insightful: (news.reactions.insightful || []).length,
+      celebrate: (news.reactions.celebrate || []).length
+    };
+
+    // Determine user's current reaction
+    let userReaction = null;
+    if (currentUserId) {
+      if ((news.reactions.like || []).includes(currentUserId)) userReaction = 'like';
+      else if ((news.reactions.love || []).includes(currentUserId)) userReaction = 'love';
+      else if ((news.reactions.insightful || []).includes(currentUserId)) userReaction = 'insightful';
+      else if ((news.reactions.celebrate || []).includes(currentUserId)) userReaction = 'celebrate';
+    }
+
+    // Return news with computed metadata
+    const newsData = news.toJSON ? news.toJSON() : news;
+    newsData.counts = counts;
+    newsData.userReaction = userReaction;
+    newsData.reactions = undefined; // Remove raw array from response
+
+    res.json(newsData);
   } catch (err) {
     console.error('Error fetching news:', err);
     res.status(500).json({ error: 'Failed to load news' });
   }
 });
 
-// AUTHENTICATED: Like a news article
-app.post('/api/news/:id/like', async (req, res) => {
+// AUTHENTICATED: React to a news article (like, love, insightful, celebrate)
+app.post('/api/news/:newsId/react', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-      console.warn('❌ Like endpoint: No token provided');
       return res.status(401).json({ error: 'Authentication required' });
     }
-
-    console.log('👍 Like endpoint called:', { id: req.params.id, token: token.substring(0, 20) + '...' });
 
     const users = loadUsers();
     let userId = null;
@@ -2070,11 +2160,149 @@ app.post('/api/news/:id/like', async (req, res) => {
     }
 
     if (!userId) {
-      console.warn('❌ Like endpoint: Token not found in users table. Available tokens:', Object.keys(users).map(e => users[e].token ? users[e].token.substring(0, 10) : 'none'));
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    console.log('✅ Like endpoint: User authenticated:', userId);
+    const { reaction } = req.body;
+    const validReactions = ['like', 'love', 'insightful', 'celebrate'];
+    if (!validReactions.includes(reaction)) {
+      return res.status(400).json({ error: 'Invalid reaction type' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    const news = await db.models.News.findById(req.params.newsId);
+    if (!news) {
+      return res.status(404).json({ error: 'News not found' });
+    }
+
+    // Initialize reactions object if needed
+    if (!news.reactions) {
+      news.reactions = {
+        like: [],
+        love: [],
+        insightful: [],
+        celebrate: []
+      };
+    }
+
+    // Remove user from all reaction arrays
+    validReactions.forEach(type => {
+      if (!news.reactions[type]) news.reactions[type] = [];
+      news.reactions[type] = news.reactions[type].filter(id => id !== userId);
+    });
+
+    // Add user to selected reaction array
+    if (!news.reactions[reaction]) news.reactions[reaction] = [];
+    news.reactions[reaction].push(userId);
+
+    await news.save();
+
+    // Return reaction counts and user's current reaction
+    const counts = {};
+    validReactions.forEach(type => {
+      counts[type] = news.reactions[type].length;
+    });
+
+    res.json({
+      userReaction: reaction,
+      counts
+    });
+  } catch (err) {
+    console.error('Error reacting to news:', err);
+    res.status(500).json({ error: 'Failed to process reaction' });
+  }
+});
+
+// AUTHENTICATED: Remove reaction from a news article
+app.delete('/api/news/:newsId/react', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const users = loadUsers();
+    let userId = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        userId = email;
+        break;
+      }
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    const news = await db.models.News.findById(req.params.newsId);
+    if (!news) {
+      return res.status(404).json({ error: 'News not found' });
+    }
+
+    // Initialize reactions object if needed
+    if (!news.reactions) {
+      news.reactions = {
+        like: [],
+        love: [],
+        insightful: [],
+        celebrate: []
+      };
+    }
+
+    // Remove user from all reaction arrays
+    const validReactions = ['like', 'love', 'insightful', 'celebrate'];
+    validReactions.forEach(type => {
+      if (!news.reactions[type]) news.reactions[type] = [];
+      news.reactions[type] = news.reactions[type].filter(id => id !== userId);
+    });
+
+    await news.save();
+
+    // Return updated counts
+    const counts = {};
+    validReactions.forEach(type => {
+      counts[type] = news.reactions[type].length;
+    });
+
+    res.json({
+      userReaction: null,
+      counts
+    });
+  } catch (err) {
+    console.error('Error removing reaction:', err);
+    res.status(500).json({ error: 'Failed to remove reaction' });
+  }
+});
+
+// OLD ENDPOINTS (kept for backward compatibility, will be removed later)
+app.post('/api/news/:id/like', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const users = loadUsers();
+    let userId = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        userId = email;
+        break;
+      }
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
 
     const db = require('./db.js');
     if (!db?.models?.News) {
@@ -2086,46 +2314,48 @@ app.post('/api/news/:id/like', async (req, res) => {
       return res.status(404).json({ error: 'News not found' });
     }
 
-    // Initialize likes array if needed
-    if (!news.likes) news.likes = [];
-
-    console.log(`👍 Before like: Article has ${news.likes.length} likes`);
-
-    // Check if user already liked
-    const existingLikeIndex = news.likes.findIndex(l => l.userId === userId);
-    if (existingLikeIndex >= 0) {
-      // Remove like (unlike)
-      console.log(`👍 User ${userId} already liked, removing like`);
-      news.likes.splice(existingLikeIndex, 1);
-    } else {
-      // Add like
-      console.log(`👍 Adding like from user ${userId}`);
-      news.likes.push({ userId, createdAt: new Date() });
+    // Migrate to new model if needed
+    if (!news.reactions || typeof news.reactions !== 'object' || Array.isArray(news.reactions)) {
+      news.reactions = {
+        like: [],
+        love: [],
+        insightful: [],
+        celebrate: []
+      };
     }
 
-    console.log(`👍 After like: Article has ${news.likes.length} likes`);
-    console.log(`👍 Saving to MongoDB...`);
+    // Toggle like (using new model)
+    if (!news.reactions.like) news.reactions.like = [];
+    const likeIndex = news.reactions.like.indexOf(userId);
+    if (likeIndex >= 0) {
+      news.reactions.like.splice(likeIndex, 1);
+    } else {
+      news.reactions.like.push(userId);
+    }
+
     await news.save();
-    console.log(`👍 Successfully saved to MongoDB`);
-    
-    res.json({ 
-      liked: existingLikeIndex < 0, 
-      likeCount: news.likes.length,
-      likes: news.likes,
-      reactions: news.reactions
+
+    res.json({
+      liked: likeIndex < 0,
+      likeCount: news.reactions.like.length,
+      counts: {
+        like: news.reactions.like.length,
+        love: (news.reactions.love || []).length,
+        insightful: (news.reactions.insightful || []).length,
+        celebrate: (news.reactions.celebrate || []).length
+      }
     });
   } catch (err) {
-    console.error('❌ Error liking news:', err);
+    console.error('Error liking news:', err);
     res.status(500).json({ error: 'Failed to process like' });
   }
 });
 
-// AUTHENTICATED: React to a news article
+// AUTHENTICATED: React to a news article (OLD ENDPOINT)
 app.post('/api/news/:id/react', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-      console.warn('❌ React endpoint: No token provided');
       return res.status(401).json({ error: 'Authentication required' });
     }
 
@@ -2141,11 +2371,8 @@ app.post('/api/news/:id/react', async (req, res) => {
     }
 
     if (!userId) {
-      console.warn('❌ React endpoint: Token not found in users table');
       return res.status(401).json({ error: 'Invalid token' });
     }
-
-    console.log('✅ React endpoint: User authenticated:', userId);
 
     const { type } = req.body;
     const validTypes = ['love', 'laugh', 'wow', 'sad', 'angry'];
@@ -2163,40 +2390,47 @@ app.post('/api/news/:id/react', async (req, res) => {
       return res.status(404).json({ error: 'News not found' });
     }
 
-    // Initialize reactions array if needed
-    if (!news.reactions) news.reactions = [];
-
-    console.log(`😊 Before react: Article has ${news.reactions.length} total reactions`);
-
-    // Check if user already reacted
-    const existingReactionIndex = news.reactions.findIndex(r => r.userId === userId);
-    if (existingReactionIndex >= 0) {
-      // Update reaction
-      console.log(`😊 User ${userId} already reacted with ${news.reactions[existingReactionIndex].type}, updating to ${type}`);
-      news.reactions[existingReactionIndex] = { userId, type, createdAt: new Date() };
-    } else {
-      // Add new reaction
-      console.log(`😊 Adding ${type} reaction from user ${userId}`);
-      news.reactions.push({ userId, type, createdAt: new Date() });
+    // Migrate old model to new model if needed
+    if (!news.reactions || Array.isArray(news.reactions)) {
+      news.reactions = {
+        like: [],
+        love: [],
+        insightful: [],
+        celebrate: []
+      };
     }
 
-    console.log(`😊 After react: Article has ${news.reactions.length} total reactions`);
-    console.log(`😊 Saving to MongoDB...`);
-    await news.save();
-    console.log(`😊 Successfully saved to MongoDB`);
+    // Map old reaction types to new ones (for backward compat with old model)
+    const typeMap = {
+      'love': 'love',
+      'laugh': 'celebrate',
+      'wow': 'insightful',
+      'sad': 'celebrate',
+      'angry': 'celebrate'
+    };
+    const mappedType = typeMap[type] || 'celebrate';
 
-    // Calculate reaction summary
-    const summary = {};
-    news.reactions.forEach(r => {
-      summary[r.type] = (summary[r.type] || 0) + 1;
+    // Remove user from all reaction arrays
+    ['like', 'love', 'insightful', 'celebrate'].forEach(t => {
+      if (!news.reactions[t]) news.reactions[t] = [];
+      news.reactions[t] = news.reactions[t].filter(id => id !== userId);
     });
-    console.log(`😊 Reaction summary:`, summary);
 
-    res.json({ 
-      userReaction: type, 
-      summary,
-      likes: news.likes,
-      reactions: news.reactions
+    // Add user to selected reaction array
+    if (!news.reactions[mappedType]) news.reactions[mappedType] = [];
+    news.reactions[mappedType].push(userId);
+
+    await news.save();
+
+    // Return counts
+    const counts = {};
+    ['like', 'love', 'insightful', 'celebrate'].forEach(t => {
+      counts[t] = (news.reactions[t] || []).length;
+    });
+
+    res.json({
+      userReaction: type,
+      counts
     });
   } catch (err) {
     console.error('Error reacting to news:', err);
@@ -2248,8 +2482,12 @@ app.post('/api/admin/news', async (req, res) => {
       author: author || authUser.name || authUser.email,
       published: false,
       publishedAt: null,
-      likes: [],
-      reactions: [],
+      reactions: {
+        like: [],
+        love: [],
+        insightful: [],
+        celebrate: []
+      },
       createdAt: new Date(),
       updatedAt: new Date()
     });
@@ -2285,7 +2523,36 @@ app.get('/api/admin/news', async (req, res) => {
     }
 
     const news = await db.models.News.find().sort({ createdAt: -1 });
-    res.json(news || []);
+    
+    // Compute counts for each article
+    const newsWithCounts = (news || []).map(article => {
+      const data = article.toJSON ? article.toJSON() : article;
+
+      // Ensure reactions object has correct format
+      if (!data.reactions || typeof data.reactions !== 'object' || Array.isArray(data.reactions)) {
+        data.reactions = {
+          like: [],
+          love: [],
+          insightful: [],
+          celebrate: []
+        };
+      }
+
+      // Compute counts
+      const counts = {
+        like: (data.reactions.like || []).length,
+        love: (data.reactions.love || []).length,
+        insightful: (data.reactions.insightful || []).length,
+        celebrate: (data.reactions.celebrate || []).length
+      };
+
+      data.counts = counts;
+      data.reactions = undefined; // Remove raw array from response
+
+      return data;
+    });
+
+    res.json(newsWithCounts);
   } catch (err) {
     console.error('Error fetching admin news:', err);
     res.status(500).json({ error: 'Failed to load news' });
