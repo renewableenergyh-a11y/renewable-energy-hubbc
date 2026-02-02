@@ -412,6 +412,11 @@
 
   // Load initial news
   loadNews();
+
+  // Auto-refresh news every 5 seconds to show real-time likes/reactions
+  setInterval(() => {
+    loadNews(currentPage, currentSort);
+  }, 5000);
 </script>
 
 </body>
