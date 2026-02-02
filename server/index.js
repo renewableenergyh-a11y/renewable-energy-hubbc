@@ -2347,7 +2347,7 @@ app.patch('/api/admin/news/:id/publish', async (req, res) => {
     }
 
     const { published } = req.body;
-    console.log('📤 Publish endpoint called:', { id: req.params.id, published, user: authUser.email });
+    console.log('📤 Publish endpoint called:', { id: req.params.id, published, reqBody: req.body, user: authUser.email });
     
     const news = await db.models.News.findById(req.params.id);
     if (!news) {
@@ -2357,9 +2357,11 @@ app.patch('/api/admin/news/:id/publish', async (req, res) => {
 
     console.log('📤 Before update:', { id: news._id, title: news.title, published: news.published });
     
-    news.published = published || false;
-    if (published) {
+    news.published = published;
+    if (published === true) {
       news.publishedAt = new Date();
+    } else if (published === false && news.publishedAt) {
+      news.publishedAt = null;
     }
     await news.save();
     
