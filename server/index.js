@@ -7405,6 +7405,42 @@ async function startServer() {
     console.warn(`⚠️ [Startup] Participant migration failed (non-critical):`, err.message);
   }
   
+  // MIGRATION: Initialize reactions on all news articles that don't have them
+  try {
+    console.log('🧹 [Startup] Running news reactions migration...');
+    const News = db.models?.News;
+    if (News) {
+      // Find all news articles without reactions
+      const articlesWithoutReactions = await News.find({
+        $or: [
+          { reactions: { $exists: false } },
+          { reactions: null },
+          { reactions: {} }
+        ]
+      });
+      
+      console.log(`📊 [Startup] Found ${articlesWithoutReactions.length} articles without proper reactions structure`);
+      
+      if (articlesWithoutReactions.length > 0) {
+        for (const article of articlesWithoutReactions) {
+          article.reactions = {
+            like: [],
+            love: [],
+            insightful: [],
+            celebrate: []
+          };
+          await article.save();
+          console.log(`  ✅ Initialized reactions for: "${article.title}" (ID: ${article._id})`);
+        }
+        console.log(`✅ [Startup] Initialized reactions on ${articlesWithoutReactions.length} articles`);
+      } else {
+        console.log('✅ [Startup] All articles have proper reactions structure');
+      }
+    }
+  } catch (err) {
+    console.warn(`⚠️ [Startup] News reactions migration failed (non-critical):`, err.message);
+  }
+  
   // Initialize discussion system services after MongoDB is ready (without io yet)
   initializeDiscussionServices();
   
