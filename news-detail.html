@@ -519,15 +519,20 @@
 
   function updateLikeCount() {
     const count = currentArticle.likes ? currentArticle.likes.length : 0;
-    document.getElementById('likeCount').textContent = count;
+    const likeCountEl = document.getElementById('likeCount');
+    if (likeCountEl) {
+      likeCountEl.textContent = count;
+    }
     
     const likeBtn = document.getElementById('likeBtn');
-    if (userLiked) {
-      likeBtn.classList.add('liked');
-      likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> <span>Liked</span> <span class="like-count">${count}</span>`;
-    } else {
-      likeBtn.classList.remove('liked');
-      likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> <span>Like</span> <span class="like-count">${count}</span>`;
+    if (likeBtn) {
+      if (userLiked) {
+        likeBtn.classList.add('liked');
+        likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> <span>Liked</span> <span class="like-count">${count}</span>`;
+      } else {
+        likeBtn.classList.remove('liked');
+        likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> <span>Like</span> <span class="like-count">${count}</span>`;
+      }
     }
   }
 
@@ -574,12 +579,17 @@
       currentArticle.likes = Array(data.likeCount).fill(null);
       
       updateLikeCount();
-      document.getElementById('likeError').style.display = 'none';
+      const likeErrorEl = document.getElementById('likeError');
+      if (likeErrorEl) {
+        likeErrorEl.style.display = 'none';
+      }
     } catch (err) {
       console.error('Error liking article:', err);
       const errorDiv = document.getElementById('likeError');
-      errorDiv.textContent = 'Failed to process your like. Please try again.';
-      errorDiv.style.display = 'block';
+      if (errorDiv) {
+        errorDiv.textContent = 'Failed to process your like. Please try again.';
+        errorDiv.style.display = 'block';
+      }
     }
   }
 
@@ -624,12 +634,17 @@
       );
 
       renderReactionButtons();
-      document.getElementById('reactionError').style.display = 'none';
+      const reactionErrorEl = document.getElementById('reactionError');
+      if (reactionErrorEl) {
+        reactionErrorEl.style.display = 'none';
+      }
     } catch (err) {
       console.error('Error reacting:', err);
       const errorDiv = document.getElementById('reactionError');
-      errorDiv.textContent = 'Failed to process your reaction. Please try again.';
-      errorDiv.style.display = 'block';
+      if (errorDiv) {
+        errorDiv.textContent = 'Failed to process your reaction. Please try again.';
+        errorDiv.style.display = 'block';
+      }
     }
   }
 
