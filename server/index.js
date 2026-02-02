@@ -2265,6 +2265,9 @@ app.delete('/api/news/:newsId/react', async (req, res) => {
       return res.status(404).json({ error: 'News not found' });
     }
 
+    console.log(`🔵 DELETE /api/news/:newsId/react - newsId: ${req.params.newsId}, userId: ${userId}`);
+    console.log(`📊 Before update - reactions:`, news.reactions);
+
     // Initialize reactions object if needed
     if (!news.reactions) {
       news.reactions = {
@@ -2282,7 +2285,10 @@ app.delete('/api/news/:newsId/react', async (req, res) => {
       news.reactions[type] = news.reactions[type].filter(id => id !== userId);
     });
 
-    await news.save();
+    console.log(`📊 After update - reactions:`, news.reactions);
+
+    const saveResult = await news.save();
+    console.log(`💾 Saved successfully`);
 
     // Return updated counts
     const counts = {};
@@ -2290,6 +2296,7 @@ app.delete('/api/news/:newsId/react', async (req, res) => {
       counts[type] = news.reactions[type].length;
     });
 
+    console.log(`✅ Returning counts:`, counts);
     res.json({
       userReaction: null,
       counts
