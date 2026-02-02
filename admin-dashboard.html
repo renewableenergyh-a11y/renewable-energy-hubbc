@@ -3512,7 +3512,15 @@
     }
 
     // ----- News Management UI -----
+    let newsManagementInitialized = false;
     async function loadNewsManagementUI() {
+      // Prevent duplicate initialization
+      if (newsManagementInitialized) {
+        renderNews(currentViewingTab);
+        return;
+      }
+      newsManagementInitialized = true;
+      
       const newsForm = document.getElementById('news-form');
       const newsList = document.getElementById('news-list');
       const newsFormTitle = document.getElementById('news-form-title');
@@ -3671,9 +3679,16 @@
       // Set initial active tab
       document.querySelector('.news-tab-btn[data-tab="published"]').classList.add('active');
       
-      // Form submission
+      // Form submission - add a flag to prevent duplicate submissions
+      let isSubmittingNews = false;
       newsForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        
+        // Prevent duplicate submissions
+        if (isSubmittingNews) {
+          console.warn('⚠️ News submission already in progress, ignoring duplicate');
+          return;
+        }
         
         const title = document.getElementById('news-title').value.trim();
         const slug = document.getElementById('news-slug').value.trim() || 
@@ -3688,9 +3703,13 @@
           return;
         }
         
+        isSubmittingNews = true;
         try {
           const adminToken = getAdminToken();
-          if (!adminToken) return;
+          if (!adminToken) {
+            isSubmittingNews = false;
+            return;
+          }
           
           const method = currentEditingId ? 'PUT' : 'POST';
           const url = currentEditingId ? 
@@ -3748,6 +3767,8 @@
           newsFormNotice.style.borderLeftColor = '#dc3545';
           newsFormNotice.style.color = '#721c24';
           newsFormNotice.style.display = 'block';
+        } finally {
+          isSubmittingNews = false;
         }
       });
       
