@@ -2272,24 +2272,36 @@ app.put('/api/admin/news/:id', async (req, res) => {
     }
 
     const { title, slug, excerpt, content, coverImage, author } = req.body;
-    const news = await db.models.News.findById(req.params.id);
-    if (!news) {
+    
+    // Build update object
+    const updateObj = { updatedAt: new Date() };
+    if (title) updateObj.title = title;
+    if (slug) updateObj.slug = slug;
+    if (excerpt) updateObj.excerpt = excerpt;
+    if (content) updateObj.content = content;
+    if (coverImage !== undefined) updateObj.coverImage = coverImage;
+    if (author) updateObj.author = author;
+    
+    console.log('✏️ Edit endpoint called:', { id: req.params.id, updateObj });
+    
+    const updateResult = await db.models.News.updateOne(
+      { _id: req.params.id },
+      { $set: updateObj }
+    );
+    
+    console.log('✏️ Update result:', { modifiedCount: updateResult.modifiedCount, matchedCount: updateResult.matchedCount });
+    
+    if (updateResult.matchedCount === 0) {
       return res.status(404).json({ error: 'News not found' });
     }
-
-    // Update fields
-    if (title) news.title = title;
-    if (slug) news.slug = slug;
-    if (excerpt) news.excerpt = excerpt;
-    if (content) news.content = content;
-    if (coverImage !== undefined) news.coverImage = coverImage;
-    if (author) news.author = author;
-    news.updatedAt = new Date();
-
-    await news.save();
-    res.json(news);
+    
+    // Fetch and return the updated article
+    const updatedNews = await db.models.News.findById(req.params.id);
+    console.log('✅ Article updated:', { id: updatedNews._id, title: updatedNews.title });
+    
+    res.json(updatedNews);
   } catch (err) {
-    console.error('Error updating news:', err);
+    console.error('❌ Error updating news:', err);
     res.status(500).json({ error: 'Failed to update news' });
   }
 });
