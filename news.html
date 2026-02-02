@@ -335,13 +335,13 @@
             <div class="news-engagement">
               <div class="engagement-item">
                 <i class="fas fa-thumbs-up"></i>
-                ${news.likes ? news.likes.length : 0}
+                ${news.counts ? news.counts.like : 0}
               </div>
-              ${news.reactions && news.reactions.length > 0 ? `
+              ${news.counts && (news.counts.love > 0 || news.counts.insightful > 0 || news.counts.celebrate > 0) ? `
                 <div class="engagement-item">
                   <span>Reactions</span>
                   <div class="reaction-icons">
-                    ${getReactionIcons(news.reactions).join('')}
+                    ${getReactionIcons(news.counts).join('')}
                   </div>
                 </div>
               ` : ''}
@@ -353,22 +353,15 @@
     `).join('');
   }
 
-  function getReactionIcons(reactions) {
-    const counts = {};
-    reactions.forEach(r => {
-      counts[r.type] = (counts[r.type] || 0) + 1;
-    });
-
+  function getReactionIcons(counts) {
     const icons = {
       love: '❤️',
-      laugh: '😂',
-      wow: '😮',
-      sad: '😢',
-      angry: '😡'
+      insightful: '💡',
+      celebrate: '🎉'
     };
 
-    return Object.entries(counts).slice(0, 3).map(([type, count]) => 
-      `<span class="reaction-icon" title="${type}: ${count}">${icons[type] || type}</span>`
+    return Object.entries(icons).filter(([type]) => counts[type] && counts[type] > 0).map(([type, emoji]) => 
+      `<span class="reaction-icon" title="${type}: ${counts[type]}">${emoji} ${counts[type]}</span>`
     );
   }
 

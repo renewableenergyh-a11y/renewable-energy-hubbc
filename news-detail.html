@@ -388,8 +388,6 @@
 
   let currentArticle = null;
   let isAuthenticated = false;
-  let userLiked = false;
-  let userReaction = null;
 
   async function loadArticle() {
     const params = new URLSearchParams(window.location.search);
@@ -401,15 +399,21 @@
     }
 
     try {
-      const response = await fetch(`/api/news/${slug}`);
+      const token = localStorage.getItem('authToken');
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`/api/news/${slug}`, { headers });
       if (!response.ok) throw new Error('Not found');
 
       currentArticle = await response.json();
       console.log('📰 Article loaded:', {
         _id: currentArticle._id,
         slug: currentArticle.slug,
-        likes: currentArticle.likes ? currentArticle.likes.length : 0,
-        reactions: currentArticle.reactions ? currentArticle.reactions.length : 0
+        counts: currentArticle.counts,
+        userReaction: currentArticle.userReaction
       });
       renderArticle();
       initializeEngagement();
@@ -482,23 +486,8 @@
   }
 
   function checkUserEngagement() {
+    // No longer needed - userReaction is already in the API response
     if (!currentArticle) return;
-
-    const token = localStorage.getItem('authToken');
-    if (!token) return;
-
-    const userEmail = localStorage.getItem('userEmail');
-    
-    // Check if user liked
-    if (currentArticle.likes) {
-      userLiked = currentArticle.likes.some(l => l.userId === userEmail);
-    }
-
-    // Check if user reacted
-    if (currentArticle.reactions) {
-      const userReactionObj = currentArticle.reactions.find(r => r.userId === userEmail);
-      userReaction = userReactionObj ? userReactionObj.type : null;
-    }
   }
 
   function renderReactionButtons() {
@@ -508,14 +497,22 @@
       return;
     }
 
-    container.innerHTML = reactions.map(type => {
-      const count = currentArticle.reactions ? 
-        currentArticle.reactions.filter(r => r.type === type).length : 0;
+    const reactionTypes = ['like', 'love', 'insightful', 'celebrate'];
+    const reactionEmojisMap = {
+      like: '👍',
+      love: '❤️',
+      insightful: '💡',
+      celebrate: '🎉'
+    };
+
+    container.innerHTML = reactionTypes.map(type => {
+      const count = currentArticle.counts ? (currentArticle.counts[type] || 0) : 0;
+      const isActive = currentArticle.userReaction === type;
       return `
-        <button class="reaction-btn ${userReaction === type ? 'active' : ''}" 
+        <button class="reaction-btn ${isActive ? 'active' : ''}" 
                 data-reaction="${type}" 
                 title="${type}">
-          ${reactionEmojis[type]}
+          ${reactionEmojisMap[type]}
           <span class="count">${count}</span>
         </button>
       `;
@@ -528,7 +525,7 @@
   }
 
   function updateLikeCount() {
-    const count = currentArticle.likes ? currentArticle.likes.length : 0;
+    const count = currentArticle.counts ? (currentArticle.counts.like || 0) : 0;
     const likeCountEl = document.getElementById('likeCount');
     if (likeCountEl) {
       likeCountEl.textContent = count;
@@ -536,7 +533,8 @@
     
     const likeBtn = document.getElementById('likeBtn');
     if (likeBtn) {
-      if (userLiked) {
+      const isLiked = currentArticle.userReaction === 'like';
+      if (isLiked) {
         likeBtn.classList.add('liked');
         likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> <span>Liked</span> <span class="like-count">${count}</span>`;
       } else {
@@ -564,41 +562,35 @@
 
     try {
       const token = localStorage.getItem('authToken');
-      console.log('👍 Sending like request with token:', { 
-        tokenExists: !!token, 
-        tokenLength: token ? token.length : 0,
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
-        articleId: currentArticle._id 
-      });
       
-      const response = await fetch(`/api/news/${currentArticle._id}/like`, {
-        method: 'POST',
+      // If user already liked, remove the like; otherwise add it
+      const method = currentArticle.userReaction === 'like' ? 'DELETE' : 'POST';
+      const url = currentArticle.userReaction === 'like' ? 
+        `/api/news/${currentArticle._id}/react` :
+        `/api/news/${currentArticle._id}/react`;
+      
+      const options = {
+        method,
         headers: {
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      });
+      };
 
-      console.log('👍 Like response status:', response.status);
+      if (method === 'POST') {
+        options.body = JSON.stringify({ reaction: 'like' });
+      }
+
+      const response = await fetch(url, options);
 
       if (!response.ok) {
         throw new Error('Failed to like');
       }
 
       const data = await response.json();
-      console.log('👍 Like response data:', { 
-        liked: data.liked,
-        likeCount: data.likeCount,
-        likesArray: data.likes
-      });
-      userLiked = data.liked;
-      // Update with full article data from backend
-      currentArticle.likes = data.likes || [];
-      currentArticle.reactions = data.reactions || [];
-      
-      console.log('👍 Updated currentArticle:', {
-        likes: currentArticle.likes.length,
-        reactions: currentArticle.reactions.length
-      });
+      // Update article with server response
+      currentArticle.counts = data.counts || {};
+      currentArticle.userReaction = data.userReaction;
       
       updateLikeCount();
       renderReactionButtons();
@@ -624,47 +616,27 @@
 
     try {
       const token = localStorage.getItem('authToken');
-      console.log('😊 Sending reaction request with token:', { 
-        tokenExists: !!token, 
-        tokenLength: token ? token.length : 0,
-        tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
-        reactionType: type,
-        articleId: currentArticle._id 
-      });
-      
+
       const response = await fetch(`/api/news/${currentArticle._id}/react`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ type })
+        body: JSON.stringify({ reaction: type })
       });
-
-      console.log('😊 Reaction response status:', response.status);
 
       if (!response.ok) {
         throw new Error('Failed to react');
       }
 
       const data = await response.json();
-      console.log('😊 Reaction response data:', {
-        userReaction: data.userReaction,
-        summary: data.summary,
-        reactionsArray: data.reactions
-      });
-      userReaction = data.userReaction;
-      
-      // Update with full article data from backend
-      currentArticle.likes = data.likes || [];
-      currentArticle.reactions = data.reactions || [];
-
-      console.log('😊 Updated currentArticle:', {
-        likes: currentArticle.likes.length,
-        reactions: currentArticle.reactions.length
-      });
+      // Update article with server response
+      currentArticle.counts = data.counts || {};
+      currentArticle.userReaction = data.userReaction;
 
       renderReactionButtons();
+      updateLikeCount();
       const reactionErrorEl = document.getElementById('reactionError');
       if (reactionErrorEl) {
         reactionErrorEl.style.display = 'none';
@@ -675,6 +647,9 @@
       if (errorDiv) {
         errorDiv.textContent = 'Failed to process your reaction. Please try again.';
         errorDiv.style.display = 'block';
+      }
+    }
+  }
       }
     }
   }

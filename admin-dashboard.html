@@ -3583,25 +3583,24 @@
             const card = document.createElement('div');
             card.className = 'news-card';
             
-            const likeCount = article.likes ? article.likes.length : 0;
-            const reactionCounts = {};
-            if (article.reactions) {
-              article.reactions.forEach(r => {
-                reactionCounts[r.type] = (reactionCounts[r.type] || 0) + 1;
-              });
-            }
+            const likeCount = article.counts ? article.counts.like : 0;
+            const reactionCounts = article.counts ? {
+              love: article.counts.love || 0,
+              insightful: article.counts.insightful || 0,
+              celebrate: article.counts.celebrate || 0
+            } : {};
             
             const reactionEmojis = {
               'love': '❤️',
-              'laugh': '😂',
-              'wow': '😮',
-              'sad': '😢',
-              'angry': '😠'
+              'insightful': '💡',
+              'celebrate': '🎉'
             };
             
             let reactionSummary = '';
             Object.entries(reactionCounts).slice(0, 3).forEach(([type, count]) => {
-              reactionSummary += reactionEmojis[type] + ` ${count} `;
+              if (count > 0) {
+                reactionSummary += reactionEmojis[type] + ` ${count} `;
+              }
             });
             
             const publishDate = new Date(article.publishedAt || article.createdAt);
