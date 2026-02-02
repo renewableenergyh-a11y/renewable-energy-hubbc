@@ -580,9 +580,12 @@
 
       const data = await response.json();
       userLiked = data.liked;
-      currentArticle.likes = Array(data.likeCount).fill(null);
+      // Update with full article data from backend
+      currentArticle.likes = data.likes || [];
+      currentArticle.reactions = data.reactions || [];
       
       updateLikeCount();
+      renderReactionButtons();
       const likeErrorEl = document.getElementById('likeError');
       if (likeErrorEl) {
         likeErrorEl.style.display = 'none';
@@ -631,11 +634,9 @@
       const data = await response.json();
       userReaction = data.userReaction;
       
-      // Update reactions in currentArticle
-      if (!currentArticle.reactions) currentArticle.reactions = [];
-      currentArticle.reactions = Object.entries(data.summary).flatMap(([reactionType, count]) =>
-        Array(count).fill(null).map(() => ({ type: reactionType }))
-      );
+      // Update with full article data from backend
+      currentArticle.likes = data.likes || [];
+      currentArticle.reactions = data.reactions || [];
 
       renderReactionButtons();
       const reactionErrorEl = document.getElementById('reactionError');

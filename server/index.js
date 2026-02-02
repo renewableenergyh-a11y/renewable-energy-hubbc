@@ -2095,7 +2095,12 @@ app.post('/api/news/:id/like', async (req, res) => {
     }
 
     await news.save();
-    res.json({ liked: existingLikeIndex < 0, likeCount: news.likes.length });
+    res.json({ 
+      liked: existingLikeIndex < 0, 
+      likeCount: news.likes.length,
+      likes: news.likes,
+      reactions: news.reactions
+    });
   } catch (err) {
     console.error('❌ Error liking news:', err);
     res.status(500).json({ error: 'Failed to process like' });
@@ -2166,7 +2171,12 @@ app.post('/api/news/:id/react', async (req, res) => {
       summary[r.type] = (summary[r.type] || 0) + 1;
     });
 
-    res.json({ userReaction: type, summary });
+    res.json({ 
+      userReaction: type, 
+      summary,
+      likes: news.likes,
+      reactions: news.reactions
+    });
   } catch (err) {
     console.error('Error reacting to news:', err);
     res.status(500).json({ error: 'Failed to process reaction' });
