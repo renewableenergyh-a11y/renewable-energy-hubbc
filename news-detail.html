@@ -549,12 +549,21 @@
 
     try {
       const token = localStorage.getItem('token');
+      console.log('👍 Sending like request with token:', { 
+        tokenExists: !!token, 
+        tokenLength: token ? token.length : 0,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+        articleId: currentArticle._id 
+      });
+      
       const response = await fetch(`/api/news/${currentArticle._id}/like`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
+
+      console.log('👍 Like response status:', response.status);
 
       if (!response.ok) {
         throw new Error('Failed to like');
@@ -582,6 +591,14 @@
 
     try {
       const token = localStorage.getItem('token');
+      console.log('😊 Sending reaction request with token:', { 
+        tokenExists: !!token, 
+        tokenLength: token ? token.length : 0,
+        tokenPreview: token ? token.substring(0, 20) + '...' : 'none',
+        reactionType: type,
+        articleId: currentArticle._id 
+      });
+      
       const response = await fetch(`/api/news/${currentArticle._id}/react`, {
         method: 'POST',
         headers: {
@@ -590,6 +607,8 @@
         },
         body: JSON.stringify({ type })
       });
+
+      console.log('😊 Reaction response status:', response.status);
 
       if (!response.ok) {
         throw new Error('Failed to react');
