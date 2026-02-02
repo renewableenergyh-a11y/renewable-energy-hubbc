@@ -474,7 +474,7 @@
   function checkUserEngagement() {
     if (!currentArticle) return;
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('authToken');
     if (!token) return;
 
     const userEmail = localStorage.getItem('userEmail');
@@ -548,7 +548,7 @@
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
       console.log('👍 Sending like request with token:', { 
         tokenExists: !!token, 
         tokenLength: token ? token.length : 0,
@@ -590,7 +590,7 @@
     }
 
     try {
-      const token = localStorage.getItem('token');
+      const token = localStorage.getItem('authToken');
       console.log('😊 Sending reaction request with token:', { 
         tokenExists: !!token, 
         tokenLength: token ? token.length : 0,
