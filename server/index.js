@@ -1926,7 +1926,7 @@ app.post('/api/modules/:courseId', (req, res) => {
             title: '📖 New Module Available!',
             message: `${title} - Check out the latest lesson${course ? ` in ${course.title}` : ''}!`,
             icon: 'fa-graduation-cap',
-            actionUrl: `/module.html?id=${courseId}`,
+            actionUrl: `/module.html?course=${courseId}&module=${entry.id}`,
             data: {
               courseId: courseId,
               courseSlug: course?.slug,
