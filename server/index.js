@@ -2037,6 +2037,11 @@ app.get('/api/news/:slug', async (req, res) => {
       return res.status(404).json({ error: 'News not found' });
     }
 
+    console.log(`📰 Fetching news slug ${req.params.slug}:`, {
+      likes: news.likes ? news.likes.length : 0,
+      reactions: news.reactions ? news.reactions.length : 0
+    });
+
     res.json(news);
   } catch (err) {
     console.error('Error fetching news:', err);
@@ -2084,17 +2089,25 @@ app.post('/api/news/:id/like', async (req, res) => {
     // Initialize likes array if needed
     if (!news.likes) news.likes = [];
 
+    console.log(`👍 Before like: Article has ${news.likes.length} likes`);
+
     // Check if user already liked
     const existingLikeIndex = news.likes.findIndex(l => l.userId === userId);
     if (existingLikeIndex >= 0) {
       // Remove like (unlike)
+      console.log(`👍 User ${userId} already liked, removing like`);
       news.likes.splice(existingLikeIndex, 1);
     } else {
       // Add like
+      console.log(`👍 Adding like from user ${userId}`);
       news.likes.push({ userId, createdAt: new Date() });
     }
 
+    console.log(`👍 After like: Article has ${news.likes.length} likes`);
+    console.log(`👍 Saving to MongoDB...`);
     await news.save();
+    console.log(`👍 Successfully saved to MongoDB`);
+    
     res.json({ 
       liked: existingLikeIndex < 0, 
       likeCount: news.likes.length,
@@ -2153,23 +2166,31 @@ app.post('/api/news/:id/react', async (req, res) => {
     // Initialize reactions array if needed
     if (!news.reactions) news.reactions = [];
 
+    console.log(`😊 Before react: Article has ${news.reactions.length} total reactions`);
+
     // Check if user already reacted
     const existingReactionIndex = news.reactions.findIndex(r => r.userId === userId);
     if (existingReactionIndex >= 0) {
       // Update reaction
+      console.log(`😊 User ${userId} already reacted with ${news.reactions[existingReactionIndex].type}, updating to ${type}`);
       news.reactions[existingReactionIndex] = { userId, type, createdAt: new Date() };
     } else {
       // Add new reaction
+      console.log(`😊 Adding ${type} reaction from user ${userId}`);
       news.reactions.push({ userId, type, createdAt: new Date() });
     }
 
+    console.log(`😊 After react: Article has ${news.reactions.length} total reactions`);
+    console.log(`😊 Saving to MongoDB...`);
     await news.save();
+    console.log(`😊 Successfully saved to MongoDB`);
 
     // Calculate reaction summary
     const summary = {};
     news.reactions.forEach(r => {
       summary[r.type] = (summary[r.type] || 0) + 1;
     });
+    console.log(`😊 Reaction summary:`, summary);
 
     res.json({ 
       userReaction: type, 

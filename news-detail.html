@@ -579,10 +579,20 @@
       }
 
       const data = await response.json();
+      console.log('👍 Like response data:', { 
+        liked: data.liked,
+        likeCount: data.likeCount,
+        likesArray: data.likes
+      });
       userLiked = data.liked;
       // Update with full article data from backend
       currentArticle.likes = data.likes || [];
       currentArticle.reactions = data.reactions || [];
+      
+      console.log('👍 Updated currentArticle:', {
+        likes: currentArticle.likes.length,
+        reactions: currentArticle.reactions.length
+      });
       
       updateLikeCount();
       renderReactionButtons();
@@ -632,11 +642,21 @@
       }
 
       const data = await response.json();
+      console.log('😊 Reaction response data:', {
+        userReaction: data.userReaction,
+        summary: data.summary,
+        reactionsArray: data.reactions
+      });
       userReaction = data.userReaction;
       
       // Update with full article data from backend
       currentArticle.likes = data.likes || [];
       currentArticle.reactions = data.reactions || [];
+
+      console.log('😊 Updated currentArticle:', {
+        likes: currentArticle.likes.length,
+        reactions: currentArticle.reactions.length
+      });
 
       renderReactionButtons();
       const reactionErrorEl = document.getElementById('reactionError');
