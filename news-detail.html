@@ -443,15 +443,25 @@
   }
 
   function initializeEngagement() {
-    // Check if user is logged in
+    // Check if user is logged in - check multiple possible keys
     const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
-    const token = localStorage.getItem('token');
-    isAuthenticated = isLoggedIn && !!token;
+    const token = localStorage.getItem('token') || localStorage.getItem('userToken') || localStorage.getItem('authToken');
+    
+    console.log('🔐 Login check:', {
+      isLoggedIn,
+      token: !!token,
+      tokenLength: token ? token.length : 0,
+      storageKeys: Object.keys(localStorage).filter(k => k.includes('token') || k.includes('log') || k.includes('auth'))
+    });
+    
+    isAuthenticated = (isLoggedIn || !!token) && !!token;
 
     if (isAuthenticated) {
+      console.log('✅ User authenticated - enabling engagement');
       checkUserEngagement();
       document.getElementById('authPrompt').style.display = 'none';
     } else {
+      console.log('❌ User not authenticated - showing auth prompt');
       document.getElementById('authPrompt').style.display = 'block';
       document.getElementById('likeBtn').disabled = true;
     }
