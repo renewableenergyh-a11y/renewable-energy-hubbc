@@ -2356,18 +2356,27 @@ app.patch('/api/admin/news/:id/publish', async (req, res) => {
     }
 
     console.log('📤 Before update:', { id: news._id, title: news.title, published: news.published });
+    console.log('📤 Setting published to:', published, 'type:', typeof published);
     
-    news.published = published;
-    if (published === true) {
-      news.publishedAt = new Date();
-    } else if (published === false && news.publishedAt) {
-      news.publishedAt = null;
-    }
-    await news.save();
+    // Use updateOne to explicitly update the database
+    const updateResult = await db.models.News.updateOne(
+      { _id: req.params.id },
+      { 
+        $set: { 
+          published: published === true ? true : false,
+          publishedAt: published === true ? new Date() : null,
+          updatedAt: new Date()
+        }
+      }
+    );
     
-    console.log('✅ After update:', { id: news._id, title: news.title, published: news.published, publishedAt: news.publishedAt });
+    console.log('📤 Update result:', { modifiedCount: updateResult.modifiedCount, matchedCount: updateResult.matchedCount });
+    
+    // Fetch the updated article to return
+    const updatedNews = await db.models.News.findById(req.params.id);
+    console.log('✅ After update:', { id: updatedNews._id, title: updatedNews.title, published: updatedNews.published, publishedAt: updatedNews.publishedAt });
 
-    res.json(news);
+    res.json(updatedNews);
   } catch (err) {
     console.error('❌ Error publishing news:', err);
     res.status(500).json({ error: 'Failed to publish news' });
