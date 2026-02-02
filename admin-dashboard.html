@@ -3554,6 +3554,7 @@
           if (!response.ok) throw new Error('Failed to load news');
           
           const articles = await response.json();
+          console.log('📰 Loaded articles:', { total: articles.length, filter });
           
           // Filter by status
           let filtered = articles || [];
@@ -3562,6 +3563,8 @@
           } else if (filter === 'drafts') {
             filtered = filtered.filter(a => !a.published);
           }
+          
+          console.log('📰 Filtered articles:', { filter, count: filtered.length, articles: filtered.map(a => ({ title: a.title, published: a.published })) });
           
           newsList.innerHTML = '';
           
@@ -3922,7 +3925,7 @@
           const adminToken = getAdminToken();
           if (!adminToken) return;
           
-          console.log('Publishing news:', { id, hasToken: !!adminToken });
+          console.log('📤 Publishing news:', { id, hasToken: !!adminToken });
           
           const response = await fetch(`/api/admin/news/${id}/publish`, {
             method: 'PATCH',
@@ -3933,14 +3936,25 @@
             body: JSON.stringify({ published: true })
           });
           
+          console.log('📤 Publish response status:', response.status);
+          
           if (!response.ok) {
             const error = await response.json().catch(() => ({}));
             console.error('Publish error:', error);
             throw new Error('Failed to publish');
           }
           
+          const publishedArticle = await response.json();
+          console.log('📤 Article published:', { id, published: publishedArticle.published, publishedAt: publishedArticle.publishedAt });
+          
           await showAlert('Success', 'Article published!', 'success');
-          renderNews(currentViewingTab);
+          
+          // Switch to published tab to show the published article
+          currentViewingTab = 'published';
+          document.querySelectorAll('.news-tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelector('.news-tab-btn[data-tab="published"]').classList.add('active');
+          
+          renderNews('published');
         } catch (error) {
           console.error('publishNews error:', error);
           showAlert('Error', 'Failed to publish article', 'error');
