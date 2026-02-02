@@ -2102,6 +2102,9 @@ app.get('/api/news/:slug', async (req, res) => {
       return res.status(404).json({ error: 'News not found' });
     }
 
+    console.log(`🔵 GET /api/news/:slug - slug: ${req.params.slug}, userId: ${currentUserId}`);
+    console.log(`📊 Raw reactions from DB:`, news.reactions);
+
     // Ensure reactions object has correct format
     if (!news.reactions || typeof news.reactions !== 'object' || Array.isArray(news.reactions)) {
       news.reactions = {
@@ -2120,6 +2123,8 @@ app.get('/api/news/:slug', async (req, res) => {
       celebrate: (news.reactions.celebrate || []).length
     };
 
+    console.log(`✅ Computed counts:`, counts);
+
     // Determine user's current reaction
     let userReaction = null;
     if (currentUserId) {
@@ -2128,6 +2133,8 @@ app.get('/api/news/:slug', async (req, res) => {
       else if ((news.reactions.insightful || []).includes(currentUserId)) userReaction = 'insightful';
       else if ((news.reactions.celebrate || []).includes(currentUserId)) userReaction = 'celebrate';
     }
+
+    console.log(`👤 User reaction:`, userReaction);
 
     // Return news with computed metadata
     const newsData = news.toJSON ? news.toJSON() : news;
@@ -2174,10 +2181,16 @@ app.post('/api/news/:newsId/react', async (req, res) => {
       return res.status(503).json({ error: 'News service unavailable' });
     }
 
+    console.log(`🔵 POST /api/news/:newsId/react - newsId: ${req.params.newsId}, userId: ${userId}, reaction: ${reaction}`);
+
     const news = await db.models.News.findById(req.params.newsId);
     if (!news) {
+      console.log(`❌ News not found: ${req.params.newsId}`);
       return res.status(404).json({ error: 'News not found' });
     }
+
+    console.log(`✅ Found news: ${news._id}, slug: ${news.slug}`);
+    console.log(`📊 Before update - reactions:`, news.reactions);
 
     // Initialize reactions object if needed
     if (!news.reactions) {
@@ -2199,7 +2212,10 @@ app.post('/api/news/:newsId/react', async (req, res) => {
     if (!news.reactions[reaction]) news.reactions[reaction] = [];
     news.reactions[reaction].push(userId);
 
-    await news.save();
+    console.log(`📊 After update - reactions:`, news.reactions);
+
+    const saveResult = await news.save();
+    console.log(`💾 Saved successfully. Modified: ${saveResult.lastErrorObject ? 'pending' : 'confirmed'}`);
 
     // Return reaction counts and user's current reaction
     const counts = {};
@@ -2207,12 +2223,13 @@ app.post('/api/news/:newsId/react', async (req, res) => {
       counts[type] = news.reactions[type].length;
     });
 
+    console.log(`✅ Returning counts:`, counts);
     res.json({
       userReaction: reaction,
       counts
     });
   } catch (err) {
-    console.error('Error reacting to news:', err);
+    console.error('❌ Error reacting to news:', err);
     res.status(500).json({ error: 'Failed to process reaction' });
   }
 });
