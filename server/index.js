@@ -2214,8 +2214,17 @@ app.post('/api/news/:newsId/react', async (req, res) => {
 
     console.log(`📊 After update - reactions:`, news.reactions);
 
+    // CRITICAL: Mark reactions field as modified for Mongoose
+    // Mongoose doesn't automatically detect deep nested changes
+    news.markModified('reactions');
+    console.log(`🔧 Marked 'reactions' field as modified for save`);
+
     const saveResult = await news.save();
     console.log(`💾 Saved successfully. Modified: ${saveResult.lastErrorObject ? 'pending' : 'confirmed'}`);
+
+    // Verify the save by refetching
+    const verifyNews = await db.models.News.findById(news._id);
+    console.log(`✅ Verification fetch - reactions in DB:`, verifyNews.reactions);
 
     // Return reaction counts and user's current reaction
     const counts = {};
@@ -2287,8 +2296,16 @@ app.delete('/api/news/:newsId/react', async (req, res) => {
 
     console.log(`📊 After update - reactions:`, news.reactions);
 
+    // CRITICAL: Mark reactions field as modified for Mongoose
+    news.markModified('reactions');
+    console.log(`🔧 Marked 'reactions' field as modified for save`);
+
     const saveResult = await news.save();
     console.log(`💾 Saved successfully`);
+
+    // Verify the save by refetching
+    const verifyNews = await db.models.News.findById(news._id);
+    console.log(`✅ Verification fetch - reactions in DB:`, verifyNews.reactions);
 
     // Return updated counts
     const counts = {};
