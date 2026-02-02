@@ -3834,8 +3834,10 @@
           }
           
           const savedArticle = await response.json();
+          console.log('💾 Article saved:', { id: savedArticle._id, title: savedArticle.title });
           
           // Then publish it
+          console.log('📤 Attempting to publish article:', { id: savedArticle._id });
           const publishRes = await fetch(`/api/admin/news/${savedArticle._id}/publish`, {
             method: 'PATCH',
             headers: {
@@ -3845,10 +3847,16 @@
             body: JSON.stringify({ published: true })
           });
           
+          console.log('📤 Publish response status:', publishRes.status);
+          
           if (!publishRes.ok) {
-            console.error('Publish error:', publishRes.status);
+            const pubError = await publishRes.json().catch(() => ({}));
+            console.error('❌ Publish error:', { status: publishRes.status, error: pubError });
             throw new Error('Failed to publish article');
           }
+          
+          const publishedArticle = await publishRes.json();
+          console.log('✅ Article published:', { id: publishedArticle._id, published: publishedArticle.published });
           
           await showAlert('Success', 'Article published successfully!', 'success');
           
@@ -3863,7 +3871,7 @@
           
           renderNews('published');
         } catch (error) {
-          console.error('Publish error:', error);
+          console.error('❌ Publish button error:', error);
           await showAlert('Error', error.message, 'error');
         }
       });

@@ -2347,20 +2347,27 @@ app.patch('/api/admin/news/:id/publish', async (req, res) => {
     }
 
     const { published } = req.body;
+    console.log('📤 Publish endpoint called:', { id: req.params.id, published, user: authUser.email });
+    
     const news = await db.models.News.findById(req.params.id);
     if (!news) {
+      console.warn('⚠️ News article not found:', req.params.id);
       return res.status(404).json({ error: 'News not found' });
     }
 
+    console.log('📤 Before update:', { id: news._id, title: news.title, published: news.published });
+    
     news.published = published || false;
     if (published) {
       news.publishedAt = new Date();
     }
     await news.save();
+    
+    console.log('✅ After update:', { id: news._id, title: news.title, published: news.published, publishedAt: news.publishedAt });
 
     res.json(news);
   } catch (err) {
-    console.error('Error publishing news:', err);
+    console.error('❌ Error publishing news:', err);
     res.status(500).json({ error: 'Failed to publish news' });
   }
 });
