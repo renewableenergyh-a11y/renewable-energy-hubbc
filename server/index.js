@@ -2746,6 +2746,87 @@ app.patch('/api/admin/news/:id/publish', async (req, res) => {
   }
 });
 
+// ADMIN: Manual migration endpoint to fix reactions structure
+app.post('/api/admin/news/migrate/reactions', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const authUser = authenticateToken(token);
+    if (!authUser || !['admin', 'superadmin'].includes(authUser.role)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    console.log('🧹 Manual migration triggered by admin');
+    
+    // Find ALL articles and check their reactions structure
+    const allArticles = await db.models.News.find({});
+    console.log(`📊 Found ${allArticles.length} total news articles`);
+    
+    const articlesToFix = [];
+    
+    for (const article of allArticles) {
+      // Check if reactions is missing, null, an empty array [], or an empty object {}
+      const isArray = Array.isArray(article.reactions);
+      const isEmpty = !article.reactions || 
+                     (isArray && article.reactions.length === 0) ||
+                     (typeof article.reactions === 'object' && !isArray && Object.keys(article.reactions).length === 0);
+      const isNotObject = !isArray && typeof article.reactions === 'object' && article.reactions !== null && !article.reactions.like;
+      
+      if (!article.reactions || isArray || isEmpty || isNotObject) {
+        articlesToFix.push(article);
+      }
+    }
+    
+    console.log(`🔍 Found ${articlesToFix.length} articles with improper reactions structure`);
+    
+    const results = [];
+    if (articlesToFix.length > 0) {
+      for (const article of articlesToFix) {
+        const oldStructure = Array.isArray(article.reactions) ? 'array' : typeof article.reactions;
+        console.log(`  - Fixing: "${article.title}" - reactions type was: ${oldStructure}`);
+        
+        article.reactions = {
+          like: [],
+          love: [],
+          insightful: [],
+          celebrate: []
+        };
+        article.markModified('reactions');
+        await article.save();
+        
+        results.push({
+          id: article._id,
+          title: article.title,
+          status: 'fixed',
+          oldType: oldStructure
+        });
+        
+        console.log(`  ✅ Fixed: "${article.title}" (ID: ${article._id})`);
+      }
+      console.log(`✅ Fixed reactions on ${articlesToFix.length} articles`);
+    }
+
+    res.json({
+      success: true,
+      message: `Fixed reactions structure on ${articlesToFix.length} articles`,
+      fixed: articlesToFix.length,
+      total: allArticles.length,
+      results: results
+    });
+  } catch (err) {
+    console.error('❌ Error in reactions migration:', err);
+    res.status(500).json({ error: 'Migration failed', details: err.message });
+  }
+});
+
 // Video upload endpoint (stores URL references, not actual files)
 // Module video upload endpoint - supports both URL references and file uploads
 app.post('/api/upload-module-video', express.json(), (req, res) => {
