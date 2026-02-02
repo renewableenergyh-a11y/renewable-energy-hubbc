@@ -2049,8 +2049,11 @@ app.post('/api/news/:id/like', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
+      console.warn('❌ Like endpoint: No token provided');
       return res.status(401).json({ error: 'Authentication required' });
     }
+
+    console.log('👍 Like endpoint called:', { id: req.params.id, token: token.substring(0, 20) + '...' });
 
     const users = loadUsers();
     let userId = null;
@@ -2062,8 +2065,11 @@ app.post('/api/news/:id/like', async (req, res) => {
     }
 
     if (!userId) {
+      console.warn('❌ Like endpoint: Token not found in users table. Available tokens:', Object.keys(users).map(e => users[e].token ? users[e].token.substring(0, 10) : 'none'));
       return res.status(401).json({ error: 'Invalid token' });
     }
+
+    console.log('✅ Like endpoint: User authenticated:', userId);
 
     const db = require('./db.js');
     if (!db?.models?.News) {
@@ -2091,7 +2097,7 @@ app.post('/api/news/:id/like', async (req, res) => {
     await news.save();
     res.json({ liked: existingLikeIndex < 0, likeCount: news.likes.length });
   } catch (err) {
-    console.error('Error liking news:', err);
+    console.error('❌ Error liking news:', err);
     res.status(500).json({ error: 'Failed to process like' });
   }
 });
@@ -2101,8 +2107,11 @@ app.post('/api/news/:id/react', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
+      console.warn('❌ React endpoint: No token provided');
       return res.status(401).json({ error: 'Authentication required' });
     }
+
+    console.log('😊 React endpoint called:', { id: req.params.id, token: token.substring(0, 20) + '...' });
 
     const users = loadUsers();
     let userId = null;
@@ -2114,8 +2123,11 @@ app.post('/api/news/:id/react', async (req, res) => {
     }
 
     if (!userId) {
+      console.warn('❌ React endpoint: Token not found in users table');
       return res.status(401).json({ error: 'Invalid token' });
     }
+
+    console.log('✅ React endpoint: User authenticated:', userId);
 
     const { type } = req.body;
     const validTypes = ['love', 'laugh', 'wow', 'sad', 'angry'];
