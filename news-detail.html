@@ -405,6 +405,12 @@
       if (!response.ok) throw new Error('Not found');
 
       currentArticle = await response.json();
+      console.log('📰 Article loaded:', {
+        _id: currentArticle._id,
+        slug: currentArticle.slug,
+        likes: currentArticle.likes ? currentArticle.likes.length : 0,
+        reactions: currentArticle.reactions ? currentArticle.reactions.length : 0
+      });
       renderArticle();
       initializeEngagement();
     } catch (err) {
