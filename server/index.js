@@ -70,6 +70,46 @@ function generateToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+// Helper function to authenticate using token from either admins or users table
+function authenticateToken(token) {
+  if (!token) return null;
+  
+  // Check superadmins first
+  try {
+    const admins = storage.loadAdmins();
+    for (const admin of admins) {
+      if (admin.token === token) {
+        return {
+          email: admin.email || admin.idNumber,
+          name: admin.name || 'Super Admin',
+          role: 'superadmin',
+          idNumber: admin.idNumber
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Error checking admins:', err.message);
+  }
+  
+  // Check regular admin/instructor users
+  try {
+    const users = loadUsers();
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        return {
+          email,
+          name: user.name || email,
+          role: user.role || 'user'
+        };
+      }
+    }
+  } catch (err) {
+    console.warn('Error checking users:', err.message);
+  }
+  
+  return null;
+}
+
 function validatePasswordStrength(password) {
   const errors = [];
   
@@ -2129,22 +2169,14 @@ app.post('/api/admin/news', async (req, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const users = loadUsers();
-    let userEmail = null;
-    for (const [email, user] of Object.entries(users)) {
-      if (user.token === token) {
-        userEmail = email;
-        break;
-      }
-    }
-
-    if (!userEmail) {
+    const authUser = authenticateToken(token);
+    if (!authUser) {
+      console.warn('❌ Token validation failed for news creation');
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    // Check if user is admin
-    const user = users[userEmail];
-    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+    // Check if user is admin or superadmin
+    if (!['admin', 'superadmin'].includes(authUser.role)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
@@ -2170,7 +2202,7 @@ app.post('/api/admin/news', async (req, res) => {
       excerpt: excerpt || content.substring(0, 200),
       content,
       coverImage: coverImage || '',
-      author: author || user.name || userEmail,
+      author: author || authUser.name || authUser.email,
       published: false,
       publishedAt: null,
       likes: [],
@@ -2195,21 +2227,12 @@ app.get('/api/admin/news', async (req, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const users = loadUsers();
-    let userEmail = null;
-    for (const [email, user] of Object.entries(users)) {
-      if (user.token === token) {
-        userEmail = email;
-        break;
-      }
-    }
-
-    if (!userEmail) {
+    const authUser = authenticateToken(token);
+    if (!authUser) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    const user = users[userEmail];
-    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+    if (!['admin', 'superadmin'].includes(authUser.role)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
@@ -2234,21 +2257,12 @@ app.put('/api/admin/news/:id', async (req, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const users = loadUsers();
-    let userEmail = null;
-    for (const [email, user] of Object.entries(users)) {
-      if (user.token === token) {
-        userEmail = email;
-        break;
-      }
-    }
-
-    if (!userEmail) {
+    const authUser = authenticateToken(token);
+    if (!authUser) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    const user = users[userEmail];
-    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+    if (!['admin', 'superadmin'].includes(authUser.role)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
@@ -2288,21 +2302,12 @@ app.delete('/api/admin/news/:id', async (req, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const users = loadUsers();
-    let userEmail = null;
-    for (const [email, user] of Object.entries(users)) {
-      if (user.token === token) {
-        userEmail = email;
-        break;
-      }
-    }
-
-    if (!userEmail) {
+    const authUser = authenticateToken(token);
+    if (!authUser) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    const user = users[userEmail];
-    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+    if (!['admin', 'superadmin'].includes(authUser.role)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
@@ -2327,21 +2332,12 @@ app.patch('/api/admin/news/:id/publish', async (req, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const users = loadUsers();
-    let userEmail = null;
-    for (const [email, user] of Object.entries(users)) {
-      if (user.token === token) {
-        userEmail = email;
-        break;
-      }
-    }
-
-    if (!userEmail) {
+    const authUser = authenticateToken(token);
+    if (!authUser) {
       return res.status(401).json({ error: 'Invalid token' });
     }
 
-    const user = users[userEmail];
-    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+    if (!['admin', 'superadmin'].includes(authUser.role)) {
       return res.status(403).json({ error: 'Admin access required' });
     }
 
