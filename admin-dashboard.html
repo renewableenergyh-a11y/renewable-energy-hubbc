@@ -3521,11 +3521,23 @@
       let currentEditingId = null;
       let currentViewingTab = 'published';
       
+      // Get the proper admin token
+      function getAdminToken() {
+        const token = localStorage.getItem('adminToken');
+        if (!token) {
+          console.warn('⚠️ No admin token found in localStorage');
+          showAlert('Authentication Error', 'Your session has expired. Please log in again.', 'error');
+          window.location.href = 'admin-login.html';
+          return null;
+        }
+        return token;
+      }
+      
       // Fetch and render news articles
       async function renderNews(filter = 'published') {
         try {
-          const adminEmail = localStorage.getItem('adminEmail') || '';
-          const adminToken = localStorage.getItem('adminToken') || '';
+          const adminToken = getAdminToken();
+          if (!adminToken) return;
           
           const response = await fetch('/api/admin/news', {
             headers: { 'Authorization': `Bearer ${adminToken}` }
@@ -3677,11 +3689,15 @@
         }
         
         try {
-          const adminToken = localStorage.getItem('adminToken') || '';
+          const adminToken = getAdminToken();
+          if (!adminToken) return;
+          
           const method = currentEditingId ? 'PUT' : 'POST';
           const url = currentEditingId ? 
             `/api/admin/news/${currentEditingId}` : 
             '/api/admin/news';
+          
+          console.log('📝 News submission:', { method, url, hasToken: !!adminToken, tokenLength: adminToken.length });
           
           const response = await fetch(url, {
             method,
@@ -3699,8 +3715,11 @@
             })
           });
           
+          console.log('Response status:', response.status);
+          
           if (!response.ok) {
             const error = await response.json().catch(() => ({}));
+            console.error('API error:', error);
             throw new Error(error.error || `HTTP ${response.status}`);
           }
           
@@ -3758,11 +3777,15 @@
         const author = document.getElementById('news-author').value.trim() || (localStorage.getItem('adminName') || 'Admin');
         
         try {
-          const adminToken = localStorage.getItem('adminToken') || '';
+          const adminToken = getAdminToken();
+          if (!adminToken) return;
+          
           const method = currentEditingId ? 'PUT' : 'POST';
           const url = currentEditingId ? 
             `/api/admin/news/${currentEditingId}` : 
             '/api/admin/news';
+          
+          console.log('📝 News publish:', { method, url, hasToken: !!adminToken });
           
           const response = await fetch(url, {
             method,
@@ -3782,6 +3805,7 @@
           
           if (!response.ok) {
             const error = await response.json().catch(() => ({}));
+            console.error('Save error:', error);
             throw new Error(error.error || `HTTP ${response.status}`);
           }
           
@@ -3798,6 +3822,7 @@
           });
           
           if (!publishRes.ok) {
+            console.error('Publish error:', publishRes.status);
             throw new Error('Failed to publish article');
           }
           
@@ -3830,12 +3855,20 @@
       // Global functions for inline onclick handlers
       window.editNews = async (id) => {
         try {
-          const adminToken = localStorage.getItem('adminToken') || '';
+          const adminToken = getAdminToken();
+          if (!adminToken) return;
+          
+          console.log('Loading article for edit:', { id, hasToken: !!adminToken });
+          
           const response = await fetch(`/api/admin/news`, {
             headers: { 'Authorization': `Bearer ${adminToken}` }
           });
           
-          if (!response.ok) throw new Error('Failed to load articles');
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            console.error('Load error:', error);
+            throw new Error('Failed to load articles');
+          }
           
           const articles = await response.json();
           const article = articles.find(a => a._id === id);
@@ -3865,7 +3898,11 @@
         if (!confirmed) return;
         
         try {
-          const adminToken = localStorage.getItem('adminToken') || '';
+          const adminToken = getAdminToken();
+          if (!adminToken) return;
+          
+          console.log('Publishing news:', { id, hasToken: !!adminToken });
+          
           const response = await fetch(`/api/admin/news/${id}/publish`, {
             method: 'PATCH',
             headers: {
@@ -3875,7 +3912,11 @@
             body: JSON.stringify({ published: true })
           });
           
-          if (!response.ok) throw new Error('Failed to publish');
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            console.error('Publish error:', error);
+            throw new Error('Failed to publish');
+          }
           
           await showAlert('Success', 'Article published!', 'success');
           renderNews(currentViewingTab);
@@ -3890,7 +3931,9 @@
         if (!confirmed) return;
         
         try {
-          const adminToken = localStorage.getItem('adminToken') || '';
+          const adminToken = getAdminToken();
+          if (!adminToken) return;
+          
           const response = await fetch(`/api/admin/news/${id}/publish`, {
             method: 'PATCH',
             headers: {
@@ -3915,14 +3958,21 @@
         if (!confirmed) return;
         
         try {
-          const adminToken = localStorage.getItem('adminToken') || '';
+          const adminToken = getAdminToken();
+          if (!adminToken) return;
+          
+          console.log('Deleting news:', { id, hasToken: !!adminToken });
+          
           const response = await fetch(`/api/admin/news/${id}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${adminToken}` }
           });
           
-          if (!response.ok) throw new Error('Failed to delete');
-          
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            console.error('Delete error:', error);
+            throw new Error('Failed to delete');
+          }
           await showAlert('Success', 'Article deleted', 'success');
           renderNews(currentViewingTab);
         } catch (error) {
