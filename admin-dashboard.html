@@ -1110,6 +1110,10 @@
               <i class="fas fa-video"></i>
               <span>Discussions</span>
             </a>
+            <a href="#" class="sidebar-link" data-tab="news">
+              <i class="fas fa-newspaper"></i>
+              <span>News</span>
+            </a>
           </div>
 
           <div class="sidebar-section">
@@ -1863,6 +1867,246 @@
               }
 
               .disc-session-btn-danger:hover {
+                background: rgba(244, 67, 54, 0.2);
+              }
+            </style>
+          </div>
+
+          <!-- NEWS MANAGEMENT TAB -->
+          <div class="tab-panel" id="news-panel">
+            <div style="margin-bottom: 24px;">
+              <h2 style="margin: 0 0 8px 0; font-size: 24px; color: var(--text-main);">
+                <i class="fas fa-newspaper" style="margin-right: 10px; color: var(--green-main);"></i>News Management
+              </h2>
+              <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Create, edit, and publish news articles with engagement tracking (likes, reactions, shares).</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+              <!-- CREATE/EDIT NEWS FORM -->
+              <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                  <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--green-main), #00796b); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                    <i class="fas fa-plus" style="color: white; font-size: 16px;"></i>
+                  </div>
+                  <h3 id="news-form-title" style="margin: 0; font-size: 16px; color: var(--text-main);">Create News Article</h3>
+                </div>
+                
+                <form id="news-form" style="display: flex; flex-direction: column; gap: 14px;">
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-heading" style="margin-right: 4px; color: var(--green-main);"></i>Title *
+                    </label>
+                    <input id="news-title" type="text" placeholder="Article title" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-link" style="margin-right: 4px; color: var(--green-main);"></i>Slug *
+                    </label>
+                    <input id="news-slug" type="text" placeholder="article-url-slug" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                    <small style="color: var(--text-muted); font-size: 11px; display: block; margin-top: 4px;">URL-friendly slug (lowercase, hyphens). Auto-generated from title if empty.</small>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-image" style="margin-right: 4px; color: var(--green-main);"></i>Cover Image URL
+                    </label>
+                    <input id="news-image" type="url" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-paragraph" style="margin-right: 4px; color: var(--green-main);"></i>Excerpt
+                    </label>
+                    <textarea id="news-excerpt" placeholder="Brief summary (optional, auto-generated from content if empty)" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical;"></textarea>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-pen" style="margin-right: 4px; color: var(--green-main);"></i>Content *
+                    </label>
+                    <textarea id="news-content" placeholder="Article content (markdown supported)" required rows="8" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: monospace; font-size: 12px; resize: vertical;"></textarea>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-user" style="margin-right: 4px; color: var(--green-main);"></i>Author
+                    </label>
+                    <input id="news-author" type="text" placeholder="Author name" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                    <small style="color: var(--text-muted); font-size: 11px; display: block; margin-top: 4px;">Auto-filled with your name if empty.</small>
+                  </div>
+
+                  <div id="news-form-notice" style="padding: 10px 12px; border-radius: 6px; font-size: 12px; display: none; margin: 6px 0; border-left: 3px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
+
+                  <div style="display: flex; gap: 8px;">
+                    <button id="news-save-draft" class="btn" type="button" style="flex: 1; padding: 10px 12px; font-weight: 600; font-size: 12px; border-radius: 6px;">
+                      <i class="fas fa-save" style="margin-right: 4px;"></i>Save Draft
+                    </button>
+                    <button id="news-publish" class="btn-primary" type="button" style="flex: 1; padding: 10px 12px; font-weight: 600; font-size: 12px; border-radius: 6px;">
+                      <i class="fas fa-paper-plane" style="margin-right: 4px;"></i>Publish
+                    </button>
+                    <button id="news-cancel" class="btn" type="button" style="flex: 0.5; padding: 10px 12px; font-size: 12px; border-radius: 6px; display: none;">Cancel</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- NEWS LIST & MANAGEMENT -->
+              <div class="card" style="padding: 24px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
+                  <div style="width: 40px; height: 40px; background: linear-gradient(135deg, #00796b, #005a4f); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px;">
+                    <i class="fas fa-list" style="color: white; font-size: 18px;"></i>
+                  </div>
+                  <h3 style="margin: 0; font-size: 18px; color: var(--text-main);">Published & Drafts</h3>
+                </div>
+
+                <!-- News Tabs -->
+                <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); overflow-x: auto; padding-bottom: 12px; flex-shrink: 0;">
+                  <button class="news-tab-btn" data-tab="published" style="padding: 8px 16px; border: none; background: none; color: var(--text-muted); font-weight: 600; font-size: 13px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -12px; transition: all 0.3s; white-space: nowrap;">
+                    <i class="fas fa-check-circle" style="margin-right: 6px; color: #4caf50;"></i>Published
+                  </button>
+                  <button class="news-tab-btn" data-tab="drafts" style="padding: 8px 16px; border: none; background: none; color: var(--text-muted); font-weight: 600; font-size: 13px; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -12px; transition: all 0.3s; white-space: nowrap;">
+                    <i class="fas fa-file-alt" style="margin-right: 6px; color: #ff9800;"></i>Drafts
+                  </button>
+                </div>
+
+                <div id="news-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; min-height: 0; padding-right: 8px;">
+                  <div style="padding: 40px 24px; text-align: center; color: var(--text-muted);">
+                    <i class="fas fa-inbox" style="font-size: 40px; opacity: 0.2; display: block; margin-bottom: 12px;"></i>
+                    <p style="margin: 0; font-size: 14px;">No articles yet</p>
+                    <p style="margin: 4px 0 0 0; font-size: 12px;">Create your first article using the form on the left</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <style>
+              .news-tab-btn.active {
+                color: var(--green-main) !important;
+                border-bottom-color: var(--green-main) !important;
+              }
+              
+              .news-card {
+                padding: 16px;
+                background: var(--bg-main);
+                border: 1px solid var(--border-color);
+                border-radius: 10px;
+                transition: all 0.3s ease;
+              }
+              
+              .news-card:hover {
+                border-color: var(--green-main);
+                box-shadow: 0 4px 12px rgba(0, 121, 107, 0.12);
+              }
+
+              .news-card-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 12px;
+              }
+
+              .news-card-title {
+                font-weight: 600;
+                font-size: 14px;
+                color: var(--text-main);
+                margin-bottom: 4px;
+                word-break: break-word;
+              }
+
+              .news-card-slug {
+                font-size: 12px;
+                color: var(--text-muted);
+              }
+
+              .news-card-badge {
+                display: inline-block;
+                padding: 4px 10px;
+                border-radius: 20px;
+                font-size: 11px;
+                font-weight: 600;
+                text-transform: uppercase;
+                white-space: nowrap;
+              }
+
+              .news-card-badge.published {
+                background: rgba(76, 175, 80, 0.2);
+                color: #4caf50;
+              }
+
+              .news-card-badge.draft {
+                background: rgba(255, 152, 0, 0.2);
+                color: #ff9800;
+              }
+
+              .news-card-stats {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 8px;
+                margin: 12px 0;
+                padding: 8px 0;
+                border-top: 1px solid var(--border-color);
+                border-bottom: 1px solid var(--border-color);
+                font-size: 12px;
+              }
+
+              .news-card-stat {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                color: var(--text-muted);
+              }
+
+              .news-card-stat i {
+                color: var(--green-main);
+                width: 14px;
+              }
+
+              .news-card-actions {
+                display: flex;
+                gap: 6px;
+                margin-top: 12px;
+                flex-wrap: wrap;
+              }
+
+              .news-card-btn {
+                flex: 1;
+                min-width: 70px;
+                padding: 6px 8px;
+                border: none;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s;
+              }
+
+              .news-card-btn-primary {
+                background: var(--green-main);
+                color: white;
+              }
+
+              .news-card-btn-primary:hover {
+                background: #005a4f;
+                box-shadow: 0 2px 8px rgba(0, 121, 107, 0.3);
+              }
+
+              .news-card-btn-secondary {
+                background: var(--bg-secondary);
+                color: var(--text-main);
+                border: 1px solid var(--border-color);
+              }
+
+              .news-card-btn-secondary:hover {
+                background: var(--border-color);
+              }
+
+              .news-card-btn-danger {
+                background: rgba(244, 67, 54, 0.1);
+                color: #f44336;
+                border: 1px solid rgba(244, 67, 54, 0.2);
+              }
+
+              .news-card-btn-danger:hover {
                 background: rgba(244, 67, 54, 0.2);
               }
             </style>
@@ -3263,6 +3507,430 @@
         console.error('endDiscussionSession error:', error);
         showAlert('Error', 'Failed to end session: ' + error.message, 'error');
       }
+    }
+
+    // ----- News Management UI -----
+    async function loadNewsManagementUI() {
+      const newsForm = document.getElementById('news-form');
+      const newsList = document.getElementById('news-list');
+      const newsFormTitle = document.getElementById('news-form-title');
+      const newsFormNotice = document.getElementById('news-form-notice');
+      
+      let currentEditingId = null;
+      let currentViewingTab = 'published';
+      
+      // Fetch and render news articles
+      async function renderNews(filter = 'published') {
+        try {
+          const adminEmail = localStorage.getItem('adminEmail') || '';
+          const adminToken = localStorage.getItem('adminToken') || '';
+          
+          const response = await fetch('/api/admin/news', {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+          });
+          
+          if (!response.ok) throw new Error('Failed to load news');
+          
+          const articles = await response.json();
+          
+          // Filter by status
+          let filtered = articles || [];
+          if (filter === 'published') {
+            filtered = filtered.filter(a => a.published);
+          } else if (filter === 'drafts') {
+            filtered = filtered.filter(a => !a.published);
+          }
+          
+          newsList.innerHTML = '';
+          
+          if (!filtered || filtered.length === 0) {
+            const empty = document.createElement('div');
+            empty.style.cssText = 'padding: 40px 24px; text-align: center; color: var(--text-muted);';
+            empty.innerHTML = '<i class="fas fa-inbox" style="font-size: 40px; opacity: 0.2; display: block; margin-bottom: 12px;"></i><p style="margin: 0; font-size: 14px;">No ' + filter + ' articles yet</p>';
+            newsList.appendChild(empty);
+            return;
+          }
+          
+          // Sort by latest first
+          filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+          
+          filtered.forEach(article => {
+            const card = document.createElement('div');
+            card.className = 'news-card';
+            
+            const likeCount = article.likes ? article.likes.length : 0;
+            const reactionCounts = {};
+            if (article.reactions) {
+              article.reactions.forEach(r => {
+                reactionCounts[r.type] = (reactionCounts[r.type] || 0) + 1;
+              });
+            }
+            
+            const reactionEmojis = {
+              'love': '❤️',
+              'laugh': '😂',
+              'wow': '😮',
+              'sad': '😢',
+              'angry': '😠'
+            };
+            
+            let reactionSummary = '';
+            Object.entries(reactionCounts).slice(0, 3).forEach(([type, count]) => {
+              reactionSummary += reactionEmojis[type] + ` ${count} `;
+            });
+            
+            const publishDate = new Date(article.publishedAt || article.createdAt);
+            const formattedDate = publishDate.toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric',
+              hour: '2-digit',
+              minute: '2-digit'
+            });
+            
+            card.innerHTML = `
+              <div class="news-card-header">
+                <div>
+                  <div class="news-card-title">${escapeHtml(article.title)}</div>
+                  <div class="news-card-slug">${escapeHtml(article.slug)}</div>
+                </div>
+                <span class="news-card-badge ${article.published ? 'published' : 'draft'}">
+                  ${article.published ? 'Published' : 'Draft'}
+                </span>
+              </div>
+              
+              <div class="news-card-stats">
+                <div class="news-card-stat">
+                  <i class="fas fa-heart"></i>
+                  <span>${likeCount}</span>
+                </div>
+                <div class="news-card-stat">
+                  <i class="fas fa-smile"></i>
+                  <span>${Object.values(reactionCounts).reduce((a, b) => a + b, 0)}</span>
+                </div>
+                <div class="news-card-stat">
+                  <i class="fas fa-calendar"></i>
+                  <span>${formattedDate}</span>
+                </div>
+              </div>
+              
+              <div class="news-card-actions">
+                <button class="news-card-btn news-card-btn-secondary" onclick="editNews('${escapeHtml(article._id)}')" title="Edit article">
+                  <i class="fas fa-edit"></i> Edit
+                </button>
+                ${!article.published ? `
+                  <button class="news-card-btn news-card-btn-primary" onclick="publishNews('${escapeHtml(article._id)}')" title="Publish article">
+                    <i class="fas fa-paper-plane"></i> Publish
+                  </button>
+                ` : `
+                  <button class="news-card-btn news-card-btn-secondary" onclick="unpublishNews('${escapeHtml(article._id)}')" title="Unpublish article">
+                    <i class="fas fa-times"></i> Unpublish
+                  </button>
+                `}
+                <button class="news-card-btn news-card-btn-danger" onclick="deleteNews('${escapeHtml(article._id)}')" title="Delete article">
+                  <i class="fas fa-trash"></i> Delete
+                </button>
+              </div>
+            `;
+            
+            newsList.appendChild(card);
+          });
+        } catch (error) {
+          console.error('renderNews error:', error);
+          newsList.innerHTML = '<div style="color: var(--text-muted); padding: 20px; text-align: center;">Failed to load articles</div>';
+        }
+      }
+      
+      // Tab switching
+      document.querySelectorAll('.news-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tab = btn.dataset.tab;
+          currentViewingTab = tab;
+          
+          document.querySelectorAll('.news-tab-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          
+          renderNews(tab);
+        });
+      });
+      
+      // Set initial active tab
+      document.querySelector('.news-tab-btn[data-tab="published"]').classList.add('active');
+      
+      // Form submission
+      newsForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const title = document.getElementById('news-title').value.trim();
+        const slug = document.getElementById('news-slug').value.trim() || 
+                     title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const excerpt = document.getElementById('news-excerpt').value.trim();
+        const content = document.getElementById('news-content').value.trim();
+        const image = document.getElementById('news-image').value.trim();
+        const author = document.getElementById('news-author').value.trim() || (localStorage.getItem('adminName') || 'Admin');
+        
+        if (!title || !content) {
+          showAlert('Validation Error', 'Title and content are required.', 'warning');
+          return;
+        }
+        
+        try {
+          const adminToken = localStorage.getItem('adminToken') || '';
+          const method = currentEditingId ? 'PUT' : 'POST';
+          const url = currentEditingId ? 
+            `/api/admin/news/${currentEditingId}` : 
+            '/api/admin/news';
+          
+          const response = await fetch(url, {
+            method,
+            headers: {
+              'Authorization': `Bearer ${adminToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              title,
+              slug,
+              excerpt: excerpt || undefined,
+              content,
+              coverImage: image || undefined,
+              author
+            })
+          });
+          
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.error || `HTTP ${response.status}`);
+          }
+          
+          newsFormNotice.textContent = currentEditingId ? 
+            'Article updated successfully!' : 
+            'Article created as draft. Publish when ready.';
+          newsFormNotice.style.background = '#d4edda';
+          newsFormNotice.style.borderLeftColor = '#28a745';
+          newsFormNotice.style.color = '#155724';
+          newsFormNotice.style.display = 'block';
+          
+          newsForm.reset();
+          currentEditingId = null;
+          newsFormTitle.textContent = 'Create News Article';
+          document.getElementById('news-cancel').style.display = 'none';
+          
+          setTimeout(() => {
+            newsFormNotice.style.display = 'none';
+          }, 4000);
+          
+          renderNews(currentViewingTab);
+        } catch (error) {
+          console.error('Form submission error:', error);
+          newsFormNotice.textContent = 'Error: ' + error.message;
+          newsFormNotice.style.background = '#f8d7da';
+          newsFormNotice.style.borderLeftColor = '#dc3545';
+          newsFormNotice.style.color = '#721c24';
+          newsFormNotice.style.display = 'block';
+        }
+      });
+      
+      // Save draft button
+      document.getElementById('news-save-draft').addEventListener('click', async (e) => {
+        e.preventDefault();
+        newsForm.dispatchEvent(new Event('submit'));
+      });
+      
+      // Publish button
+      document.getElementById('news-publish').addEventListener('click', async (e) => {
+        e.preventDefault();
+        
+        const title = document.getElementById('news-title').value.trim();
+        const content = document.getElementById('news-content').value.trim();
+        
+        if (!title || !content) {
+          showAlert('Validation Error', 'Title and content are required.', 'warning');
+          return;
+        }
+        
+        // First save the article
+        const slug = document.getElementById('news-slug').value.trim() || 
+                     title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+        const excerpt = document.getElementById('news-excerpt').value.trim();
+        const image = document.getElementById('news-image').value.trim();
+        const author = document.getElementById('news-author').value.trim() || (localStorage.getItem('adminName') || 'Admin');
+        
+        try {
+          const adminToken = localStorage.getItem('adminToken') || '';
+          const method = currentEditingId ? 'PUT' : 'POST';
+          const url = currentEditingId ? 
+            `/api/admin/news/${currentEditingId}` : 
+            '/api/admin/news';
+          
+          const response = await fetch(url, {
+            method,
+            headers: {
+              'Authorization': `Bearer ${adminToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              title,
+              slug,
+              excerpt: excerpt || undefined,
+              content,
+              coverImage: image || undefined,
+              author
+            })
+          });
+          
+          if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            throw new Error(error.error || `HTTP ${response.status}`);
+          }
+          
+          const savedArticle = await response.json();
+          
+          // Then publish it
+          const publishRes = await fetch(`/api/admin/news/${savedArticle._id}/publish`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${adminToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ published: true })
+          });
+          
+          if (!publishRes.ok) {
+            throw new Error('Failed to publish article');
+          }
+          
+          await showAlert('Success', 'Article published successfully!', 'success');
+          
+          newsForm.reset();
+          currentEditingId = null;
+          newsFormTitle.textContent = 'Create News Article';
+          document.getElementById('news-cancel').style.display = 'none';
+          
+          currentViewingTab = 'published';
+          document.querySelectorAll('.news-tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelector('.news-tab-btn[data-tab="published"]').classList.add('active');
+          
+          renderNews('published');
+        } catch (error) {
+          console.error('Publish error:', error);
+          await showAlert('Error', error.message, 'error');
+        }
+      });
+      
+      // Cancel button
+      document.getElementById('news-cancel').addEventListener('click', () => {
+        newsForm.reset();
+        currentEditingId = null;
+        newsFormTitle.textContent = 'Create News Article';
+        document.getElementById('news-cancel').style.display = 'none';
+      });
+      
+      // Global functions for inline onclick handlers
+      window.editNews = async (id) => {
+        try {
+          const adminToken = localStorage.getItem('adminToken') || '';
+          const response = await fetch(`/api/admin/news`, {
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+          });
+          
+          if (!response.ok) throw new Error('Failed to load articles');
+          
+          const articles = await response.json();
+          const article = articles.find(a => a._id === id);
+          
+          if (!article) throw new Error('Article not found');
+          
+          currentEditingId = id;
+          newsFormTitle.textContent = `Edit: ${article.title}`;
+          document.getElementById('news-title').value = article.title;
+          document.getElementById('news-slug').value = article.slug;
+          document.getElementById('news-excerpt').value = article.excerpt || '';
+          document.getElementById('news-content').value = article.content;
+          document.getElementById('news-image').value = article.coverImage || '';
+          document.getElementById('news-author').value = article.author || '';
+          document.getElementById('news-cancel').style.display = 'block';
+          
+          // Scroll to form
+          newsForm.scrollIntoView({ behavior: 'smooth' });
+        } catch (error) {
+          console.error('editNews error:', error);
+          showAlert('Error', 'Failed to load article for editing', 'error');
+        }
+      };
+      
+      window.publishNews = async (id) => {
+        const confirmed = await showConfirm('Publish Article', 'Publish this article?', 'success');
+        if (!confirmed) return;
+        
+        try {
+          const adminToken = localStorage.getItem('adminToken') || '';
+          const response = await fetch(`/api/admin/news/${id}/publish`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${adminToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ published: true })
+          });
+          
+          if (!response.ok) throw new Error('Failed to publish');
+          
+          await showAlert('Success', 'Article published!', 'success');
+          renderNews(currentViewingTab);
+        } catch (error) {
+          console.error('publishNews error:', error);
+          showAlert('Error', 'Failed to publish article', 'error');
+        }
+      };
+      
+      window.unpublishNews = async (id) => {
+        const confirmed = await showConfirm('Unpublish Article', 'Move this article back to drafts?', 'warning');
+        if (!confirmed) return;
+        
+        try {
+          const adminToken = localStorage.getItem('adminToken') || '';
+          const response = await fetch(`/api/admin/news/${id}/publish`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${adminToken}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ published: false })
+          });
+          
+          if (!response.ok) throw new Error('Failed to unpublish');
+          
+          await showAlert('Success', 'Article moved to drafts', 'success');
+          renderNews(currentViewingTab);
+        } catch (error) {
+          console.error('unpublishNews error:', error);
+          showAlert('Error', 'Failed to unpublish article', 'error');
+        }
+      };
+      
+      window.deleteNews = async (id) => {
+        const confirmed = await showConfirm('Delete Article', 'Delete this article permanently? This cannot be undone.', 'error');
+        if (!confirmed) return;
+        
+        try {
+          const adminToken = localStorage.getItem('adminToken') || '';
+          const response = await fetch(`/api/admin/news/${id}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${adminToken}` }
+          });
+          
+          if (!response.ok) throw new Error('Failed to delete');
+          
+          await showAlert('Success', 'Article deleted', 'success');
+          renderNews(currentViewingTab);
+        } catch (error) {
+          console.error('deleteNews error:', error);
+          showAlert('Error', 'Failed to delete article', 'error');
+        }
+      };
+      
+      // Initial load
+      renderNews('published');
     }
 
     // ----- Pending Documents UI (extracted for global access) -----
@@ -5535,6 +6203,7 @@
       else if (name === 'settings') loadSettingsUI();
       else if (name === 'inbox') loadInboxUI();
       else if (name === 'discussions') loadDiscussionsUI();
+      else if (name === 'news') loadNewsManagementUI();
       else if (name === 'modules') loadModuleManagementUI();
       else if (name === 'content') loadContentManagementUI();
       else if (name === 'documents') loadDocumentsUI();

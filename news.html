@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News - Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    .news-container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .news-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .news-header h1 {
+      font-size: 2.5rem;
+      color: #00796b;
+      margin-bottom: 10px;
+    }
+
+    .news-header p {
+      font-size: 1.1rem;
+      color: #666;
+    }
+
+    .sort-controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .sort-btn {
+      padding: 8px 16px;
+      border: 2px solid #00796b;
+      background: white;
+      color: #00796b;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .sort-btn.active {
+      background: #00796b;
+      color: white;
+    }
+
+    .sort-btn:hover {
+      background: #00796b;
+      color: white;
+    }
+
+    .news-list {
+      display: grid;
+      gap: 30px;
+    }
+
+    .news-card {
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+
+    .news-card:hover {
+      box-shadow: 0 4px 15px rgba(0, 121, 107, 0.2);
+      transform: translateY(-2px);
+    }
+
+    .news-card-image {
+      width: 100%;
+      height: 200px;
+      background: linear-gradient(135deg, #00796b 0%, #0d8b7f 100%);
+      overflow: hidden;
+    }
+
+    .news-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .news-card-content {
+      padding: 20px;
+    }
+
+    .news-card-title {
+      font-size: 1.3rem;
+      color: #00796b;
+      margin-bottom: 10px;
+      font-weight: 600;
+    }
+
+    .news-card-meta {
+      display: flex;
+      gap: 15px;
+      font-size: 0.9rem;
+      color: #999;
+      margin-bottom: 12px;
+    }
+
+    .news-card-meta span {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .news-card-excerpt {
+      color: #555;
+      line-height: 1.6;
+      margin-bottom: 15px;
+    }
+
+    .news-card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+
+    .news-engagement {
+      display: flex;
+      gap: 15px;
+      font-size: 0.9rem;
+    }
+
+    .engagement-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      color: #00796b;
+      font-weight: 600;
+    }
+
+    .reaction-icons {
+      display: flex;
+      gap: 5px;
+      margin-left: 5px;
+    }
+
+    .reaction-icon {
+      font-size: 0.8rem;
+    }
+
+    .read-more {
+      color: #00796b;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s;
+    }
+
+    .read-more:hover {
+      color: #005a4f;
+      text-decoration: underline;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #999;
+    }
+
+    .empty-state i {
+      font-size: 3rem;
+      color: #ddd;
+      margin-bottom: 20px;
+    }
+
+    .pagination {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 40px;
+    }
+
+    .pagination button {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: all 0.3s;
+    }
+
+    .pagination button:hover {
+      background: #f0f0f0;
+    }
+
+    .pagination button.active {
+      background: #00796b;
+      color: white;
+      border-color: #00796b;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    @media (max-width: 600px) {
+      .news-header h1 {
+        font-size: 1.8rem;
+      }
+
+      .sort-controls {
+        flex-direction: column;
+      }
+
+      .news-card-meta {
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .news-card-footer {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="news.html">News</a>
+      <a href="discussions.html" style="display: none;" id="nav-discussions-link">Discussions</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="admin-login.html">Admin</a>
+      <a href="login.html" id="nav-login-link" style="display: none;">Login</a>
+      <a href="register.html" id="nav-register-link" style="display: none;">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="news-container">
+    <div class="news-header">
+      <h1>Latest News</h1>
+      <p>Stay updated with renewable energy insights and hub updates</p>
+    </div>
+
+    <div class="sort-controls">
+      <button class="sort-btn active" data-sort="latest">Latest</button>
+      <button class="sort-btn" data-sort="oldest">Oldest</button>
+    </div>
+
+    <div class="news-list" id="newsList"></div>
+
+    <div class="pagination" id="pagination"></div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>&copy; 2026 Renewable Energy Hub. All rights reserved.</p>
+</footer>
+
+<script src="js/lib/navbar.js"></script>
+<script>
+  let currentPage = 1;
+  let currentSort = 'latest';
+
+  async function loadNews(page = 1, sort = 'latest') {
+    try {
+      const response = await fetch(`/api/news?page=${page}&sort=${sort}`);
+      const data = await response.json();
+
+      if (!data.news || data.news.length === 0) {
+        document.getElementById('newsList').innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-newspaper"></i>
+            <h2>No news available yet</h2>
+            <p>Check back soon for updates!</p>
+          </div>
+        `;
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+
+      renderNews(data.news);
+      renderPagination(data.page, data.pages);
+      currentPage = page;
+      currentSort = sort;
+    } catch (err) {
+      console.error('Error loading news:', err);
+      document.getElementById('newsList').innerHTML = '<p style="color: red;">Error loading news. Please try again later.</p>';
+    }
+  }
+
+  function renderNews(newsArray) {
+    const newsList = document.getElementById('newsList');
+    newsList.innerHTML = newsArray.map(news => `
+      <div class="news-card" onclick="window.location.href = 'news-detail.html?slug=${news.slug}'">
+        <div class="news-card-image">
+          ${news.coverImage ? `<img src="${news.coverImage}" alt="${news.title}">` : ''}
+        </div>
+        <div class="news-card-content">
+          <h2 class="news-card-title">${news.title}</h2>
+          <div class="news-card-meta">
+            <span><i class="fas fa-user"></i> ${news.author || 'Anonymous'}</span>
+            <span><i class="fas fa-calendar"></i> ${new Date(news.publishedAt).toLocaleDateString()}</span>
+          </div>
+          <p class="news-card-excerpt">${news.excerpt}</p>
+          <div class="news-card-footer">
+            <div class="news-engagement">
+              <div class="engagement-item">
+                <i class="fas fa-thumbs-up"></i>
+                ${news.likes ? news.likes.length : 0}
+              </div>
+              ${news.reactions && news.reactions.length > 0 ? `
+                <div class="engagement-item">
+                  <span>Reactions</span>
+                  <div class="reaction-icons">
+                    ${getReactionIcons(news.reactions).join('')}
+                  </div>
+                </div>
+              ` : ''}
+            </div>
+            <a href="news-detail.html?slug=${news.slug}" class="read-more">Read More →</a>
+          </div>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function getReactionIcons(reactions) {
+    const counts = {};
+    reactions.forEach(r => {
+      counts[r.type] = (counts[r.type] || 0) + 1;
+    });
+
+    const icons = {
+      love: '❤️',
+      laugh: '😂',
+      wow: '😮',
+      sad: '😢',
+      angry: '😡'
+    };
+
+    return Object.entries(counts).slice(0, 3).map(([type, count]) => 
+      `<span class="reaction-icon" title="${type}: ${count}">${icons[type] || type}</span>`
+    );
+  }
+
+  function renderPagination(currentPageNum, totalPages) {
+    const pagination = document.getElementById('pagination');
+    if (totalPages <= 1) {
+      pagination.innerHTML = '';
+      return;
+    }
+
+    let html = '';
+    if (currentPageNum > 1) {
+      html += `<button onclick="loadNews(${currentPageNum - 1}, '${currentSort}')">← Previous</button>`;
+    }
+
+    for (let i = 1; i <= totalPages; i++) {
+      if (i === currentPageNum) {
+        html += `<button class="active" disabled>${i}</button>`;
+      } else if (i <= 2 || i >= totalPages - 1 || Math.abs(i - currentPageNum) <= 1) {
+        html += `<button onclick="loadNews(${i}, '${currentSort}')">${i}</button>`;
+      } else if (i === 3 || i === totalPages - 2) {
+        html += `<button disabled>...</button>`;
+      }
+    }
+
+    if (currentPageNum < totalPages) {
+      html += `<button onclick="loadNews(${currentPageNum + 1}, '${currentSort}')">Next →</button>`;
+    }
+
+    pagination.innerHTML = html;
+  }
+
+  // Sort controls
+  document.querySelectorAll('.sort-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+      loadNews(1, this.dataset.sort);
+    });
+  });
+
+  // Load initial news
+  loadNews();
+</script>
+
+</body>
+</html>

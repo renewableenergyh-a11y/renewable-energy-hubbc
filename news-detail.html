@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News Article - Renewable Energy Hub</title>
+
+  <link rel="stylesheet" href="css/style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <style>
+    .article-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 40px 20px;
+    }
+
+    .article-header {
+      margin-bottom: 30px;
+    }
+
+    .article-title {
+      font-size: 2.2rem;
+      color: #00796b;
+      margin-bottom: 15px;
+      line-height: 1.3;
+    }
+
+    .article-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      color: #999;
+      font-size: 0.95rem;
+      padding-bottom: 20px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .article-meta span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .article-cover {
+      width: 100%;
+      height: 400px;
+      background: linear-gradient(135deg, #00796b 0%, #0d8b7f 100%);
+      margin: 30px 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .article-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .article-content {
+      font-size: 1.05rem;
+      line-height: 1.8;
+      color: #333;
+      margin-bottom: 40px;
+    }
+
+    .article-content p {
+      margin-bottom: 15px;
+    }
+
+    .article-content h2 {
+      font-size: 1.5rem;
+      color: #00796b;
+      margin: 30px 0 15px;
+    }
+
+    .article-content img {
+      max-width: 100%;
+      height: auto;
+      margin: 20px 0;
+      border-radius: 8px;
+    }
+
+    .engagement-section {
+      background: #f9f9f9;
+      padding: 30px;
+      border-radius: 8px;
+      margin-top: 40px;
+    }
+
+    .engagement-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #00796b;
+      margin-bottom: 20px;
+    }
+
+    .engagement-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+      gap: 10px;
+      margin-bottom: 30px;
+    }
+
+    .reaction-btn {
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      background: white;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1.5rem;
+      transition: all 0.3s;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      flex-direction: column;
+    }
+
+    .reaction-btn:hover {
+      border-color: #00796b;
+      background: #f0f0f0;
+    }
+
+    .reaction-btn.active {
+      background: #00796b;
+      color: white;
+      border-color: #00796b;
+    }
+
+    .reaction-btn .count {
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .like-btn {
+      padding: 12px 20px;
+      background: #00796b;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .like-btn:hover {
+      background: #005a4f;
+    }
+
+    .like-btn.liked {
+      background: #d32f2f;
+    }
+
+    .like-count {
+      display: inline-block;
+      background: rgba(255, 255, 255, 0.3);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-weight: 600;
+    }
+
+    .share-section {
+      margin-top: 30px;
+      padding-top: 30px;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .share-buttons {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .share-btn {
+      padding: 10px 16px;
+      border: 2px solid #e0e0e0;
+      background: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #00796b;
+      transition: all 0.3s;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .share-btn:hover {
+      background: #00796b;
+      color: white;
+      border-color: #00796b;
+    }
+
+    .auth-prompt {
+      background: #fff3cd;
+      border-left: 4px solid #ffc107;
+      padding: 15px;
+      margin-top: 20px;
+      border-radius: 4px;
+      color: #856404;
+    }
+
+    .auth-prompt a {
+      color: #00796b;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .auth-prompt a:hover {
+      text-decoration: underline;
+    }
+
+    .error-message {
+      color: #d32f2f;
+      padding: 10px;
+      background: #ffebee;
+      border-radius: 4px;
+      margin-top: 10px;
+      display: none;
+    }
+
+    .back-link {
+      display: inline-block;
+      margin-bottom: 20px;
+      color: #00796b;
+      text-decoration: none;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+
+    .back-link:hover {
+      color: #005a4f;
+      text-decoration: underline;
+    }
+
+    @media (max-width: 600px) {
+      .article-container {
+        padding: 20px 15px;
+      }
+
+      .article-title {
+        font-size: 1.5rem;
+      }
+
+      .article-cover {
+        height: 250px;
+      }
+
+      .article-meta {
+        gap: 10px;
+        font-size: 0.85rem;
+      }
+
+      .engagement-buttons {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .reaction-btn {
+        padding: 8px;
+        font-size: 1.2rem;
+      }
+
+      .reaction-btn .count {
+        font-size: 0.7rem;
+      }
+
+      .share-buttons {
+        gap: 8px;
+      }
+
+      .share-btn {
+        padding: 8px 12px;
+        font-size: 0.8rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header class="site-header">
+  <div class="container header-container">
+    <h1 class="logo">Renewable Energy Hub</h1>
+
+    <button id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation">
+      <span class="nav-icon">☰</span>
+    </button>
+
+    <nav id="nav-menu" class="nav-menu">
+      <a href="index.html">Home</a>
+      <a href="courses.html">Courses</a>
+      <a href="news.html">News</a>
+      <a href="discussions.html" style="display: none;" id="nav-discussions-link">Discussions</a>
+      <a href="billing.html" class="nav-premium-link" id="nav-premium-btn" style="display: none;">Go Premium</a>
+      <a href="admin-login.html">Admin</a>
+      <a href="login.html" id="nav-login-link" style="display: none;">Login</a>
+      <a href="register.html" id="nav-register-link" style="display: none;">Register</a>
+      <!-- Notification Bell -->
+      <button id="notification-bell" class="notification-bell" title="Notifications" style="display: none;">
+        <i class="fas fa-bell"></i>
+        <span id="notification-badge"></span>
+      </button>
+      <!-- Dropdown menu container (will be populated dynamically) -->
+      <div id="nav-dropdown-container"></div>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="article-container">
+    <a href="news.html" class="back-link">← Back to News</a>
+
+    <article id="article"></article>
+
+    <div class="engagement-section" id="engagementSection">
+      <div class="engagement-title">What do you think?</div>
+
+      <div class="like-section" id="likeSection">
+        <button class="like-btn" id="likeBtn">
+          <i class="fas fa-thumbs-up"></i>
+          <span>Like</span>
+          <span class="like-count" id="likeCount">0</span>
+        </button>
+        <div class="error-message" id="likeError"></div>
+      </div>
+
+      <div style="margin-top: 25px;">
+        <div style="font-size: 0.9rem; color: #999; margin-bottom: 10px;">Reactions</div>
+        <div class="engagement-buttons" id="reactionsContainer"></div>
+        <div class="error-message" id="reactionError"></div>
+      </div>
+
+      <div class="share-section">
+        <div style="font-size: 0.9rem; color: #999; margin-bottom: 10px;">Share this article</div>
+        <div class="share-buttons">
+          <button class="share-btn" id="copyLinkBtn" title="Copy link to clipboard">
+            <i class="fas fa-link"></i> Copy Link
+          </button>
+          <button class="share-btn" id="whatsappBtn" title="Share on WhatsApp">
+            <i class="fab fa-whatsapp"></i> WhatsApp
+          </button>
+          <button class="share-btn" id="facebookBtn" title="Share on Facebook">
+            <i class="fab fa-facebook"></i> Facebook
+          </button>
+          <button class="share-btn" id="twitterBtn" title="Share on X (Twitter)">
+            <i class="fab fa-x-twitter"></i> X
+          </button>
+        </div>
+      </div>
+
+      <div class="auth-prompt" id="authPrompt" style="display: none;">
+        <i class="fas fa-lock"></i>
+        <span>To like and react to articles, please <a href="login.html">log in</a> or <a href="register.html">register</a>.</span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <p>&copy; 2026 Renewable Energy Hub. All rights reserved.</p>
+</footer>
+
+<script src="js/lib/navbar.js"></script>
+<script>
+  const reactions = ['love', 'laugh', 'wow', 'sad', 'angry'];
+  const reactionEmojis = {
+    love: '❤️',
+    laugh: '😂',
+    wow: '😮',
+    sad: '😢',
+    angry: '😡'
+  };
+
+  let currentArticle = null;
+  let isAuthenticated = false;
+  let userLiked = false;
+  let userReaction = null;
+
+  async function loadArticle() {
+    const params = new URLSearchParams(window.location.search);
+    const slug = params.get('slug');
+
+    if (!slug) {
+      document.getElementById('article').innerHTML = '<p style="color: red;">Article not found.</p>';
+      return;
+    }
+
+    try {
+      const response = await fetch(`/api/news/${slug}`);
+      if (!response.ok) throw new Error('Not found');
+
+      currentArticle = await response.json();
+      renderArticle();
+      initializeEngagement();
+    } catch (err) {
+      console.error('Error loading article:', err);
+      document.getElementById('article').innerHTML = '<p style="color: red;">Failed to load article. Please try again later.</p>';
+    }
+  }
+
+  function renderArticle() {
+    const article = document.getElementById('article');
+    const content = currentArticle.content || '';
+    
+    article.innerHTML = `
+      <header class="article-header">
+        <h1 class="article-title">${currentArticle.title}</h1>
+        <div class="article-meta">
+          <span><i class="fas fa-user"></i> ${currentArticle.author || 'Anonymous'}</span>
+          <span><i class="fas fa-calendar"></i> ${new Date(currentArticle.publishedAt).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          })}</span>
+        </div>
+      </header>
+
+      ${currentArticle.coverImage ? `
+        <div class="article-cover">
+          <img src="${currentArticle.coverImage}" alt="${currentArticle.title}">
+        </div>
+      ` : ''}
+
+      <div class="article-content">${sanitizeHtml(content)}</div>
+    `;
+  }
+
+  function sanitizeHtml(html) {
+    const div = document.createElement('div');
+    div.textContent = html;
+    return div.innerHTML.replace(/\n/g, '<br>');
+  }
+
+  function initializeEngagement() {
+    const token = localStorage.getItem('token');
+    isAuthenticated = !!token;
+
+    if (isAuthenticated) {
+      checkUserEngagement();
+      document.getElementById('authPrompt').style.display = 'none';
+    } else {
+      document.getElementById('authPrompt').style.display = 'block';
+      document.getElementById('likeBtn').disabled = true;
+    }
+
+    renderReactionButtons();
+    updateLikeCount();
+    setupEventListeners();
+  }
+
+  function checkUserEngagement() {
+    if (!currentArticle) return;
+
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const userEmail = localStorage.getItem('userEmail');
+    
+    // Check if user liked
+    if (currentArticle.likes) {
+      userLiked = currentArticle.likes.some(l => l.userId === userEmail);
+    }
+
+    // Check if user reacted
+    if (currentArticle.reactions) {
+      const userReactionObj = currentArticle.reactions.find(r => r.userId === userEmail);
+      userReaction = userReactionObj ? userReactionObj.type : null;
+    }
+  }
+
+  function renderReactionButtons() {
+    const container = document.getElementById('reactionsContainer');
+    if (!isAuthenticated) {
+      container.innerHTML = '<p style="color: #999; font-size: 0.9rem;">Sign in to react to this article</p>';
+      return;
+    }
+
+    container.innerHTML = reactions.map(type => {
+      const count = currentArticle.reactions ? 
+        currentArticle.reactions.filter(r => r.type === type).length : 0;
+      return `
+        <button class="reaction-btn ${userReaction === type ? 'active' : ''}" 
+                data-reaction="${type}" 
+                title="${type}">
+          ${reactionEmojis[type]}
+          <span class="count">${count}</span>
+        </button>
+      `;
+    }).join('');
+
+    // Add event listeners
+    document.querySelectorAll('.reaction-btn').forEach(btn => {
+      btn.addEventListener('click', () => handleReaction(btn.dataset.reaction));
+    });
+  }
+
+  function updateLikeCount() {
+    const count = currentArticle.likes ? currentArticle.likes.length : 0;
+    document.getElementById('likeCount').textContent = count;
+    
+    const likeBtn = document.getElementById('likeBtn');
+    if (userLiked) {
+      likeBtn.classList.add('liked');
+      likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> <span>Liked</span> <span class="like-count">${count}</span>`;
+    } else {
+      likeBtn.classList.remove('liked');
+      likeBtn.innerHTML = `<i class="fas fa-thumbs-up"></i> <span>Like</span> <span class="like-count">${count}</span>`;
+    }
+  }
+
+  function setupEventListeners() {
+    document.getElementById('likeBtn').addEventListener('click', handleLike);
+    
+    // Share buttons
+    document.getElementById('copyLinkBtn').addEventListener('click', copyLink);
+    document.getElementById('whatsappBtn').addEventListener('click', shareWhatsApp);
+    document.getElementById('facebookBtn').addEventListener('click', shareFacebook);
+    document.getElementById('twitterBtn').addEventListener('click', shareTwitter);
+  }
+
+  async function handleLike() {
+    if (!isAuthenticated) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/news/${currentArticle._id}/like`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to like');
+      }
+
+      const data = await response.json();
+      userLiked = data.liked;
+      currentArticle.likes = Array(data.likeCount).fill(null);
+      
+      updateLikeCount();
+      document.getElementById('likeError').style.display = 'none';
+    } catch (err) {
+      console.error('Error liking article:', err);
+      const errorDiv = document.getElementById('likeError');
+      errorDiv.textContent = 'Failed to process your like. Please try again.';
+      errorDiv.style.display = 'block';
+    }
+  }
+
+  async function handleReaction(type) {
+    if (!isAuthenticated) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`/api/news/${currentArticle._id}/react`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ type })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to react');
+      }
+
+      const data = await response.json();
+      userReaction = data.userReaction;
+      
+      // Update reactions in currentArticle
+      if (!currentArticle.reactions) currentArticle.reactions = [];
+      currentArticle.reactions = Object.entries(data.summary).flatMap(([reactionType, count]) =>
+        Array(count).fill(null).map(() => ({ type: reactionType }))
+      );
+
+      renderReactionButtons();
+      document.getElementById('reactionError').style.display = 'none';
+    } catch (err) {
+      console.error('Error reacting:', err);
+      const errorDiv = document.getElementById('reactionError');
+      errorDiv.textContent = 'Failed to process your reaction. Please try again.';
+      errorDiv.style.display = 'block';
+    }
+  }
+
+  function copyLink() {
+    const url = window.location.href;
+    navigator.clipboard.writeText(url).then(() => {
+      const btn = document.getElementById('copyLinkBtn');
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-check"></i> Copied!';
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+      }, 2000);
+    }).catch(err => {
+      console.error('Failed to copy:', err);
+    });
+  }
+
+  function shareWhatsApp() {
+    const text = `${currentArticle.title}\n${window.location.href}`;
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
+
+  function shareFacebook() {
+    const url = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(window.location.href)}`;
+    window.open(url, '_blank');
+  }
+
+  function shareTwitter() {
+    const text = `${currentArticle.title} - Check it out!`;
+    const url = `https://x.com/intent/tweet?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+  }
+
+  // Load article on page load
+  loadArticle();
+</script>
+
+</body>
+</html>

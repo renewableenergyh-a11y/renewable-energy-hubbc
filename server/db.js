@@ -38,6 +38,7 @@ async function init() {
     models.PointsLog = mongoose.models.PointsLog || mongoose.model('PointsLog', AnySchema, 'points_logs');
     models.Notification = mongoose.models.Notification || mongoose.model('Notification', AnySchema, 'notifications');
     models.Media = mongoose.models.Media || mongoose.model('Media', AnySchema, 'media');
+    models.News = mongoose.models.News || mongoose.model('News', AnySchema, 'news');
     
     // Discussion system models
     models.DiscussionSession = mongoose.models.DiscussionSession || mongoose.model('DiscussionSession', DiscussionSessionSchema);

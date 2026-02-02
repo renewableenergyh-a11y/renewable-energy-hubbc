@@ -1949,6 +1949,426 @@ app.post('/api/modules/:courseId', (req, res) => {
   }
 });
 
+// ==================== NEWS SYSTEM ROUTES ====================
+
+// PUBLIC: Get all news (paginated, sorted by date)
+app.get('/api/news', async (req, res) => {
+  try {
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    const page = parseInt(req.query.page) || 1;
+    const limit = 10;
+    const skip = (page - 1) * limit;
+    const sort = req.query.sort === 'oldest' ? 1 : -1;
+
+    const news = await db.models.News.find({ published: true })
+      .sort({ publishedAt: sort })
+      .skip(skip)
+      .limit(limit)
+      .select('id slug title excerpt coverImage author publishedAt likes reactions');
+
+    const total = await db.models.News.countDocuments({ published: true });
+
+    res.json({
+      news: news || [],
+      total,
+      page,
+      pages: Math.ceil(total / limit)
+    });
+  } catch (err) {
+    console.error('Error fetching news:', err);
+    res.status(500).json({ error: 'Failed to load news' });
+  }
+});
+
+// PUBLIC: Get single news article by slug
+app.get('/api/news/:slug', async (req, res) => {
+  try {
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    const news = await db.models.News.findOne({ slug: req.params.slug, published: true });
+    if (!news) {
+      return res.status(404).json({ error: 'News not found' });
+    }
+
+    res.json(news);
+  } catch (err) {
+    console.error('Error fetching news:', err);
+    res.status(500).json({ error: 'Failed to load news' });
+  }
+});
+
+// AUTHENTICATED: Like a news article
+app.post('/api/news/:id/like', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const users = loadUsers();
+    let userId = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        userId = email;
+        break;
+      }
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    const news = await db.models.News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ error: 'News not found' });
+    }
+
+    // Initialize likes array if needed
+    if (!news.likes) news.likes = [];
+
+    // Check if user already liked
+    const existingLikeIndex = news.likes.findIndex(l => l.userId === userId);
+    if (existingLikeIndex >= 0) {
+      // Remove like (unlike)
+      news.likes.splice(existingLikeIndex, 1);
+    } else {
+      // Add like
+      news.likes.push({ userId, createdAt: new Date() });
+    }
+
+    await news.save();
+    res.json({ liked: existingLikeIndex < 0, likeCount: news.likes.length });
+  } catch (err) {
+    console.error('Error liking news:', err);
+    res.status(500).json({ error: 'Failed to process like' });
+  }
+});
+
+// AUTHENTICATED: React to a news article
+app.post('/api/news/:id/react', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const users = loadUsers();
+    let userId = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        userId = email;
+        break;
+      }
+    }
+
+    if (!userId) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const { type } = req.body;
+    const validTypes = ['love', 'laugh', 'wow', 'sad', 'angry'];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ error: 'Invalid reaction type' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    const news = await db.models.News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ error: 'News not found' });
+    }
+
+    // Initialize reactions array if needed
+    if (!news.reactions) news.reactions = [];
+
+    // Check if user already reacted
+    const existingReactionIndex = news.reactions.findIndex(r => r.userId === userId);
+    if (existingReactionIndex >= 0) {
+      // Update reaction
+      news.reactions[existingReactionIndex] = { userId, type, createdAt: new Date() };
+    } else {
+      // Add new reaction
+      news.reactions.push({ userId, type, createdAt: new Date() });
+    }
+
+    await news.save();
+
+    // Calculate reaction summary
+    const summary = {};
+    news.reactions.forEach(r => {
+      summary[r.type] = (summary[r.type] || 0) + 1;
+    });
+
+    res.json({ userReaction: type, summary });
+  } catch (err) {
+    console.error('Error reacting to news:', err);
+    res.status(500).json({ error: 'Failed to process reaction' });
+  }
+});
+
+// ADMIN: Create news
+app.post('/api/admin/news', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const users = loadUsers();
+    let userEmail = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        userEmail = email;
+        break;
+      }
+    }
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    // Check if user is admin
+    const user = users[userEmail];
+    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { title, slug, excerpt, content, coverImage, author } = req.body;
+    if (!title || !slug || !content) {
+      return res.status(400).json({ error: 'Title, slug, and content required' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    // Check if slug already exists
+    const existing = await db.models.News.findOne({ slug });
+    if (existing) {
+      return res.status(400).json({ error: 'Slug already exists' });
+    }
+
+    const newsArticle = new db.models.News({
+      title,
+      slug,
+      excerpt: excerpt || content.substring(0, 200),
+      content,
+      coverImage: coverImage || '',
+      author: author || user.name || userEmail,
+      published: false,
+      publishedAt: null,
+      likes: [],
+      reactions: [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    await newsArticle.save();
+    res.status(201).json(newsArticle);
+  } catch (err) {
+    console.error('Error creating news:', err);
+    res.status(500).json({ error: 'Failed to create news' });
+  }
+});
+
+// ADMIN: Get all news (including unpublished)
+app.get('/api/admin/news', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const users = loadUsers();
+    let userEmail = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        userEmail = email;
+        break;
+      }
+    }
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = users[userEmail];
+    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    const news = await db.models.News.find().sort({ createdAt: -1 });
+    res.json(news || []);
+  } catch (err) {
+    console.error('Error fetching admin news:', err);
+    res.status(500).json({ error: 'Failed to load news' });
+  }
+});
+
+// ADMIN: Edit news
+app.put('/api/admin/news/:id', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const users = loadUsers();
+    let userEmail = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        userEmail = email;
+        break;
+      }
+    }
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = users[userEmail];
+    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    const { title, slug, excerpt, content, coverImage, author } = req.body;
+    const news = await db.models.News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ error: 'News not found' });
+    }
+
+    // Update fields
+    if (title) news.title = title;
+    if (slug) news.slug = slug;
+    if (excerpt) news.excerpt = excerpt;
+    if (content) news.content = content;
+    if (coverImage !== undefined) news.coverImage = coverImage;
+    if (author) news.author = author;
+    news.updatedAt = new Date();
+
+    await news.save();
+    res.json(news);
+  } catch (err) {
+    console.error('Error updating news:', err);
+    res.status(500).json({ error: 'Failed to update news' });
+  }
+});
+
+// ADMIN: Delete news
+app.delete('/api/admin/news/:id', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const users = loadUsers();
+    let userEmail = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        userEmail = email;
+        break;
+      }
+    }
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = users[userEmail];
+    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    await db.models.News.findByIdAndDelete(req.params.id);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Error deleting news:', err);
+    res.status(500).json({ error: 'Failed to delete news' });
+  }
+});
+
+// ADMIN: Publish/Unpublish news
+app.patch('/api/admin/news/:id/publish', async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+    if (!token) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const users = loadUsers();
+    let userEmail = null;
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        userEmail = email;
+        break;
+      }
+    }
+
+    if (!userEmail) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    const user = users[userEmail];
+    if (!user || !['admin', 'superadmin'].includes(user.role)) {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const db = require('./db.js');
+    if (!db?.models?.News) {
+      return res.status(503).json({ error: 'News service unavailable' });
+    }
+
+    const { published } = req.body;
+    const news = await db.models.News.findById(req.params.id);
+    if (!news) {
+      return res.status(404).json({ error: 'News not found' });
+    }
+
+    news.published = published || false;
+    if (published) {
+      news.publishedAt = new Date();
+    }
+    await news.save();
+
+    res.json(news);
+  } catch (err) {
+    console.error('Error publishing news:', err);
+    res.status(500).json({ error: 'Failed to publish news' });
+  }
+});
+
 // Video upload endpoint (stores URL references, not actual files)
 // Module video upload endpoint - supports both URL references and file uploads
 app.post('/api/upload-module-video', express.json(), (req, res) => {
