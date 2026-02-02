@@ -443,8 +443,10 @@
   }
 
   function initializeEngagement() {
+    // Check if user is logged in
+    const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true';
     const token = localStorage.getItem('token');
-    isAuthenticated = !!token;
+    isAuthenticated = isLoggedIn && !!token;
 
     if (isAuthenticated) {
       checkUserEngagement();
