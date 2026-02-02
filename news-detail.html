@@ -409,11 +409,13 @@
       if (!response.ok) throw new Error('Not found');
 
       currentArticle = await response.json();
-      console.log('📰 Article loaded:', {
+      console.log('� Initial article load:', {
         _id: currentArticle._id,
         slug: currentArticle.slug,
+        title: currentArticle.title,
         counts: currentArticle.counts,
-        userReaction: currentArticle.userReaction
+        userReaction: currentArticle.userReaction,
+        reactions: currentArticle.reactions
       });
       renderArticle();
       initializeEngagement();
@@ -588,9 +590,16 @@
       }
 
       const data = await response.json();
+      console.log('✅ Like endpoint returned:', data);
+      
       // Update article with server response
       currentArticle.counts = data.counts || {};
       currentArticle.userReaction = data.userReaction;
+      
+      console.log('🔄 Updated currentArticle:', {
+        counts: currentArticle.counts,
+        userReaction: currentArticle.userReaction
+      });
       
       updateLikeCount();
       renderReactionButtons();
@@ -631,9 +640,16 @@
       }
 
       const data = await response.json();
+      console.log(`✅ Reaction endpoint returned for type "${type}":`, data);
+      
       // Update article with server response
       currentArticle.counts = data.counts || {};
       currentArticle.userReaction = data.userReaction;
+
+      console.log('🔄 Updated currentArticle:', {
+        counts: currentArticle.counts,
+        userReaction: currentArticle.userReaction
+      });
 
       renderReactionButtons();
       updateLikeCount();
