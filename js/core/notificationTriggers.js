@@ -344,11 +344,10 @@ class NotificationTriggers {
         return;
       }
 
-      // Show toast notification immediately
-      if (typeof notificationService !== 'undefined' && notificationService.showToastNotification) {
-        const toastType = notif.type === 'achievement' ? 'success' : 
-                         notif.type === 'error' ? 'error' : 'info';
-        notificationService.showToastNotification(notif.title, notif.message, toastType, 6000);
+      // Show toast notification ONLY for certificate notifications
+      // Other notifications only show in the notification bell
+      if (notif.type === 'certificate' && typeof notificationService !== 'undefined' && notificationService.showToastNotification) {
+        notificationService.showToastNotification(notif.title, notif.message, 'success', 6000);
       }
 
       // If notification service is initialized, refresh notifications
