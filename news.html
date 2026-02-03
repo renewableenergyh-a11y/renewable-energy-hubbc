@@ -230,6 +230,145 @@
         gap: 10px;
       }
     }
+
+    /* ===== DARK MODE SUPPORT ===== */
+    body.dark {
+      background: #0d1117;
+      color: #e6f7ef;
+    }
+
+    body.dark .site-header {
+      background: #003d36;
+      border-bottom-color: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark .site-header nav a {
+      color: #e6f7ef;
+    }
+
+    body.dark .site-header nav a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #00b38a;
+    }
+
+    body.dark .news-container {
+      background: transparent;
+    }
+
+    body.dark .news-header h1 {
+      color: #00c9b7;
+    }
+
+    body.dark .news-header p {
+      color: #9fb6c6;
+    }
+
+    body.dark .sort-btn {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e6f7ef;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark .sort-btn:hover {
+      background: rgba(0, 179, 138, 0.2);
+      border-color: rgba(0, 179, 138, 0.4);
+      color: #00c9b7;
+    }
+
+    body.dark .sort-btn.active {
+      background: rgba(0, 179, 138, 0.3);
+      border-color: rgba(0, 179, 138, 0.6);
+      color: #00c9b7;
+    }
+
+    body.dark .news-card {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(0, 179, 138, 0.2);
+    }
+
+    body.dark .news-card:hover {
+      background: rgba(255, 255, 255, 0.05);
+      border-color: rgba(0, 179, 138, 0.35);
+      box-shadow: 0 4px 12px rgba(0, 179, 138, 0.15);
+    }
+
+    body.dark .news-card-category {
+      background: rgba(0, 179, 138, 0.15);
+      color: #00c9b7;
+    }
+
+    body.dark .news-card-title {
+      color: #e6f7ef;
+    }
+
+    body.dark .news-card-title:hover {
+      color: #00c9b7;
+    }
+
+    body.dark .news-card-excerpt {
+      color: #9fb6c6;
+    }
+
+    body.dark .news-card-meta {
+      color: #6b8fa0;
+    }
+
+    body.dark .reaction-icon {
+      color: #00c9b7;
+    }
+
+    body.dark .read-more {
+      color: #00c9b7;
+    }
+
+    body.dark .read-more:hover {
+      color: #00e5cc;
+    }
+
+    body.dark #pagination {
+      color: #e6f7ef;
+    }
+
+    body.dark #pagination button {
+      background: rgba(255, 255, 255, 0.08);
+      color: #e6f7ef;
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark #pagination button:hover {
+      background: rgba(0, 179, 138, 0.2);
+      border-color: rgba(0, 179, 138, 0.4);
+      color: #00c9b7;
+    }
+
+    body.dark #pagination button.active {
+      background: rgba(0, 179, 138, 0.3);
+      border-color: rgba(0, 179, 138, 0.6);
+      color: #00c9b7;
+    }
+
+    body.dark .theme-toggle {
+      background: rgba(0, 0, 0, 0.3);
+      color: #e6f7ef;
+    }
+
+    body.dark .theme-toggle:hover {
+      background: rgba(0, 0, 0, 0.5);
+    }
+
+    body.dark footer {
+      background: #003d36;
+      border-top-color: rgba(255, 255, 255, 0.1);
+      color: #9fb6c6;
+    }
+
+    body.dark footer a {
+      color: #00c9b7;
+    }
+
+    body.dark footer a:hover {
+      color: #00e5cc;
+    }
   </style>
 </head>
 
@@ -410,7 +549,55 @@
   setInterval(() => {
     loadNews(currentPage, currentSort);
   }, 5000);
+
+  // ===== DARK MODE INITIALIZATION =====
+  function initThemeToggle() {
+    const toggleBtn = document.getElementById('theme-toggle');
+    if (toggleBtn) {
+      const icon = toggleBtn.querySelector('.icon');
+      const savedTheme = localStorage.getItem('theme') || 'light';
+
+      // Apply saved theme on load
+      if (savedTheme === 'dark') {
+        document.body.classList.add('dark');
+        if (icon) icon.textContent = '☀️';
+      } else {
+        document.body.classList.remove('dark');
+        if (icon) icon.textContent = '🌙';
+      }
+
+      // Remove any existing listeners by cloning and replacing
+      const newToggleBtn = toggleBtn.cloneNode(true);
+      toggleBtn.parentNode.replaceChild(newToggleBtn, toggleBtn);
+
+      newToggleBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        document.body.classList.toggle('dark');
+
+        if (document.body.classList.contains('dark')) {
+          localStorage.setItem('theme', 'dark');
+          if (newToggleBtn.querySelector('.icon')) newToggleBtn.querySelector('.icon').textContent = '☀️';
+        } else {
+          localStorage.setItem('theme', 'light');
+          if (newToggleBtn.querySelector('.icon')) newToggleBtn.querySelector('.icon').textContent = '🌙';
+        }
+      });
+    }
+  }
+
+  // Initialize theme toggle when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initThemeToggle);
+  } else {
+    initThemeToggle();
+  }
 </script>
+
+<!-- THEME TOGGLE -->
+<button id="theme-toggle" class="theme-toggle">
+  <span class="icon">🌙</span>
+</button>
 
 </body>
 </html>
