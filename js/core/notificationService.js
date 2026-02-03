@@ -8,6 +8,7 @@ class NotificationService {
     this.notifications = [];
     this.isInitialized = false;
     this.pollInterval = null;
+    this.shownToastIds = []; // Track which notifications we've shown as toasts
     // Detect API base URL
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       this.apiBase = 'http://localhost:8787/api';
@@ -73,21 +74,25 @@ class NotificationService {
       }
 
       const data = await response.json();
-      const previousCount = this.notifications.length;
-      this.notifications = data.notifications || [];
+      const newNotifications = data.notifications || [];
+      
+      // Find unread certificate notifications that we haven't shown a toast for yet
+      const shownToasts = new Set(this.shownToastIds || []);
+      
+      for (const notif of newNotifications) {
+        // Show toast for unread certificate notifications that we haven't shown yet
+        if (notif.type === 'certificate' && !notif.read && !shownToasts.has(notif._id)) {
+          console.log('📜 Showing certificate toast:', notif.title);
+          this.showToastNotification(notif.title, notif.message, 'success', 6000);
+          shownToasts.add(notif._id);
+        }
+      }
+      
+      this.shownToastIds = Array.from(shownToasts);
+      this.notifications = newNotifications;
       
       // Update badge
       this.updateBadge(data.unreadCount || 0);
-      
-      // Show toast for new unread certificate notifications
-      if (this.notifications.length > previousCount) {
-        const newNotifications = this.notifications.slice(previousCount);
-        for (const notif of newNotifications) {
-          if (notif.type === 'certificate' && !notif.read) {
-            this.showToastNotification(notif.title, notif.message, 'success', 6000);
-          }
-        }
-      }
       
       return this.notifications;
     } catch (err) {
