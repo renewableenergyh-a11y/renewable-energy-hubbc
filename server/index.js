@@ -2081,14 +2081,12 @@ app.get('/api/news/:slug', async (req, res) => {
     const token = req.headers.authorization?.split(' ')[1];
     let currentUserId = null;
 
-    // Get current user if authenticated
+    // Get current user if authenticated (handles both users and admins)
     if (token) {
-      const users = loadUsers();
-      for (const [email, user] of Object.entries(users)) {
-        if (user.token === token) {
-          currentUserId = email;
-          break;
-        }
+      const authUser = authenticateToken(token);
+      if (authUser) {
+        currentUserId = authUser.email;
+        console.log(`✅ User authenticated: ${currentUserId} (${authUser.role})`);
       }
     }
 
@@ -2153,22 +2151,22 @@ app.get('/api/news/:slug', async (req, res) => {
 app.post('/api/news/:newsId/react', async (req, res) => {
   try {
     const token = req.headers.authorization?.split(' ')[1];
+    console.log(`🔵 POST /api/news/:newsId/react - newsId: ${req.params.newsId}, token: ${token ? token.substring(0, 10) + '...' : 'MISSING'}`);
+    
     if (!token) {
+      console.log(`❌ No token provided`);
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const users = loadUsers();
-    let userId = null;
-    for (const [email, user] of Object.entries(users)) {
-      if (user.token === token) {
-        userId = email;
-        break;
-      }
-    }
-
-    if (!userId) {
+    // Authenticate token (handles both users and admins)
+    const authUser = authenticateToken(token);
+    if (!authUser) {
+      console.log(`❌ Token not found in users or admins`);
       return res.status(401).json({ error: 'Invalid token' });
     }
+
+    const userId = authUser.email;
+    console.log(`✅ User authenticated: ${userId} (${authUser.role})`);
 
     const { reaction } = req.body;
     const validReactions = ['like', 'love', 'insightful', 'celebrate'];
@@ -2181,7 +2179,7 @@ app.post('/api/news/:newsId/react', async (req, res) => {
       return res.status(503).json({ error: 'News service unavailable' });
     }
 
-    console.log(`🔵 POST /api/news/:newsId/react - newsId: ${req.params.newsId}, userId: ${userId}, reaction: ${reaction}`);
+    console.log(`📝 Reaction request: ${userId}, reaction: ${reaction}`);
 
     const news = await db.models.News.findById(req.params.newsId);
     if (!news) {
@@ -2251,18 +2249,14 @@ app.delete('/api/news/:newsId/react', async (req, res) => {
       return res.status(401).json({ error: 'Authentication required' });
     }
 
-    const users = loadUsers();
-    let userId = null;
-    for (const [email, user] of Object.entries(users)) {
-      if (user.token === token) {
-        userId = email;
-        break;
-      }
-    }
-
-    if (!userId) {
+    // Authenticate token (handles both users and admins)
+    const authUser = authenticateToken(token);
+    if (!authUser) {
       return res.status(401).json({ error: 'Invalid token' });
     }
+
+    const userId = authUser.email;
+    console.log(`✅ User authenticated: ${userId} (${authUser.role})`);
 
     const db = require('./db.js');
     if (!db?.models?.News) {

@@ -123,11 +123,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
       // Store auth token and admin info from server response
       localStorage.setItem('isAdmin', 'true');
-      localStorage.setItem('isLoggedIn', 'true');
       localStorage.setItem('adminEmail', data.admin.email || '');
       localStorage.setItem('adminName', data.admin.name || '');
-      localStorage.setItem('authToken', data.token);  // ← Standard token key
-      localStorage.setItem('adminToken', data.token);  // ← Also store as adminToken for backwards compatibility
+      localStorage.setItem('adminToken', data.token);
       localStorage.setItem('adminRole', data.admin.role || role);
       localStorage.setItem('adminData', JSON.stringify({
         id: data.admin.id,
