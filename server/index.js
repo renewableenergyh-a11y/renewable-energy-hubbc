@@ -2190,53 +2190,48 @@ app.post('/api/news/:newsId/react', async (req, res) => {
     console.log(`✅ Found news: ${news._id}, slug: ${news.slug}`);
     console.log(`📊 Before update - reactions:`, news.reactions);
 
-    // CRITICAL: Ensure reactions is an OBJECT, not an array
-    // If it's an array or anything else, convert to proper object
-    if (!news.reactions || Array.isArray(news.reactions) || typeof news.reactions !== 'object') {
-      console.log(`🔧 Converting reactions from ${Array.isArray(news.reactions) ? 'array' : typeof news.reactions} to object`);
-      news.reactions = {
-        like: [],
-        love: [],
-        insightful: [],
-        celebrate: []
-      };
-    } else if (!news.reactions.like || !news.reactions.love || !news.reactions.insightful || !news.reactions.celebrate) {
-      // Ensure all fields exist
-      console.log(`🔧 Ensuring all reaction fields exist`);
-      if (!news.reactions.like) news.reactions.like = [];
-      if (!news.reactions.love) news.reactions.love = [];
-      if (!news.reactions.insightful) news.reactions.insightful = [];
-      if (!news.reactions.celebrate) news.reactions.celebrate = [];
+    // Build the update object
+    let updateObject = {};
+    const validReactions = ['like', 'love', 'insightful', 'celebrate'];
+
+    // Initialize the reactions object structure
+    const newReactions = {
+      like: [],
+      love: [],
+      insightful: [],
+      celebrate: []
+    };
+
+    // If reactions exist and is an object (not array), preserve other users' reactions
+    if (news.reactions && typeof news.reactions === 'object' && !Array.isArray(news.reactions)) {
+      validReactions.forEach(type => {
+        if (Array.isArray(news.reactions[type])) {
+          newReactions[type] = news.reactions[type].filter(id => id !== userId);
+        }
+      });
     }
 
-    // Remove user from all reaction arrays
-    validReactions.forEach(type => {
-      if (!news.reactions[type]) news.reactions[type] = [];
-      news.reactions[type] = news.reactions[type].filter(id => id !== userId);
-    });
+    // Add user to selected reaction
+    newReactions[reaction].push(userId);
 
-    // Add user to selected reaction array
-    if (!news.reactions[reaction]) news.reactions[reaction] = [];
-    news.reactions[reaction].push(userId);
+    console.log(`📊 New reactions object:`, newReactions);
 
-    console.log(`📊 After update - reactions:`, news.reactions);
+    // Use updateOne with $set for explicit database update
+    const updateResult = await db.models.News.updateOne(
+      { _id: req.params.newsId },
+      { $set: { reactions: newReactions, updatedAt: new Date() } }
+    );
 
-    // CRITICAL: Mark reactions field as modified for Mongoose
-    // Mongoose doesn't automatically detect deep nested changes
-    news.markModified('reactions');
-    console.log(`🔧 Marked 'reactions' field as modified for save`);
+    console.log(`💾 Update result:`, { matchedCount: updateResult.matchedCount, modifiedCount: updateResult.modifiedCount });
 
-    const saveResult = await news.save();
-    console.log(`💾 Saved successfully. Modified: ${saveResult.lastErrorObject ? 'pending' : 'confirmed'}`);
-
-    // Verify the save by refetching
-    const verifyNews = await db.models.News.findById(news._id);
+    // Verify by refetching
+    const verifyNews = await db.models.News.findById(req.params.newsId);
     console.log(`✅ Verification fetch - reactions in DB:`, verifyNews.reactions);
 
     // Return reaction counts and user's current reaction
     const counts = {};
     validReactions.forEach(type => {
-      counts[type] = news.reactions[type].length;
+      counts[type] = (newReactions[type] || []).length;
     });
 
     console.log(`✅ Returning counts:`, counts);
@@ -2280,48 +2275,42 @@ app.delete('/api/news/:newsId/react', async (req, res) => {
     console.log(`🔵 DELETE /api/news/:newsId/react - newsId: ${req.params.newsId}, userId: ${userId}`);
     console.log(`📊 Before update - reactions:`, news.reactions);
 
-    // CRITICAL: Ensure reactions is an OBJECT, not an array
-    if (!news.reactions || Array.isArray(news.reactions) || typeof news.reactions !== 'object') {
-      console.log(`🔧 Converting reactions from ${Array.isArray(news.reactions) ? 'array' : typeof news.reactions} to object`);
-      news.reactions = {
-        like: [],
-        love: [],
-        insightful: [],
-        celebrate: []
-      };
-    } else if (!news.reactions.like || !news.reactions.love || !news.reactions.insightful || !news.reactions.celebrate) {
-      // Ensure all fields exist
-      console.log(`🔧 Ensuring all reaction fields exist`);
-      if (!news.reactions.like) news.reactions.like = [];
-      if (!news.reactions.love) news.reactions.love = [];
-      if (!news.reactions.insightful) news.reactions.insightful = [];
-      if (!news.reactions.celebrate) news.reactions.celebrate = [];
+    // Build the update object
+    const validReactions = ['like', 'love', 'insightful', 'celebrate'];
+    const newReactions = {
+      like: [],
+      love: [],
+      insightful: [],
+      celebrate: []
+    };
+
+    // If reactions exist and is an object (not array), preserve other users' reactions
+    if (news.reactions && typeof news.reactions === 'object' && !Array.isArray(news.reactions)) {
+      validReactions.forEach(type => {
+        if (Array.isArray(news.reactions[type])) {
+          newReactions[type] = news.reactions[type].filter(id => id !== userId);
+        }
+      });
     }
 
-    // Remove user from all reaction arrays
-    const validReactions = ['like', 'love', 'insightful', 'celebrate'];
-    validReactions.forEach(type => {
-      if (!news.reactions[type]) news.reactions[type] = [];
-      news.reactions[type] = news.reactions[type].filter(id => id !== userId);
-    });
+    console.log(`📊 After update - reactions:`, newReactions);
 
-    console.log(`📊 After update - reactions:`, news.reactions);
+    // Use updateOne with $set for explicit database update
+    const updateResult = await db.models.News.updateOne(
+      { _id: req.params.newsId },
+      { $set: { reactions: newReactions, updatedAt: new Date() } }
+    );
 
-    // CRITICAL: Mark reactions field as modified for Mongoose
-    news.markModified('reactions');
-    console.log(`🔧 Marked 'reactions' field as modified for save`);
-
-    const saveResult = await news.save();
-    console.log(`💾 Saved successfully`);
+    console.log(`💾 Update result:`, { matchedCount: updateResult.matchedCount, modifiedCount: updateResult.modifiedCount });
 
     // Verify the save by refetching
-    const verifyNews = await db.models.News.findById(news._id);
+    const verifyNews = await db.models.News.findById(req.params.newsId);
     console.log(`✅ Verification fetch - reactions in DB:`, verifyNews.reactions);
 
     // Return updated counts
     const counts = {};
     validReactions.forEach(type => {
-      counts[type] = news.reactions[type].length;
+      counts[type] = (newReactions[type] || []).length;
     });
 
     console.log(`✅ Returning counts:`, counts);
