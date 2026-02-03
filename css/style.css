@@ -5652,7 +5652,8 @@ body.dark .btn-secondary:hover {
 
   .account-card {
     padding: 30px 20px;
-    margin: 0 20px;
+    margin: 0;
+    max-width: 100%;
   }
 
   .profile-header {
