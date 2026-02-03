@@ -297,7 +297,7 @@ window.viewCertificate = async function(certId) {
     // Load certificate HTML directly (not in iframe) to allow proper rendering
     const contentDiv = document.getElementById('certificate-content');
     const wrapper = document.createElement('div');
-    wrapper.style.cssText = 'width: 100%; max-width: 800px; overflow: auto; display: flex; align-items: center; justify-content: center; background: white; padding: 10px;';
+    wrapper.style.cssText = 'width: 100%; max-width: 100%; overflow: auto; display: flex; align-items: center; justify-content: center; background: white; padding: 10px;';
     wrapper.innerHTML = html;
     contentDiv.appendChild(wrapper);
     
@@ -309,6 +309,23 @@ window.viewCertificate = async function(certId) {
       modalDiv.style.height = '100vh';
       modalDiv.style.maxWidth = '100%';
       modalDiv.style.borderRadius = '0px';
+      
+      // Scale down certificate content on mobile
+      const certificateElements = wrapper.querySelectorAll('*');
+      certificateElements.forEach(el => {
+        // Force all elements to not exceed viewport width
+        el.style.maxWidth = '100%';
+        el.style.width = 'auto';
+        if (el.style.width === '100%' || el.style.width === '800px' || el.style.width === '900px') {
+          el.style.width = '100%';
+        }
+      });
+      
+      // Add transform scale as fallback if content still overflows
+      const scale = 0.85;
+      wrapper.style.transform = `scale(${scale})`;
+      wrapper.style.transformOrigin = 'top center';
+      wrapper.style.width = `${100 / scale}%`;
     }
     
     // Close modal when clicking outside
