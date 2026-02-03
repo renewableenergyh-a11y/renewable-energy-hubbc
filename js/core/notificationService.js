@@ -180,7 +180,8 @@ class NotificationService {
 
       // Create toast element
       const toast = document.createElement('div');
-      const bgColor = type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3';
+      // Use site theme color (#00796b) for success/certificate notifications
+      const bgColor = type === 'success' ? '#00796b' : type === 'error' ? '#f44336' : '#2196F3';
       const icon = type === 'success' ? '✓' : type === 'error' ? '✕' : 'ℹ';
       
       toast.style.cssText = `
