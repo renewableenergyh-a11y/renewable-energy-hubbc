@@ -960,23 +960,39 @@
 
     function filterSessions() {
       return allSessions.filter(session => {
-        if (currentFilter === 'upcoming') return session.status === 'upcoming';
-        if (currentFilter === 'active') return session.status === 'active';
+        const actualStatus = getActualSessionStatus(session);
+        if (currentFilter === 'upcoming') return actualStatus === 'upcoming';
+        if (currentFilter === 'active') return actualStatus === 'active';
         return true;
       });
+    }
+
+    function getActualSessionStatus(session) {
+      const now = new Date();
+      const startTime = new Date(session.startTime);
+      const endTime = new Date(session.endTime);
+      
+      if (now >= startTime && now <= endTime) {
+        return 'active';
+      } else if (now < startTime) {
+        return 'upcoming';
+      } else {
+        return 'closed';
+      }
     }
 
     function renderSessionCard(session) {
       const timeStr = new Date(session.startTime).toLocaleString();
       const endTimeStr = new Date(session.endTime).toLocaleTimeString();
-      const isActive = session.status === 'active';
-      const isClosed = session.status === 'closed';
+      const actualStatus = getActualSessionStatus(session);
+      const isActive = actualStatus === 'active';
+      const isClosed = actualStatus === 'closed';
 
       return `
         <div class="session-card" data-session-id="${session.sessionId}">
           <div class="session-header">
             <span class="session-type ${session.sessionType}">${session.sessionType}</span>
-            <span class="session-status ${session.status}">${session.status}</span>
+            <span class="session-status ${actualStatus}">${actualStatus}</span>
           </div>
 
           <div class="session-title">${escapeHtml(session.subject)}</div>

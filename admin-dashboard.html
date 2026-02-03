@@ -3399,7 +3399,8 @@
           
           const startDate = new Date(session.startTime).toLocaleString();
           const endDate = new Date(session.endTime).toLocaleString();
-          const statusBadge = session.status === 'closed' ? '<span style="background: #d32f2f; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;">Closed</span>' : '<span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;">Active</span>';
+          const actualStatus = getActualSessionStatus(session);
+          const statusBadge = actualStatus === 'closed' ? '<span style="background: #d32f2f; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;">Closed</span>' : actualStatus === 'active' ? '<span style="background: #4caf50; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;">Active</span>' : '<span style="background: #ff9800; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; margin-left: 8px;">Upcoming</span>';
           
           sessionCard.innerHTML = `
             <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
@@ -3411,12 +3412,12 @@
               ${statusBadge}
             </div>
             <div style="display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
-              ${session.status !== 'closed' ? `
+              ${actualStatus !== 'closed' ? `
                 <button style="padding: 6px 12px; background: var(--green-main); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="joinDiscussionSession('${session.sessionId}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
                   <i class="fas fa-sign-in-alt" style="margin-right: 4px;"></i>Join Session
                 </button>
               ` : ''}
-              ${session.status !== 'closed' ? `
+              ${actualStatus !== 'closed' ? `
                 <button style="padding: 6px 12px; background: #f97316; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; white-space: nowrap; transition: all 0.3s ease;" onclick="endDiscussionSession('${session.sessionId}', '${escapeHtml(session.subject)}')" onmouseover="this.style.opacity='0.8'" onmouseout="this.style.opacity='1'">
                   <i class="fas fa-stop-circle" style="margin-right: 4px;"></i>End Session
                 </button>
