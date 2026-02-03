@@ -5710,7 +5710,7 @@ app.get('/api/certificates/:certId/download', (req, res) => {
             font-size: 52px; 
             color: #00796b; 
             margin-bottom: 8px;
-            margin-right: 120px;
+            margin-right: 0;
             letter-spacing: 4px;
             font-weight: 700;
             text-transform: uppercase;
