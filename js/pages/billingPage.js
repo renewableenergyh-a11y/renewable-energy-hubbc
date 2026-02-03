@@ -206,144 +206,15 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Check if returning from successful payment
+  // Check if returning from Paychangu payment redirect
+  // NOTE: No frontend verification - webhook will handle payment confirmation
   const urlParams = new URLSearchParams(window.location.search);
   if (urlParams.get('payment') === 'success') {
-    // Premium already auto-activated on server, show success banner immediately
-    console.log('Payment successful! Premium activated on server.');
-    setPremium(true);
-    localStorage.setItem('hasPremium', 'true');
-    localStorage.setItem('premiumActivatedAt', new Date().toISOString());
-    showPremiumSuccess();
-    // Don't verify - premium is already activated
+    console.log('Payment redirect received. Webhook will verify and activate premium.');
+    // Don't take any action - webhook will update the account
   } else if (urlParams.get('payment') === 'pending') {
-    // Paychangu redirected - show pending confirmation
-    showPaymentPending();
-    // Start polling for status updates
-    verifyPaymentStatus();
-  }
-
-  function showPaymentPending() {
-    if (paymentStatus) {
-      paymentStatus.innerHTML = `
-        <div class="status-message pending" style="background: #fffbeb; border: 2px solid #f59e0b; padding: 20px; border-radius: 12px; text-align: center;">
-          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
-            <div style="width: 20px; height: 20px; border: 3px solid #f59e0b; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-            <h4 style="color: #b45309; margin: 0; font-size: 18px;">Processing Payment...</h4>
-          </div>
-          <p style="color: #92400e; margin: 0;">Payment received. Your account status will be updated shortly...</p>
-        </div>
-        <style>
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        </style>
-      `;
-    }
-  }
-
-  async function verifyPaymentStatus() {
-    try {
-      // Check user's premium status
-      const token = getToken();
-      if (!token) {
-        console.warn('No token found, retrying in 2 seconds...');
-        // Wait a moment and retry if no token
-        setTimeout(() => verifyPaymentStatus(), 2000);
-        return;
-      }
-
-      console.log('Checking premium status with /auth/me...');
-      const response = await fetch(`${API_BASE}/auth/me`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const user = data.user || data;
-        console.log('Auth response:', user);
-        
-        if (user && user.hasPremium) {
-          console.log('✅ Premium status confirmed!');
-          setPremium(true);
-          showPremiumSuccess();
-        } else {
-          console.log('Premium not yet active, retrying in 2 seconds...');
-          // Premium not yet updated, retry faster (1 second)
-          setTimeout(() => verifyPaymentStatus(), 1000);
-        }
-      } else {
-        console.warn(`Auth check failed with status ${response.status}, retrying...`);
-        // Retry on error
-        setTimeout(() => verifyPaymentStatus(), 2000);
-      }
-    } catch (err) {
-      console.warn('Failed to verify payment status:', err);
-      // Retry on error
-      setTimeout(() => verifyPaymentStatus(), 2000);
-    }
-  }
-
-  function showPremiumSuccess() {
-    // Create a modal overlay
-    const modal = document.createElement('div');
-    modal.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 10000;
-    `;
-
-    // Create modal content
-    const content = document.createElement('div');
-    content.style.cssText = `
-      background: white;
-      padding: 40px;
-      border-radius: 16px;
-      text-align: center;
-      max-width: 400px;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-    `;
-
-    content.innerHTML = `
-      <h2 style="color: #059669; font-size: 28px; font-weight: bold; margin: 0 0 10px 0;">Payment Verified</h2>
-      <p style="color: #666; font-size: 16px; margin: 0 0 20px 0;">Thank you! Your premium subscription is now active. You have full access to all premium features.</p>
-      <button class="btn-primary" onclick="window.location.href='courses.html'" style="background: #059669; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
-        Start Learning Now
-      </button>
-    `;
-
-    modal.appendChild(content);
-    document.body.appendChild(modal);
-
-    // Hide the old payment status container
-    if (paymentStatus) {
-      paymentStatus.style.display = 'none';
-    }
-
-    if (subscribeBtn) {
-      subscribeBtn.textContent = 'Premium Activated';
-      subscribeBtn.disabled = true;
-    }
-    if (upgradeNowBtn) {
-      upgradeNowBtn.textContent = 'Premium Activated';
-      upgradeNowBtn.disabled = true;
-    }
-    if (paymentMethodsSection) {
-      paymentMethodsSection.style.display = 'none';
-    }
-
-    updateCardStatus();
+    console.log('Payment pending. Webhook will process when Paychangu confirms.');
+    // Don't take any action - webhook will handle verification
   }
 
   function updateCardStatus() {
