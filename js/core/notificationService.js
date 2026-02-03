@@ -73,10 +73,21 @@ class NotificationService {
       }
 
       const data = await response.json();
+      const previousCount = this.notifications.length;
       this.notifications = data.notifications || [];
       
       // Update badge
       this.updateBadge(data.unreadCount || 0);
+      
+      // Show toast for new unread certificate notifications
+      if (this.notifications.length > previousCount) {
+        const newNotifications = this.notifications.slice(previousCount);
+        for (const notif of newNotifications) {
+          if (notif.type === 'certificate' && !notif.read) {
+            this.showToastNotification(notif.title, notif.message, 'success', 6000);
+          }
+        }
+      }
       
       return this.notifications;
     } catch (err) {
