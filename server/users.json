@@ -46,12 +46,12 @@
     "lastLogin": "2026-01-22T05:49:26.311Z",
     "pendingPayment": {
       "transactionId": "RET-1768583547920-LKC7Z1F",
-      "amount": 16000,
+      "amount": 50,
       "currency": "MWK",
       "initiatedAt": "2026-01-16T17:12:29.332Z",
       "status": "pending"
     },
-    "lastPaymentAmount": 16000,
+    "lastPaymentAmount": 50,
     "lastPaymentDate": "2026-01-16T17:14:34.028Z",
     "lastPaymentRef": "RET-1768583547920-LKC7Z1F",
     "premiumActivatedAt": "2026-01-16T17:14:34.028Z",
@@ -95,7 +95,7 @@
     "lastLogin": "2026-01-27T23:30:57.998Z",
     "pendingPayment": {
       "transactionId": "RET-1768872300187-N4ZX65B",
-      "amount": 16000,
+      "amount": 50,
       "currency": "MWK",
       "initiatedAt": "2026-01-20T01:25:00.486Z",
       "status": "pending"
@@ -117,7 +117,7 @@
     "lastLogin": "2026-01-22T04:50:03.349Z",
     "pendingPayment": {
       "transactionId": "RET-1769056236878-N82RSY1",
-      "amount": 16000,
+      "amount": 50,
       "currency": "MWK",
       "initiatedAt": "2026-01-22T04:30:37.183Z",
       "status": "pending"

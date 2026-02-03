@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          amount: 16000,
+          amount: 50,
           currency: 'MWK',
           paymentMethod: null
         })
