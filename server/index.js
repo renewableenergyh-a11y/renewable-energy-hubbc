@@ -5587,7 +5587,7 @@ app.get('/api/certificates/:certId/download', (req, res) => {
     // Extract date directly from ISO string to avoid timezone shifts
     const isoDate = certificate.completedDate.split('T')[0]; // e.g., "2026-02-02"
     const [isoYear, isoMonth, isoDay] = isoDate.split('-');
-    const localDate = new Date(parseInt(isoYear), parseInt(isoMonth) - 1, parseInt(isoDay));
+    const localDate = new Date(parseInt(isoYear), parseInt(isoMonth) - 1, parseInt(isoDay) + 1);
     const htmlContent = `
       <!DOCTYPE html>
       <html>
