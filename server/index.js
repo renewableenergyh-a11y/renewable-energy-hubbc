@@ -2190,10 +2190,6 @@ app.post('/api/news/:newsId/react', async (req, res) => {
     console.log(`✅ Found news: ${news._id}, slug: ${news.slug}`);
     console.log(`📊 Before update - reactions:`, news.reactions);
 
-    // Build the update object
-    let updateObject = {};
-    const validReactions = ['like', 'love', 'insightful', 'celebrate'];
-
     // Initialize the reactions object structure
     const newReactions = {
       like: [],
