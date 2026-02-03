@@ -2749,13 +2749,21 @@ app.patch('/api/admin/news/:id/publish', async (req, res) => {
 // ADMIN: Manual migration endpoint to fix reactions structure
 app.post('/api/admin/news/migrate/reactions', async (req, res) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
+    const authHeader = req.headers.authorization;
+    console.log(`🔐 POST /api/admin/news/migrate/reactions - Authorization header:`, authHeader ? authHeader.substring(0, 20) + '...' : 'MISSING');
+    
+    const token = authHeader?.split(' ')[1];
     if (!token) {
+      console.log(`❌ No token found in Authorization header`);
       return res.status(401).json({ error: 'Authentication required' });
     }
 
+    console.log(`✅ Token extracted (length: ${token.length})`);
     const authUser = authenticateToken(token);
+    console.log(`🔍 Authentication result:`, authUser ? `${authUser.email} (${authUser.role})` : 'FAILED');
+    
     if (!authUser || !['admin', 'superadmin'].includes(authUser.role)) {
+      console.log(`❌ Admin access denied`);
       return res.status(403).json({ error: 'Admin access required' });
     }
 
