@@ -207,14 +207,158 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Check if returning from Paychangu payment redirect
-  // NOTE: No frontend verification - webhook will handle payment confirmation
+  // Poll for webhook verification - show success when premium is activated
   const urlParams = new URLSearchParams(window.location.search);
-  if (urlParams.get('payment') === 'success') {
-    console.log('Payment redirect received. Webhook will verify and activate premium.');
-    // Don't take any action - webhook will update the account
-  } else if (urlParams.get('payment') === 'pending') {
-    console.log('Payment pending. Webhook will process when Paychangu confirms.');
-    // Don't take any action - webhook will handle verification
+  if (urlParams.get('payment') === 'pending') {
+    console.log('Payment pending. Waiting for webhook confirmation...');
+    showPaymentProcessing();
+    // Start polling for premium activation (webhook will activate it)
+    startPaymentVerificationPolling();
+  }
+
+  function showPaymentProcessing() {
+    if (paymentStatus) {
+      paymentStatus.innerHTML = `
+        <div class="status-message processing" style="background: #eff6ff; border: 2px solid #3b82f6; padding: 20px; border-radius: 12px; text-align: center;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 10px;">
+            <div style="width: 20px; height: 20px; border: 3px solid #3b82f6; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+            <h4 style="color: #1e40af; margin: 0; font-size: 18px;">Processing Payment...</h4>
+          </div>
+          <p style="color: #1e3a8a; margin: 0;">Your payment is being verified. This usually takes a few seconds.</p>
+        </div>
+        <style>
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        </style>
+      `;
+    }
+  }
+
+  async function startPaymentVerificationPolling() {
+    let attempts = 0;
+    const maxAttempts = 30; // 30 seconds timeout
+    
+    const pollInterval = setInterval(async () => {
+      attempts++;
+      try {
+        const token = getToken();
+        if (!token) {
+          console.warn('No token found, will retry...');
+          if (attempts >= maxAttempts) {
+            clearInterval(pollInterval);
+            showPaymentTimeout();
+          }
+          return;
+        }
+
+        const response = await fetch(`${API_BASE}/auth/me`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const user = data.user || data;
+          
+          if (user && user.hasPremium) {
+            console.log('✅ Premium activated via webhook!');
+            clearInterval(pollInterval);
+            // Remove payment params from URL to avoid re-triggering
+            window.history.replaceState({}, document.title, '/billing.html');
+            showPaymentSuccess();
+            setPremium(true);
+            return;
+          }
+        }
+
+        // Continue polling if max attempts not reached
+        if (attempts >= maxAttempts) {
+          clearInterval(pollInterval);
+          showPaymentTimeout();
+        }
+      } catch (err) {
+        console.warn('Poll attempt failed:', err.message);
+        if (attempts >= maxAttempts) {
+          clearInterval(pollInterval);
+          showPaymentTimeout();
+        }
+      }
+    }, 1000); // Check every 1 second
+  }
+
+  function showPaymentSuccess() {
+    // Create a modal overlay
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    `;
+
+    // Create modal content
+    const content = document.createElement('div');
+    content.style.cssText = `
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      text-align: center;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    `;
+
+    content.innerHTML = `
+      <div style="font-size: 48px; margin-bottom: 20px;">✅</div>
+      <h2 style="color: #059669; font-size: 28px; font-weight: bold; margin: 0 0 10px 0;">Payment Verified!</h2>
+      <p style="color: #666; font-size: 16px; margin: 0 0 20px 0;">Thank you! Your premium subscription is now active. You have full access to all premium features.</p>
+      <button class="btn-primary" onclick="window.location.href='courses.html'" style="background: #059669; color: white; border: none; padding: 12px 30px; font-size: 16px; font-weight: 600; border-radius: 8px; cursor: pointer; transition: all 0.3s ease;">
+        Start Learning Now
+      </button>
+    `;
+
+    modal.appendChild(content);
+    document.body.appendChild(modal);
+
+    if (paymentStatus) {
+      paymentStatus.style.display = 'none';
+    }
+    if (subscribeBtn) {
+      subscribeBtn.textContent = 'Premium Activated';
+      subscribeBtn.disabled = true;
+    }
+    if (upgradeNowBtn) {
+      upgradeNowBtn.textContent = 'Premium Activated';
+      upgradeNowBtn.disabled = true;
+    }
+    if (paymentMethodsSection) {
+      paymentMethodsSection.style.display = 'none';
+    }
+
+    updateCardStatus();
+  }
+
+  function showPaymentTimeout() {
+    if (paymentStatus) {
+      paymentStatus.innerHTML = `
+        <div class="status-message timeout" style="background: #fef3c7; border: 2px solid #f59e0b; padding: 20px; border-radius: 12px; text-align: center;">
+          <h4 style="color: #b45309; margin: 0 0 10px 0; font-size: 18px;">Payment Pending Verification</h4>
+          <p style="color: #92400e; margin: 0 0 15px 0;">Your payment is still being processed. This can take up to a few minutes.</p>
+          <button onclick="location.reload()" style="background: #f59e0b; color: white; border: none; padding: 10px 20px; font-size: 14px; font-weight: 600; border-radius: 8px; cursor: pointer;">
+            Refresh to Check Status
+          </button>
+        </div>
+      `;
+    }
   }
 
   function updateCardStatus() {
