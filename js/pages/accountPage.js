@@ -271,21 +271,21 @@ window.viewCertificate = async function(certId) {
     
     modal.innerHTML = `
       <div style="background: white; border-radius: 12px; width: 95%; height: 95vh; max-width: 1200px; display: flex; flex-direction: column; box-shadow: 0 10px 40px rgba(0,0,0,0.3); max-height: 95vh;">
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 20px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
-          <h2 style="margin: 0; font-size: 20px; font-weight: 600; color: #1f2937;">Certificate</h2>
-          <button onclick="closeCertificateModal()" style="background: none; border: none; font-size: 28px; cursor: pointer; color: #6b7280; padding: 0; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center;">×</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid #e5e7eb; background: #f9fafb;">
+          <h2 style="margin: 0; font-size: 16px; font-weight: 600; color: #1f2937;">Certificate</h2>
+          <button onclick="closeCertificateModal()" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6b7280; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">×</button>
         </div>
-        <div id="certificate-content" style="flex: 1; overflow: auto; padding: 20px; background: #fafbfc; display: flex; align-items: center; justify-content: center; min-height: 0;">
+        <div id="certificate-content" style="flex: 1; overflow: auto; padding: 10px; background: #fafbfc; display: flex; align-items: center; justify-content: center; min-height: 0;">
           <!-- Certificate will be loaded here -->
         </div>
-        <div style="display: flex; gap: 10px; padding: 16px; border-top: 1px solid #e5e7eb; justify-content: flex-end; background: #f9fafb; flex-wrap: wrap;">
-          <button onclick="downloadCertificateFromModal('${certId}', 'html')" style="padding: 8px 14px; background: #3b82f6; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+        <div style="display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid #e5e7eb; justify-content: flex-end; background: #f9fafb; flex-wrap: wrap;">
+          <button onclick="downloadCertificateFromModal('${certId}', 'html')" style="padding: 6px 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
             📄 Download HTML
           </button>
-          <button onclick="downloadCertificateFromModal('${certId}', 'image')" style="padding: 8px 14px; background: #10b981; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+          <button onclick="downloadCertificateFromModal('${certId}', 'image')" style="padding: 6px 10px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
             🖼️ Download Image
           </button>
-          <button onclick="closeCertificateModal()" style="padding: 8px 14px; background: #6b7280; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='#4b5563'" onmouseout="this.style.background='#6b7280'">
+          <button onclick="closeCertificateModal()" style="padding: 6px 10px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='#4b5563'" onmouseout="this.style.background='#6b7280'">
             Close
           </button>
         </div>
@@ -322,7 +322,7 @@ window.viewCertificate = async function(certId) {
       });
       
       // Add transform scale as fallback if content still overflows
-      const scale = 0.85;
+      const scale = 0.75;
       wrapper.style.transform = `scale(${scale})`;
       wrapper.style.transformOrigin = 'top center';
       wrapper.style.width = `${100 / scale}%`;
