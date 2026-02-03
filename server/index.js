@@ -2190,14 +2190,23 @@ app.post('/api/news/:newsId/react', async (req, res) => {
     console.log(`✅ Found news: ${news._id}, slug: ${news.slug}`);
     console.log(`📊 Before update - reactions:`, news.reactions);
 
-    // Initialize reactions object if needed
-    if (!news.reactions) {
+    // CRITICAL: Ensure reactions is an OBJECT, not an array
+    // If it's an array or anything else, convert to proper object
+    if (!news.reactions || Array.isArray(news.reactions) || typeof news.reactions !== 'object') {
+      console.log(`🔧 Converting reactions from ${Array.isArray(news.reactions) ? 'array' : typeof news.reactions} to object`);
       news.reactions = {
         like: [],
         love: [],
         insightful: [],
         celebrate: []
       };
+    } else if (!news.reactions.like || !news.reactions.love || !news.reactions.insightful || !news.reactions.celebrate) {
+      // Ensure all fields exist
+      console.log(`🔧 Ensuring all reaction fields exist`);
+      if (!news.reactions.like) news.reactions.like = [];
+      if (!news.reactions.love) news.reactions.love = [];
+      if (!news.reactions.insightful) news.reactions.insightful = [];
+      if (!news.reactions.celebrate) news.reactions.celebrate = [];
     }
 
     // Remove user from all reaction arrays
@@ -2271,14 +2280,22 @@ app.delete('/api/news/:newsId/react', async (req, res) => {
     console.log(`🔵 DELETE /api/news/:newsId/react - newsId: ${req.params.newsId}, userId: ${userId}`);
     console.log(`📊 Before update - reactions:`, news.reactions);
 
-    // Initialize reactions object if needed
-    if (!news.reactions) {
+    // CRITICAL: Ensure reactions is an OBJECT, not an array
+    if (!news.reactions || Array.isArray(news.reactions) || typeof news.reactions !== 'object') {
+      console.log(`🔧 Converting reactions from ${Array.isArray(news.reactions) ? 'array' : typeof news.reactions} to object`);
       news.reactions = {
         like: [],
         love: [],
         insightful: [],
         celebrate: []
       };
+    } else if (!news.reactions.like || !news.reactions.love || !news.reactions.insightful || !news.reactions.celebrate) {
+      // Ensure all fields exist
+      console.log(`🔧 Ensuring all reaction fields exist`);
+      if (!news.reactions.like) news.reactions.like = [];
+      if (!news.reactions.love) news.reactions.love = [];
+      if (!news.reactions.insightful) news.reactions.insightful = [];
+      if (!news.reactions.celebrate) news.reactions.celebrate = [];
     }
 
     // Remove user from all reaction arrays
