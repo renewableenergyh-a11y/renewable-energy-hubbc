@@ -499,12 +499,16 @@
       return;
     }
 
-    const reactionTypes = ['like', 'love', 'insightful', 'celebrate'];
+    const reactionTypes = ['like', 'love', 'insightful', 'celebrate', 'wow', 'sad', 'angry', 'thinking'];
     const reactionEmojisMap = {
       like: '👍',
       love: '❤️',
       insightful: '💡',
-      celebrate: '🎉'
+      celebrate: '🎉',
+      wow: '😲',
+      sad: '😢',
+      angry: '😠',
+      thinking: '🤔'
     };
 
     container.innerHTML = reactionTypes.map(type => {

@@ -2035,7 +2035,11 @@ app.get('/api/news', async (req, res) => {
           like: [],
           love: [],
           insightful: [],
-          celebrate: []
+          celebrate: [],
+          wow: [],
+          sad: [],
+          angry: [],
+          thinking: []
         };
       }
 
@@ -2044,7 +2048,11 @@ app.get('/api/news', async (req, res) => {
         like: (data.reactions.like || []).length,
         love: (data.reactions.love || []).length,
         insightful: (data.reactions.insightful || []).length,
-        celebrate: (data.reactions.celebrate || []).length
+        celebrate: (data.reactions.celebrate || []).length,
+        wow: (data.reactions.wow || []).length,
+        sad: (data.reactions.sad || []).length,
+        angry: (data.reactions.angry || []).length,
+        thinking: (data.reactions.thinking || []).length
       };
 
       // Determine user's current reaction
@@ -2054,6 +2062,10 @@ app.get('/api/news', async (req, res) => {
         else if ((data.reactions.love || []).includes(currentUserId)) userReaction = 'love';
         else if ((data.reactions.insightful || []).includes(currentUserId)) userReaction = 'insightful';
         else if ((data.reactions.celebrate || []).includes(currentUserId)) userReaction = 'celebrate';
+        else if ((data.reactions.wow || []).includes(currentUserId)) userReaction = 'wow';
+        else if ((data.reactions.sad || []).includes(currentUserId)) userReaction = 'sad';
+        else if ((data.reactions.angry || []).includes(currentUserId)) userReaction = 'angry';
+        else if ((data.reactions.thinking || []).includes(currentUserId)) userReaction = 'thinking';
       }
 
       data.counts = counts;
@@ -2109,7 +2121,11 @@ app.get('/api/news/:slug', async (req, res) => {
         like: [],
         love: [],
         insightful: [],
-        celebrate: []
+        celebrate: [],
+        wow: [],
+        sad: [],
+        angry: [],
+        thinking: []
       };
     }
 
@@ -2118,7 +2134,11 @@ app.get('/api/news/:slug', async (req, res) => {
       like: (news.reactions.like || []).length,
       love: (news.reactions.love || []).length,
       insightful: (news.reactions.insightful || []).length,
-      celebrate: (news.reactions.celebrate || []).length
+      celebrate: (news.reactions.celebrate || []).length,
+      wow: (news.reactions.wow || []).length,
+      sad: (news.reactions.sad || []).length,
+      angry: (news.reactions.angry || []).length,
+      thinking: (news.reactions.thinking || []).length
     };
 
     console.log(`✅ Computed counts:`, counts);
@@ -2130,6 +2150,10 @@ app.get('/api/news/:slug', async (req, res) => {
       else if ((news.reactions.love || []).includes(currentUserId)) userReaction = 'love';
       else if ((news.reactions.insightful || []).includes(currentUserId)) userReaction = 'insightful';
       else if ((news.reactions.celebrate || []).includes(currentUserId)) userReaction = 'celebrate';
+      else if ((news.reactions.wow || []).includes(currentUserId)) userReaction = 'wow';
+      else if ((news.reactions.sad || []).includes(currentUserId)) userReaction = 'sad';
+      else if ((news.reactions.angry || []).includes(currentUserId)) userReaction = 'angry';
+      else if ((news.reactions.thinking || []).includes(currentUserId)) userReaction = 'thinking';
     }
 
     console.log(`👤 User reaction:`, userReaction);
@@ -2169,7 +2193,7 @@ app.post('/api/news/:newsId/react', async (req, res) => {
     console.log(`✅ User authenticated: ${userId} (${authUser.role})`);
 
     const { reaction } = req.body;
-    const validReactions = ['like', 'love', 'insightful', 'celebrate'];
+    const validReactions = ['like', 'love', 'insightful', 'celebrate', 'wow', 'sad', 'angry', 'thinking'];
     if (!validReactions.includes(reaction)) {
       return res.status(400).json({ error: 'Invalid reaction type' });
     }
@@ -2195,7 +2219,11 @@ app.post('/api/news/:newsId/react', async (req, res) => {
       like: [],
       love: [],
       insightful: [],
-      celebrate: []
+      celebrate: [],
+      wow: [],
+      sad: [],
+      angry: [],
+      thinking: []
     };
 
     // If reactions exist and is an object (not array), preserve other users' reactions
@@ -2272,12 +2300,16 @@ app.delete('/api/news/:newsId/react', async (req, res) => {
     console.log(`📊 Before update - reactions:`, news.reactions);
 
     // Build the update object
-    const validReactions = ['like', 'love', 'insightful', 'celebrate'];
+    const validReactions = ['like', 'love', 'insightful', 'celebrate', 'wow', 'sad', 'angry', 'thinking'];
     const newReactions = {
       like: [],
       love: [],
       insightful: [],
-      celebrate: []
+      celebrate: [],
+      wow: [],
+      sad: [],
+      angry: [],
+      thinking: []
     };
 
     // If reactions exist and is an object (not array), preserve other users' reactions
@@ -2571,7 +2603,11 @@ app.get('/api/admin/news', async (req, res) => {
           like: [],
           love: [],
           insightful: [],
-          celebrate: []
+          celebrate: [],
+          wow: [],
+          sad: [],
+          angry: [],
+          thinking: []
         };
       }
 
@@ -2580,7 +2616,11 @@ app.get('/api/admin/news', async (req, res) => {
         like: (data.reactions.like || []).length,
         love: (data.reactions.love || []).length,
         insightful: (data.reactions.insightful || []).length,
-        celebrate: (data.reactions.celebrate || []).length
+        celebrate: (data.reactions.celebrate || []).length,
+        wow: (data.reactions.wow || []).length,
+        sad: (data.reactions.sad || []).length,
+        angry: (data.reactions.angry || []).length,
+        thinking: (data.reactions.thinking || []).length
       };
 
       data.counts = counts;
@@ -2801,7 +2841,11 @@ app.post('/api/admin/news/migrate/reactions', async (req, res) => {
           like: [],
           love: [],
           insightful: [],
-          celebrate: []
+          celebrate: [],
+          wow: [],
+          sad: [],
+          angry: [],
+          thinking: []
         };
         article.markModified('reactions');
         await article.save();
@@ -7547,7 +7591,11 @@ async function startServer() {
             like: [],
             love: [],
             insightful: [],
-            celebrate: []
+            celebrate: [],
+            wow: [],
+            sad: [],
+            angry: [],
+            thinking: []
           };
           article.markModified('reactions');
           await article.save();
