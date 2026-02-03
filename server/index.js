@@ -6186,7 +6186,8 @@ app.post('/api/payment', async (req, res) => {
   }
 });
 
-// Paychangu payment callback/webhook - Handle both GET (redirect) and POST (webhook)
+// Paychangu payment callback - Handle redirect from payment gateway
+// NOTE: No verification here - webhook will handle payment confirmation
 app.all('/api/paychangu/callback', express.json(), async (req, res) => {
   try {
     // Get data from either GET query params or POST body
@@ -6194,138 +6195,18 @@ app.all('/api/paychangu/callback', express.json(), async (req, res) => {
     const { status, tx_ref, amount, email } = data;
 
     console.log(`📱 Paychangu callback received (${req.method}): tx_ref=${tx_ref}, status=${status}, email=${email}`);
+    console.log('ℹ️ No verification at redirect - webhook will handle confirmation');
 
-    // For GET requests (browser redirect after payment), auto-activate premium
+    // For GET requests (browser redirect after payment), just redirect back
     if (req.method === 'GET') {
-      console.log(`🔄 User redirect from Paychangu for transaction: ${tx_ref}, email: ${email}`);
+      console.log(`🔄 User redirect from Paychangu. Webhook will verify and activate premium.`);
       
-      // If we have tx_ref and email, auto-activate premium immediately
-      if (tx_ref && email) {
-        try {
-          const users = loadUsers();
-          console.log(`Looking for user: ${email}`);
-          
-          if (users[email]) {
-            console.log(`✅ Found user: ${email}, activating premium...`);
-            users[email].hasPremium = true;
-            users[email].premiumActivatedAt = new Date().toISOString();
-            users[email].lastPaymentRef = tx_ref;
-            users[email].lastPaymentDate = new Date().toISOString();
-            users[email].premiumCancelled = false;
-            saveUsers(users);
-            console.log(`✅ Premium auto-activated for ${email} (${tx_ref})`);
-          } else {
-            console.warn(`⚠️ User not found: ${email}`);
-            // Create new user with premium
-            users[email] = {
-              name: '',
-              email,
-              password: null,
-              token: null,
-              hasPremium: true,
-              premiumActivatedAt: new Date().toISOString(),
-              createdAt: new Date().toISOString(),
-              lastPaymentRef: tx_ref,
-              lastPaymentDate: new Date().toISOString()
-            };
-            saveUsers(users);
-            console.log(`✅ Created new premium user: ${email}`);
-          }
-        } catch (err) {
-          console.error('❌ Error activating premium:', err.message);
-        }
-      } else {
-        console.warn(`⚠️ Missing tx_ref or email for activation. tx_ref=${tx_ref}, email=${email}`);
-      }
-      
-      // Redirect to billing.html with success flag
-      return res.redirect(`/billing.html?payment=success&tx_ref=${tx_ref}`);
+      // Redirect to billing.html with pending flag - webhook will activate premium
+      return res.redirect(`/billing.html?payment=pending&tx_ref=${tx_ref}`);
     }
 
-    // POST requests are webhook callbacks from Paychangu (after they send confirmation emails)
-    if (!tx_ref || !email) {
-      console.warn(`⚠️ Paychangu callback missing data: tx_ref=${tx_ref}, email=${email}`);
-      return res.status(400).json({ error: 'Missing required callback data' });
-    }
-
-    // Verify payment with Paychangu
-    if (!paychangu) {
-      console.error('❌ Paychangu processor not available');
-      return res.status(503).json({ error: 'Payment processor not configured' });
-    }
-
-    console.log(`🔍 Verifying Paychangu payment: ${tx_ref} for ${email}`);
-    const paymentVerification = await paychangu.verifyPayment(tx_ref);
-    console.log('Payment verification response:', paymentVerification);
-
-    // Check if payment was successful - only unlock premium on webhook confirmation
-    if (paymentVerification && paymentVerification.status === 'success') {
-      console.log(`✅ Payment verified successfully for ${tx_ref}`);
-      const users = loadUsers();
-      
-      if (users[email]) {
-        users[email].hasPremium = true;
-        users[email].premiumActivatedAt = new Date().toISOString();
-        users[email].lastPaymentRef = tx_ref;
-        users[email].lastPaymentAmount = amount;
-        users[email].lastPaymentDate = new Date().toISOString();
-        users[email].premiumCancelled = false;
-        
-        // Clear pending payment
-        if (users[email].pendingPayment) {
-          users[email].pendingPayment.status = 'completed';
-          users[email].pendingPayment.completedAt = new Date().toISOString();
-        }
-      } else {
-        users[email] = {
-          name: '',
-          email,
-          password: null,
-          token: null,
-          hasPremium: true,
-          premiumActivatedAt: new Date().toISOString(),
-          createdAt: new Date().toISOString(),
-          lastPaymentRef: tx_ref,
-          lastPaymentAmount: amount,
-          lastPaymentDate: new Date().toISOString()
-        };
-      }
-      saveUsers(users);
-      console.log(`💾 User data saved with premium status for ${email}`);
-
-      // Create premium activation notification
-      try {
-        await createNotification(email, {
-          type: 'offer',
-          title: `🎉 Premium Activated!`,
-          message: `Welcome to Premium! You now have access to all exclusive courses and features. Happy learning!`,
-          icon: 'fa-star',
-          actionUrl: '/courses.html'
-        });
-      } catch (notifErr) {
-        console.warn('Failed to create premium notification:', notifErr);
-      }
-
-      // Add system message for admin
-      addSystemMessage(
-        'premium',
-        `Premium Subscription via Paychangu: ${users[email].name || email}`,
-        `A user activated premium subscription via Paychangu payment.`,
-        {
-          email: email,
-          name: users[email].name || '',
-          transactionRef: tx_ref,
-          amount: amount,
-          activatedAt: users[email].premiumActivatedAt
-        }
-      );
-
-      console.log(`✅ Premium activated for ${email} via Paychangu webhook (${tx_ref})`);
-      return res.json({ success: true, message: 'Premium activated successfully' });
-    } else {
-      console.log(`❌ Payment verification failed for ${tx_ref}: ${paymentVerification?.status || 'unknown status'}`);
-      return res.status(402).json({ error: 'Payment verification failed' });
-    }
+    // If this is somehow a POST, also just acknowledge it
+    res.json({ received: true, message: 'Webhook will process payment verification' });
   } catch (err) {
     console.error('Error processing Paychangu callback:', err);
     res.status(500).json({ error: 'Failed to process payment callback' });
@@ -6338,7 +6219,9 @@ app.post('/webhook/paychangu', express.json(), async (req, res) => {
     const payload = req.body;
     const signature = req.headers['x-paychangu-signature'];
 
-    console.log('🔔 Paychangu webhook received:', payload.tx_ref);
+    console.log('🔔 Paychangu webhook received');
+    console.log('Headers:', req.headers);
+    console.log('Payload:', JSON.stringify(payload, null, 2));
 
     // Verify webhook signature if provided
     if (signature && paychangu) {
@@ -6347,20 +6230,29 @@ app.post('/webhook/paychangu', express.json(), async (req, res) => {
         .update(JSON.stringify(payload))
         .digest('hex');
 
+      console.log('Signature comparison:', { received: signature, expected: expectedSignature });
+
       if (signature !== expectedSignature) {
         console.error('⚠️ Webhook signature verification failed');
         return res.status(403).json({ error: 'Signature verification failed' });
       }
+      console.log('✅ Signature verified');
+    } else {
+      console.warn('⚠️ No signature provided or paychangu not configured, skipping verification');
     }
 
     const { status, tx_ref, email, amount } = payload;
 
+    console.log(`Processing webhook: status=${status}, tx_ref=${tx_ref}, email=${email}, amount=${amount}`);
+
     if (!tx_ref || !email) {
+      console.error(`❌ Missing required webhook data: tx_ref=${tx_ref}, email=${email}`);
       return res.status(400).json({ error: 'Missing required webhook data' });
     }
 
     // Process successful payment
-    if (status === 'success') {
+    if (status === 'success' || status === 'completed') {
+      console.log(`✅ Processing successful payment for ${email} (${tx_ref})`);
       const users = loadUsers();
 
       if (users[email]) {
@@ -6370,7 +6262,14 @@ app.post('/webhook/paychangu', express.json(), async (req, res) => {
         users[email].lastPaymentAmount = amount;
         users[email].lastPaymentDate = new Date().toISOString();
         users[email].premiumCancelled = false;
+        
+        // Clear pending payment if exists
+        if (users[email].pendingPayment) {
+          users[email].pendingPayment.status = 'completed';
+          users[email].pendingPayment.completedAt = new Date().toISOString();
+        }
       } else {
+        console.log(`Creating new user record for ${email}`);
         users[email] = {
           name: '',
           email,
@@ -6385,6 +6284,7 @@ app.post('/webhook/paychangu', express.json(), async (req, res) => {
         };
       }
       saveUsers(users);
+      console.log(`💾 Saved: Premium activated for ${email}`);
 
       // Notification sent by backend only (no frontend email)
       try {
@@ -6413,6 +6313,8 @@ app.post('/webhook/paychangu', express.json(), async (req, res) => {
       );
 
       console.log(`✅ Premium activated via webhook: ${email}`);
+    } else {
+      console.warn(`⚠️ Webhook received but status is not success: status=${status}`);
     }
 
     res.json({ received: true });
