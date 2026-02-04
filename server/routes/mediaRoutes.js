@@ -33,7 +33,7 @@ function authenticateSuperAdmin(req, res, next) {
     const admins = storage.loadAdmins();
     console.log('[Media Auth] Loaded admins count:', admins?.length || 0);
     console.log('[Media Auth] Token received:', token.substring(0, 20) + '...');
-    console.log('[Media Auth] User role from header:', userRole);
+    console.log('[Media Auth] User role from header (x-user-role):', userRole);
     
     let user = (admins || []).find(u => u.token === token);
     
