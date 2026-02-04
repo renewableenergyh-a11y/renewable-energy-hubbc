@@ -2328,7 +2328,7 @@
                     <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
                       <i class="fas fa-image" style="margin-right: 4px; color: var(--green-main);"></i>Thumbnail Image URL (optional)
                     </label>
-                    <input id="media-thumbnail" type="url" placeholder="https://example.com/thumbnail.jpg" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                    <input id="media-thumbnail" type="file" accept="image/*" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
                   </div>
 
                   <div id="media-form-notice" style="padding: 10px 12px; border-radius: 6px; font-size: 12px; display: none; margin: 6px 0; border-left: 3px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
@@ -4506,7 +4506,7 @@
         const description = document.getElementById('media-description').value.trim();
         const category = document.getElementById('media-category').value.trim();
         const fileInput = document.getElementById('media-file');
-        const thumbnail = document.getElementById('media-thumbnail').value.trim();
+        const thumbnailInput = document.getElementById('media-thumbnail');
 
         if (!title) {
           showAlert('Error', 'Video title is required', 'error');
@@ -4523,6 +4523,11 @@
           return;
         }
 
+        if (!thumbnailInput.files[0]) {
+          showAlert('Error', 'Please select a thumbnail image', 'error');
+          return;
+        }
+
         try {
           uploadBtn.disabled = true;
           
@@ -4531,7 +4536,7 @@
           formData.append('description', description);
           formData.append('category', category);
           formData.append('file', fileInput.files[0]);
-          formData.append('thumbnail', thumbnail);
+          formData.append('thumbnail', thumbnailInput.files[0]);
 
           const token = localStorage.getItem('adminToken') || '';
           console.log('[Upload] Token:', token.substring(0, 20) + '...');

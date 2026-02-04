@@ -9,7 +9,7 @@ const path = require('path');
 let db;
 let storage;
 
-// Configure multer for temporary file storage
+// Configure multer for temporary file storage - allow multiple files
 const upload = multer({ dest: 'tmp/' });
 
 // Setup database and storage
@@ -111,16 +111,25 @@ router.get('/', authenticateSuperAdmin, async (req, res) => {
 });
 
 // POST upload media
-router.post('/upload', authenticateSuperAdmin, upload.single('file'), async (req, res) => {
+router.post('/upload', authenticateSuperAdmin, upload.fields([{ name: 'file', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]), async (req, res) => {
   try {
-    const { title, description, category, thumbnail } = req.body;
+    const { title, description, category } = req.body;
 
-    if (!title || !category || !req.file) {
+    if (!title || !category || !req.files || !req.files.file) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Upload to Cloudinary
-    const cloudinaryResult = await cloudinary.uploader.upload(req.file.path, {
+    const videoFile = req.files.file[0];
+    const thumbnailFile = req.files.thumbnail ? req.files.thumbnail[0] : null;
+    
+    // Create media directory if it doesn't exist
+    const mediaDir = path.join(__dirname, '../../public/media');
+    if (!fs.existsSync(mediaDir)) {
+      fs.mkdirSync(mediaDir, { recursive: true });
+    }
+
+    // Upload video to Cloudinary
+    const cloudinaryResult = await cloudinary.uploader.upload(videoFile.path, {
       resource_type: 'video',
       folder: 'ret-hub/media',
       public_id: `${Date.now()}-${title.replace(/\s+/g, '-').toLowerCase()}`,
@@ -129,8 +138,26 @@ router.post('/upload', authenticateSuperAdmin, upload.single('file'), async (req
       ]
     });
 
-    // Remove temp file
-    fs.unlinkSync(req.file.path);
+    // Remove temp video file
+    fs.unlinkSync(videoFile.path);
+
+    // Handle thumbnail upload locally
+    let thumbnailUrl = '';
+    if (thumbnailFile) {
+      const ext = path.extname(thumbnailFile.originalname) || '.jpg';
+      const thumbnailName = `${Date.now()}-${title.replace(/\s+/g, '-').toLowerCase()}${ext}`;
+      const thumbnailPath = path.join(mediaDir, thumbnailName);
+      
+      // Move thumbnail to public directory
+      fs.renameSync(thumbnailFile.path, thumbnailPath);
+      thumbnailUrl = `/media/${thumbnailName}`;
+      console.log('[Media] Thumbnail saved to:', thumbnailUrl);
+    }
+    
+    // If no thumbnail uploaded, remove temp file
+    if (thumbnailFile && fs.existsSync(thumbnailFile.path)) {
+      fs.unlinkSync(thumbnailFile.path);
+    }
 
     // Save to database
     const Media = db.models.Media;
@@ -140,7 +167,7 @@ router.post('/upload', authenticateSuperAdmin, upload.single('file'), async (req
       category,
       cloudinaryUrl: cloudinaryResult.secure_url,
       cloudinaryId: cloudinaryResult.public_id,
-      thumbnail: thumbnail || '',
+      thumbnail: thumbnailUrl || '',
       uploadedBy: req.user.email,
       source: 'media-panel',
       createdAt: new Date()
@@ -156,9 +183,14 @@ router.post('/upload', authenticateSuperAdmin, upload.single('file'), async (req
   } catch (err) {
     console.error('Upload error:', err);
     
-    // Clean up temp file if it exists
-    if (req.file && fs.existsSync(req.file.path)) {
-      fs.unlinkSync(req.file.path);
+    // Clean up temp files if they exist
+    if (req.files) {
+      if (req.files.file && fs.existsSync(req.files.file[0].path)) {
+        fs.unlinkSync(req.files.file[0].path);
+      }
+      if (req.files.thumbnail && fs.existsSync(req.files.thumbnail[0].path)) {
+        fs.unlinkSync(req.files.thumbnail[0].path);
+      }
     }
 
     res.status(500).json({ error: 'Upload failed: ' + err.message });

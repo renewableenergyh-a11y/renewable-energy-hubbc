@@ -3157,6 +3157,13 @@ app.use('/videos', express.static(VIDEOS_DIR));
 // Serve uploaded images as static files (persistent storage)
 app.use('/images', express.static(IMAGES_DIR));
 
+// Serve uploaded media files (thumbnails, etc.)
+const MEDIA_DIR = path.join(__dirname, '../public/media');
+if (!fs.existsSync(MEDIA_DIR)) {
+  fs.mkdirSync(MEDIA_DIR, { recursive: true });
+}
+app.use('/media', express.static(MEDIA_DIR));
+
 app.delete('/api/modules/:courseId/:file', (req, res) => {
   try {
     const { courseId, file } = req.params;
