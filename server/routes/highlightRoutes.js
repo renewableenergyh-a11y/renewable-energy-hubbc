@@ -123,6 +123,15 @@ function createHighlightRoutes(db) {
         createdAt: h.createdAt,
         updatedAt: h.updatedAt
       }));
+      
+      // Log what we're returning
+      if (highlightData.length > 0) {
+        console.log('📤 Returning highlights with colors:');
+        highlightData.forEach(h => {
+          console.log(`   - "${h.text.substring(0, 30)}..." → ${h.color}`);
+        });
+      }
+      
       res.json({ highlights: highlightData || [] });
     } catch (err) {
       console.error('❌ Error fetching highlights:', err.message);
@@ -281,6 +290,17 @@ function createHighlightRoutes(db) {
       await highlight.save();
 
       console.log('   ✅ Highlight saved. New color:', highlight.color);
+      
+      // CRITICAL: Verify the save actually persisted
+      const verifyHighlight = await Highlight.findOne({ _id: highlight._id });
+      if (verifyHighlight) {
+        console.log('   🔍 VERIFY: Queried database after save - color is:', verifyHighlight.color);
+        if (verifyHighlight.color !== color) {
+          console.error('   ⚠️ MISMATCH: Database saved color does not match! Saved:', color, 'But DB has:', verifyHighlight.color);
+        }
+      } else {
+        console.error('   ❌ CRITICAL: Could not find highlight after save!');
+      }
 
       res.json({
         message: 'Highlight updated',

@@ -33,7 +33,14 @@ export async function fetchHighlights(contentId, contentType = 'module') {
     });
     if (!response.ok) return [];
     const data = await response.json();
-    console.log('📥 Fetched highlights:', data.highlights?.map(h => ({ id: h.id, color: h.color })));
+    if (data.highlights && data.highlights.length > 0) {
+      console.log('📥 Fetched highlights with colors:');
+      data.highlights.forEach(h => {
+        console.log(`   - "${h.text.substring(0, 30)}..." → ${h.color}`);
+      });
+    } else {
+      console.log('📥 Fetched highlights: 0 highlights');
+    }
     return data.highlights || [];
   } catch (err) {
     console.error('Error fetching highlights:', err);
