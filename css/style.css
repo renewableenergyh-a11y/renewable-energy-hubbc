@@ -6615,10 +6615,10 @@ body.dark .notification-detail-actions {
   display: none;
   flex-direction: row;
   align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
+  gap: 6px;
+  padding: 6px 10px;
   background: white;
-  border-radius: 24px;
+  border-radius: 20px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   z-index: 10000;
   pointer-events: auto;
@@ -6639,8 +6639,8 @@ body.dark .highlight-toolbar {
 
 /* Individual color button */
 .highlight-color-btn {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: none;
   cursor: pointer;
@@ -6648,6 +6648,7 @@ body.dark .highlight-toolbar {
   padding: 0;
   position: relative;
   flex-shrink: 0;
+  font-size: 11px;
 }
 
 .highlight-color-btn:hover {
@@ -6661,8 +6662,8 @@ body.dark .highlight-toolbar {
 
 /* Delete button */
 .highlight-delete-btn {
-  width: 32px;
-  height: 32px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
   border: none;
   background: #e0e0e0;
@@ -6674,7 +6675,7 @@ body.dark .highlight-toolbar {
   transition: background 0.1s ease, transform 0.1s ease;
   padding: 0;
   flex-shrink: 0;
-  font-size: 14px;
+  font-size: 12px;
 }
 
 .highlight-delete-btn:hover {
@@ -6698,14 +6699,16 @@ body.dark .highlight-delete-btn:hover {
 /* Mobile/touch adjustments */
 @media (max-width: 768px) {
   .highlight-toolbar {
-    padding: 10px 14px;
-    gap: 10px;
+    padding: 6px 10px;
+    gap: 6px;
+    margin-right: 10px;
+    max-width: calc(100vw - 20px);
   }
 
   .highlight-color-btn,
   .highlight-delete-btn {
-    width: 36px;
-    height: 36px;
+    width: 28px;
+    height: 28px;
   }
 }
 
