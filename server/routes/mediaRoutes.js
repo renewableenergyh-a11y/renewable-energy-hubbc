@@ -190,8 +190,18 @@ router.delete('/:id', authenticateSuperAdmin, async (req, res) => {
   }
 });
 
-module.exports = {
-  router,
-  setDatabase,
+// GET tutorial videos (PUBLIC - anyone can view, but only media-panel videos)
+router.get('/public/tutorial-videos', async (req, res) => {
+  try {
+    const Media = db.models.Media;
+    // Return only videos uploaded through the Media Management panel
+    const media = await Media.find({ source: 'media-panel' }).sort({ createdAt: -1 }).lean();
+    res.json({ media });
+  } catch (err) {
+    console.error('Error fetching public tutorial videos:', err);
+    res.status(500).json({ error: 'Failed to fetch media' });
+  }
+});
+
   setStorage
 };
