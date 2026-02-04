@@ -2685,10 +2685,12 @@
         return;
       }
       // hide system-level links for non-superadmins
-      const hideForAdmin = ['.sidebar-link[data-tab="settings"]', '.sidebar-link[data-tab="documents"]', '.sidebar-link[data-tab="media"]'];
+      const hideForAdmin = ['.sidebar-link[data-tab="settings"]', '.sidebar-link[data-tab="documents"]'];
       const hideForInstructor = ['.sidebar-link[data-tab="users"]', '.sidebar-link[data-tab="analytics"]', '.sidebar-link[data-tab="settings"]', '.sidebar-link[data-tab="documents"]', '.sidebar-link[data-tab="media"]'];
 
       if (role === 'admin') {
+        // Show media link for admin
+        document.getElementById('media-sidebar-link').style.display = 'flex';
         hideForAdmin.forEach(s => { document.querySelectorAll(s).forEach(el => el.style.display = 'none'); });
       }
       if (role === 'instructor') {
