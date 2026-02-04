@@ -4651,7 +4651,20 @@
 
           // White play button
           const playIcon = document.createElement('div');
-          playIcon.style.cssText = 'width:60px;height:60px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;box-shadow:0 4px 12px rgba(0,0,0,0.2);';
+          playIcon.style.cssText = 'width:60px;height:60px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;box-shadow:0 4px 12px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.2s, box-shadow 0.2s;';
+          playIcon.addEventListener('mouseover', () => {
+            playIcon.style.transform = 'scale(1.1)';
+            playIcon.style.boxShadow = '0 6px 16px rgba(0,0,0,0.3)';
+          });
+          playIcon.addEventListener('mouseout', () => {
+            playIcon.style.transform = 'scale(1)';
+            playIcon.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)';
+          });
+          playIcon.addEventListener('click', () => {
+            if (video.cloudinaryUrl) {
+              openVideoModal(video.title, video.cloudinaryUrl);
+            }
+          });
           const icon = document.createElement('i');
           icon.className = 'fas fa-play';
           icon.style.cssText = 'font-size:24px;color:#6366f1;margin-left:4px;';
