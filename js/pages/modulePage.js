@@ -1236,11 +1236,9 @@ async function initializeHighlighting(contentContainer, contentId, contentType =
  * Set up text selection detection
  */
 function setupSelectionListeners(contentContainer, contentId, contentType) {
-  // Listen for selection changes and mouse/touch events
-  document.addEventListener('selectionchange', () => {
-    handleSelectionChanged(contentContainer, contentId, contentType);
-  });
-
+  // Show toolbar only after selection is complete (on mouseup/touchend)
+  // Don't show during selection (avoid showing during drag)
+  
   contentContainer.addEventListener('mouseup', () => {
     handleSelectionChanged(contentContainer, contentId, contentType);
   });
