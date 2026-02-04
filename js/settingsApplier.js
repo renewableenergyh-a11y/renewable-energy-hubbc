@@ -25,7 +25,7 @@ class SettingsApplier {
     
     // Listen for immediate settings updates from admin panel or other tabs
     window.addEventListener('storage', (e) => {
-      if (e.key === 'settingsUpdated') {
+      if (e.key === '_settingsUpdated') {
         console.log('📢 Settings update detected from admin panel or another tab');
         this.loadAndApply();
       }
