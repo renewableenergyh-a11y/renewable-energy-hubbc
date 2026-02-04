@@ -1257,16 +1257,25 @@ function setupSelectionListeners(contentContainer, contentId, contentType) {
 
   // Show toolbar after selection is complete (mouseup/touchend)
   contentContainer.addEventListener('mouseup', () => {
-    // Small delay to ensure selection is fully registered
-    setTimeout(() => {
-      handleSelectionChanged(contentContainer, contentId, contentType);
-    }, 10);
+    // Don't show toolbar if clicking on a highlight - it has its own handler
+    const selection = window.getSelection();
+    if (selection.toString().length > 0) {
+      // Only proceed if there's actual selected text
+      setTimeout(() => {
+        handleSelectionChanged(contentContainer, contentId, contentType);
+      }, 10);
+    }
   });
 
   contentContainer.addEventListener('touchend', () => {
-    setTimeout(() => {
-      handleSelectionChanged(contentContainer, contentId, contentType);
-    }, 50);
+    // Don't show toolbar if clicking on a highlight - it has its own handler
+    const selection = window.getSelection();
+    if (selection.toString().length > 0) {
+      // Only proceed if there's actual selected text
+      setTimeout(() => {
+        handleSelectionChanged(contentContainer, contentId, contentType);
+      }, 50);
+    }
   });
 }
 
@@ -1276,8 +1285,10 @@ function setupSelectionListeners(contentContainer, contentId, contentType) {
 function handleSelectionChanged(contentContainer, contentId, contentType) {
   const selection = getTextSelection(contentContainer);
 
+  // Only show toolbar if there's actual selected text
   if (!selection || selection.text.length === 0) {
-    // Hide toolbar if no valid selection
+    // Hide toolbar only if clicking on non-highlight elements
+    // (highlights show toolbar via their own click handler)
     if (highlightToolbar) {
       highlightToolbar.hide();
     }
