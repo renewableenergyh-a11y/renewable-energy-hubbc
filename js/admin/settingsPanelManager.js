@@ -531,19 +531,11 @@ class SettingsPanelManager {
       this.renderUI();
       this.setupEventListeners();
       
-      // Immediately trigger settings applier refresh on ALL pages
-      console.log('📢 Broadcasting settings update...');
-      
-      // Trigger refresh on this page if applier is loaded
-      if (window.settingsApplier) {
-        console.log('🔄 Refreshing settings applier on current page');
-        await window.settingsApplier.loadAndApply();
-      }
-      
-      // Broadcast to other tabs/windows via storage event
+      // Broadcast settings update to other tabs/windows
+      console.log('📢 Broadcasting settings update to other tabs...');
       try {
         localStorage.setItem('_settingsUpdated', Date.now().toString());
-        console.log('✅ Broadcast sent to other tabs');
+        console.log('✅ Broadcast sent');
       } catch (err) {
         console.warn('Could not broadcast to other tabs:', err.message);
       }
