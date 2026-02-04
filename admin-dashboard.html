@@ -1530,6 +1530,22 @@
                   </div>
                 </div>
               </div>
+
+              <!-- TUTORIAL VIDEOS SECTION -->
+              <div class="feature-card" style="margin-top: 40px;">
+                <div class="feature-header" style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+                  <i class="fas fa-video" style="font-size: 24px; color: var(--green-main);"></i>
+                  <h3 style="margin: 0; font-size: 20px; font-weight: 600; color: var(--text-main);">Tutorial Videos</h3>
+                </div>
+                <p style="color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">Watch video guides to learn how to manage the platform effectively. These tutorials cover key features and best practices.</p>
+                
+                <div id="tutorial-videos-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; min-height: 100px;">
+                  <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px 20px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px;"></i>
+                    <p>Loading tutorial videos...</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -4607,6 +4623,100 @@
       loadMedia();
     }
 
+    // Load Tutorial Videos in Getting Started Panel
+    async function loadTutorialVideos() {
+      const container = document.getElementById('tutorial-videos-container');
+      if (!container) return;
+
+      try {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px 20px;"><i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px;"></i><p>Loading tutorial videos...</p></div>';
+
+        const response = await fetch('/api/media');
+        const data = await response.json();
+        const videos = data.media || [];
+
+        if (videos.length === 0) {
+          container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 40px 20px;"><i class="fas fa-video" style="font-size: 32px; opacity: 0.3; margin-bottom: 12px; display: block;"></i><p>No tutorial videos available yet. SuperAdmins can add videos in the Media panel.</p></div>';
+          return;
+        }
+
+        container.innerHTML = '';
+        videos.forEach(video => {
+          const card = document.createElement('div');
+          card.style.cssText = 'border:1px solid var(--border-color);border-radius:8px;overflow:hidden;background:var(--bg-secondary);display:flex;flex-direction:column;transition:transform 0.2s, box-shadow 0.2s;';
+          card.addEventListener('mouseenter', () => {
+            card.style.transform = 'translateY(-2px)';
+            card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+          });
+          card.addEventListener('mouseleave', () => {
+            card.style.transform = 'none';
+            card.style.boxShadow = 'none';
+          });
+
+          // Thumbnail
+          const thumbnail = document.createElement('div');
+          if (video.thumbnail) {
+            thumbnail.style.cssText = 'height:160px;background:url(' + video.thumbnail + ') center / cover;';
+          } else if (video.cloudinaryUrl) {
+            // Use Cloudinary thumbnail if available
+            const thumbUrl = video.cloudinaryUrl.replace('/upload/', '/upload/w_300,h_160,c_fill/');
+            thumbnail.style.cssText = 'height:160px;background:url(' + thumbUrl + ') center / cover;';
+          } else {
+            thumbnail.style.cssText = 'height:160px;background:linear-gradient(135deg, var(--green-main) 0%, #005a4f 100%);display:flex;align-items:center;justify-content:center;';
+            const icon = document.createElement('i');
+            icon.className = 'fas fa-video';
+            icon.style.cssText = 'font-size:48px;color:rgba(255,255,255,0.3);';
+            thumbnail.appendChild(icon);
+          }
+
+          // Content
+          const content = document.createElement('div');
+          content.style.cssText = 'padding:12px;flex:1;display:flex;flex-direction:column;';
+
+          const title = document.createElement('h4');
+          title.style.cssText = 'margin:0 0 6px 0;font-size:14px;font-weight:600;color:var(--text-main);';
+          title.textContent = video.title;
+
+          const description = document.createElement('p');
+          description.style.cssText = 'margin:0 0 8px 0;font-size:12px;color:var(--text-muted);line-height:1.4;flex:1;';
+          description.textContent = video.description || 'No description';
+
+          const meta = document.createElement('div');
+          meta.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border-color);';
+
+          const category = document.createElement('span');
+          category.style.cssText = 'font-size:11px;color:var(--text-muted);';
+          category.innerHTML = '<i class="fas fa-tag" style="margin-right:4px;color:var(--green-main);"></i>' + (video.category || 'Other');
+
+          const playBtn = document.createElement('button');
+          playBtn.style.cssText = 'padding:6px 12px;background:var(--green-main);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:background 0.2s;';
+          playBtn.innerHTML = '<i class="fas fa-play"></i>Watch';
+          playBtn.addEventListener('mouseover', () => playBtn.style.background = '#00796b');
+          playBtn.addEventListener('mouseout', () => playBtn.style.background = 'var(--green-main)');
+          playBtn.addEventListener('click', () => {
+            // Open video in modal or new tab
+            if (video.cloudinaryUrl) {
+              window.open(video.cloudinaryUrl, '_blank');
+            }
+          });
+
+          meta.appendChild(category);
+          meta.appendChild(playBtn);
+
+          content.appendChild(title);
+          content.appendChild(description);
+          content.appendChild(meta);
+
+          card.appendChild(thumbnail);
+          card.appendChild(content);
+          container.appendChild(card);
+        });
+      } catch (err) {
+        console.error('Error loading tutorial videos:', err);
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px 20px;"><i class="fas fa-exclamation-circle" style="font-size: 24px; margin-bottom: 12px;"></i><p>Error loading videos</p></div>';
+      }
+    }
+
     // ----- Pending Documents UI (extracted for global access) -----
     async function loadDocumentsUI() {
       const coursesWrap = document.getElementById('pending-courses-list');
@@ -6898,6 +7008,7 @@
       else if (name === 'content') loadContentManagementUI();
       else if (name === 'media') loadMediaManagementUI();
       else if (name === 'documents') loadDocumentsUI();
+      else if (name === 'getting-started') loadTutorialVideos();
     }
 
     // Tab functionality (updated for new layout)
