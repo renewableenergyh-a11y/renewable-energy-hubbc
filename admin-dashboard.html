@@ -8030,12 +8030,18 @@
       cancelBtn.addEventListener('mouseout', () => cancelBtn.style.background = '#fff');
       
       const saveBtn = document.createElement('button');
+      saveBtn.type = 'button';
       saveBtn.style.cssText = 'flex:1;padding:10px;border:none;border-radius:6px;background:#6366f1;color:#fff;font-weight:600;cursor:pointer;transition:background 0.2s;';
       saveBtn.textContent = 'Save Changes';
       saveBtn.addEventListener('mouseover', () => saveBtn.style.background = '#4f46e5');
       saveBtn.addEventListener('mouseout', () => saveBtn.style.background = '#6366f1');
-      saveBtn.addEventListener('click', async () => {
+      saveBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
         try {
+          saveBtn.disabled = true;
+          const originalText = saveBtn.textContent;
+          
           const token = localStorage.getItem('adminToken') || '';
           const role = localStorage.getItem('adminRole') || 'superadmin';
           
@@ -8052,20 +8058,56 @@
             formData.append('thumbnail', thumbInput.files[0]);
           }
           
-          const response = await fetch(`/api/media/${video._id}`, {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'X-User-Role': role
-            },
-            body: formData
+          console.log('[Edit Video] Sending update request for video:', video._id);
+          console.log('[Edit Video] FormData keys:', Array.from(formData.keys()));
+          
+          // Use XMLHttpRequest for progress tracking
+          const xhr = new XMLHttpRequest();
+          
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              const percentComplete = Math.round((e.loaded / e.total) * 100);
+              saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:4px;"></i>Saving... ' + percentComplete + '%';
+            }
           });
           
-          if (!response.ok) throw new Error('Failed to update video');
-          await showAlert('Success', 'Video updated successfully', 'success');
-          modalOverlay.remove();
-          loadMedia();
+          xhr.addEventListener('load', async () => {
+            try {
+              if (xhr.status === 200) {
+                const responseData = JSON.parse(xhr.responseText);
+                console.log('[Edit Video] Response data:', responseData);
+                await showAlert('Success', 'Video updated successfully', 'success');
+                modalOverlay.remove();
+                loadMedia();
+              } else {
+                const errorData = JSON.parse(xhr.responseText);
+                await showAlert('Error', errorData.error || 'Update failed with status ' + xhr.status, 'error');
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+              }
+            } catch (e) {
+              console.error('Edit response error:', e);
+              await showAlert('Error', 'Update failed: ' + (e.message || 'Unknown error'), 'error');
+              saveBtn.textContent = originalText;
+              saveBtn.disabled = false;
+            }
+          });
+          
+          xhr.addEventListener('error', () => {
+            saveBtn.textContent = originalText;
+            saveBtn.disabled = false;
+            showAlert('Error', 'Update failed. Please check your connection and try again.', 'error');
+          });
+          
+          xhr.open('PUT', `/api/media/${video._id}`, true);
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+          xhr.setRequestHeader('X-User-Role', role);
+          saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:4px;"></i>Saving... 0%';
+          xhr.send(formData);
+          
         } catch (err) {
+          saveBtn.disabled = false;
+          saveBtn.textContent = 'Save Changes';
           showAlert('Error', err.message || 'Failed to save changes', 'error');
         }
       });
