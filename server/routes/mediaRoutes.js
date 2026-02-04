@@ -43,11 +43,12 @@ function authenticateSuperAdmin(req, res, next) {
   }
 }
 
-// GET all media
+// GET all media (only from media panel)
 router.get('/', async (req, res) => {
   try {
     const Media = db.models.Media;
-    const media = await Media.find({}).sort({ createdAt: -1 });
+    // Only return videos uploaded through the Media Management panel
+    const media = await Media.find({ source: 'media-panel' }).sort({ createdAt: -1 });
     res.json({ media });
   } catch (err) {
     console.error('Error fetching media:', err);
@@ -87,6 +88,7 @@ router.post('/upload', authenticateSuperAdmin, upload.single('file'), async (req
       cloudinaryId: cloudinaryResult.public_id,
       thumbnail: thumbnail || '',
       uploadedBy: req.user.email,
+      source: 'media-panel',
       createdAt: new Date()
     });
 
