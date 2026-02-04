@@ -10,9 +10,16 @@
     <style>
         * {
             box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
 
-        html, body {
+        html {
+            width: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
             width: 100%;
             overflow-x: hidden;
             margin: 0;
@@ -99,6 +106,9 @@
             cursor: pointer;
             display: flex;
             flex-direction: column;
+            max-width: 100%;
+            word-wrap: break-word;
+            word-break: break-word;
         }
 
         .career-card:hover {
@@ -187,6 +197,9 @@
             border-radius: 12px;
             padding: 32px;
             margin-bottom: 32px;
+            max-width: 100%;
+            overflow-x: hidden;
+            word-wrap: break-word;
         }
 
         .career-detail-header {
@@ -706,6 +719,7 @@
                     element.style.padding = '40px';
                     element.style.fontFamily = 'Arial, sans-serif';
                     element.style.color = '#333';
+                    element.style.maxWidth = '800px';
 
                     element.innerHTML = `
                         <h1 style="text-align: center; margin-bottom: 8px;">Renewable Energy Hub</h1>
@@ -747,7 +761,7 @@
                         jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
                     };
 
-                    html2pdf().set(opt).save(element);
+                    window.html2pdf().set(opt).from(element).save();
                 };
                 document.head.appendChild(pdfScript);
             } catch (err) {
