@@ -30,10 +30,14 @@ function authenticateSuperAdmin(req, res, next) {
 
   try {
     const admins = storage.loadAdmins();
-    const user = Object.values(admins).find(u => u.token === token);
+    console.log('[Media Auth] Loaded admins count:', admins?.length || 0);
+    console.log('[Media Auth] Token received:', token.substring(0, 20) + '...');
+    
+    const user = (admins || []).find(u => u.token === token);
     
     if (!user) {
-      console.error('[Media Auth] User not found with token');
+      console.error('[Media Auth] User not found with token. Checking in array...');
+      console.log('[Media Auth] Admin tokens available:', admins?.map(a => a.token?.substring(0, 10) + '...') || 'none');
       return res.status(401).json({ error: 'Invalid token' });
     }
     
