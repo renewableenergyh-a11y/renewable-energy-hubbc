@@ -1885,17 +1885,17 @@
               <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Create, edit, and publish news articles with engagement tracking (likes, reactions, shares).</p>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; height: 70vh;">
               <!-- CREATE/EDIT NEWS FORM -->
-              <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+              <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
                   <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--green-main), #00796b); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
                     <i class="fas fa-plus" style="color: white; font-size: 16px;"></i>
                   </div>
                   <h3 id="news-form-title" style="margin: 0; font-size: 16px; color: var(--text-main);">Create News Article</h3>
                 </div>
                 
-                <form id="news-form" style="display: flex; flex-direction: column; gap: 14px;">
+                <form id="news-form" style="display: flex; flex-direction: column; gap: 14px; flex: 1; overflow-y: auto; padding-right: 8px; min-width: 0;">
                   <div>
                     <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
                       <i class="fas fa-heading" style="margin-right: 4px; color: var(--green-main);"></i>Title *
@@ -1942,7 +1942,7 @@
 
                   <div id="news-form-notice" style="padding: 10px 12px; border-radius: 6px; font-size: 12px; display: none; margin: 6px 0; border-left: 3px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
 
-                  <div style="display: flex; gap: 8px;">
+                  <div style="display: flex; gap: 8px; flex-shrink: 0;">
                     <button id="news-save-draft" class="btn" type="button" style="flex: 1; padding: 10px 12px; font-weight: 600; font-size: 12px; border-radius: 6px;">
                       <i class="fas fa-save" style="margin-right: 4px;"></i>Save Draft
                     </button>
@@ -2223,17 +2223,17 @@
               <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Create, edit, and publish renewable energy career paths.</p>
             </div>
 
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; height: 70vh;">
               <!-- CREATE/EDIT CAREER FORM -->
-              <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+              <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
                   <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--green-main), #00796b); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
                     <i class="fas fa-plus" style="color: white; font-size: 16px;"></i>
                   </div>
                   <h3 id="career-form-title" style="margin: 0; font-size: 16px; color: var(--text-main);">Create Career</h3>
                 </div>
                 
-                <form id="career-form" style="display: flex; flex-direction: column; gap: 14px;">
+                <form id="career-form" style="display: flex; flex-direction: column; gap: 14px; flex: 1; overflow-y: auto; padding-right: 8px; min-width: 0;">
                   <div>
                     <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
                       <i class="fas fa-heading" style="margin-right: 4px; color: var(--green-main);"></i>Title *
@@ -2306,7 +2306,7 @@
 
                   <div id="career-form-notice" style="padding: 10px 12px; border-radius: 6px; font-size: 12px; display: none; margin: 6px 0; border-left: 3px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
 
-                  <div style="display: flex; gap: 8px;">
+                  <div style="display: flex; gap: 8px; flex-shrink: 0;">
                     <button id="career-save-draft" class="btn" type="button" style="flex: 1; padding: 10px 12px; font-weight: 600; font-size: 12px; border-radius: 6px;">
                       <i class="fas fa-save" style="margin-right: 4px;"></i>Save Draft
                     </button>
@@ -2319,13 +2319,13 @@
               </div>
 
               <!-- CAREERS LIST -->
-              <div style="border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); overflow: hidden;">
-                <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;">
+              <div style="border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); overflow: hidden; display: flex; flex-direction: column; height: 100%;">
+                <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
                   <i class="fas fa-list" style="color: var(--green-main); font-size: 16px;"></i>
                   <h3 style="margin: 0; font-size: 14px; color: var(--text-main);">All Careers</h3>
                   <span id="career-count" style="margin-left: auto; font-size: 12px; color: var(--text-muted);">0 careers</span>
                 </div>
-                <div id="careers-list" style="max-height: 600px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px;"></div>
+                <div id="careers-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px;"></div>
               </div>
             </div>
           </div>
@@ -2887,9 +2887,9 @@
       let body = container.querySelector('.tab-body');
       if (!body) { body = document.createElement('div'); body.className = 'tab-body'; container.appendChild(body); }
       body.innerHTML = '' +
-        '<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">' +
-        '<div style="flex:1;min-width:300px"><div id="users-list" class="card" style="padding:12px"></div></div>' +
-        '<div style="flex:1;min-width:320px"><div class="card" style="padding:12px"><h4>Add User</h4>' +
+        '<div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap;height:70vh;">' +
+        '<div style="flex:1;min-width:300px;display:flex;flex-direction:column;height:100%;overflow:hidden"><div id="users-list" class="card" style="padding:12px;flex:1;overflow-y:auto;overflow-x:hidden"></div></div>' +
+        '<div style="flex:1;min-width:320px;height:100%;overflow-y:auto"><div class="card" style="padding:12px"><h4>Add User</h4>' +
         (function(){
           const currentRole = (localStorage.getItem('adminRole') || 'superadmin');
           let roleOptions = '<option value="student">Student</option>';
@@ -3062,9 +3062,9 @@
       let body = container.querySelector('.tab-body');
       if (!body) { body = document.createElement('div'); body.className = 'tab-body'; container.appendChild(body); }
       body.innerHTML = '' +
-        '<div style="display:flex;gap:16px;flex-wrap:wrap">' +
-        '<div style="flex:1;min-width:300px;display:flex;flex-direction:column;max-height:70vh"><div id="courses-list" class="card" style="padding:12px;flex:1;overflow-y:auto;overflow-x:hidden"></div><div id="courses-list-actions" style="margin-top:12px;flex-shrink:0"></div></div>' +
-        '<div style="flex:1;min-width:320px;overflow-y:auto;max-height:70vh;overflow-y:auto;max-height:70vh">' +
+        '<div style="display:flex;gap:16px;flex-wrap:wrap;height:70vh;">' +
+        '<div style="flex:1;min-width:300px;display:flex;flex-direction:column;height:100%;overflow:hidden"><div id="courses-list" class="card" style="padding:12px;flex:1;overflow-y:auto;overflow-x:hidden"></div><div id="courses-list-actions" style="margin-top:12px;flex-shrink:0"></div></div>' +
+        '<div style="flex:1;min-width:320px;height:100%;overflow-y:auto;overflow-x:hidden">' +
         '<div id="add-course-card" class="card" style="padding:12px;display:block"><h4>Add Course</h4>' +
         '<form id="add-course-form" style="display:flex;flex-direction:column;gap:8px">' +
         '<input id="course-title" placeholder="Title" />' +
