@@ -60,8 +60,6 @@ function authenticateSuperAdmin(req, res, next) {
     }
     
     next();
-
-    next();
   } catch (err) {
     console.error('[Media Auth] Error:', err);
     res.status(401).json({ error: 'Invalid token' });
