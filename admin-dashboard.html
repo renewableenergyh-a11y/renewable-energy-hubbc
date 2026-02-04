@@ -4630,7 +4630,7 @@
           watchBtn.addEventListener('mouseout', () => watchBtn.style.background = '#00796b');
           watchBtn.addEventListener('click', () => {
             if (video.cloudinaryUrl) {
-              window.open(video.cloudinaryUrl, '_blank');
+              openVideoModal(video.title, video.cloudinaryUrl);
             }
           });
 
@@ -7723,6 +7723,71 @@
           onConfirm: () => resolve(true),
           onCancel: () => resolve(false)
         });
+      });
+    }
+
+    function openVideoModal(title, videoUrl) {
+      // Create modal overlay
+      const modalOverlay = document.createElement('div');
+      modalOverlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:10000;';
+      
+      // Create modal container
+      const modalContainer = document.createElement('div');
+      modalContainer.style.cssText = 'background:#fff;border-radius:12px;overflow:hidden;max-width:90vw;max-height:90vh;width:900px;display:flex;flex-direction:column;box-shadow:0 25px 50px rgba(0,0,0,0.3);';
+      
+      // Create header
+      const header = document.createElement('div');
+      header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid #e5e7eb;background:#f9fafb;';
+      
+      const titleEl = document.createElement('h3');
+      titleEl.style.cssText = 'margin:0;font-size:18px;font-weight:600;color:#1f2937;';
+      titleEl.textContent = title;
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.style.cssText = 'background:none;border:none;font-size:24px;color:#6b7280;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;';
+      closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+      closeBtn.addEventListener('mouseover', () => closeBtn.style.color = '#1f2937');
+      closeBtn.addEventListener('mouseout', () => closeBtn.style.color = '#6b7280');
+      closeBtn.addEventListener('click', () => modalOverlay.remove());
+      
+      header.appendChild(titleEl);
+      header.appendChild(closeBtn);
+      
+      // Create video container
+      const videoContainer = document.createElement('div');
+      videoContainer.style.cssText = 'flex:1;display:flex;align-items:center;justify-content:center;background:#000;overflow:hidden;position:relative;';
+      
+      // Create video element
+      const video = document.createElement('video');
+      video.src = videoUrl;
+      video.controls = true;
+      video.style.cssText = 'width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;';
+      
+      videoContainer.appendChild(video);
+      
+      // Assemble modal
+      modalContainer.appendChild(header);
+      modalContainer.appendChild(videoContainer);
+      modalOverlay.appendChild(modalContainer);
+      
+      // Add to page
+      document.body.appendChild(modalOverlay);
+      
+      // Close on escape key
+      const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+          modalOverlay.remove();
+          document.removeEventListener('keydown', handleEscape);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+      
+      // Close on overlay click
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+          modalOverlay.remove();
+          document.removeEventListener('keydown', handleEscape);
+        }
       });
     }
   </script>
