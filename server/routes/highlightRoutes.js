@@ -283,6 +283,62 @@ function createHighlightRoutes(db) {
     }
   });
 
+  /**
+   * DIAGNOSTIC: Test token validation (no auth required)
+   * POST /api/highlights/debug/test-token
+   */
+  router.post('/debug/test-token', (req, res) => {
+    try {
+      const authHeader = req.headers['authorization'];
+      const token = authHeader && authHeader.split(' ')[1];
+      
+      console.log('🔍 Token test request');
+      console.log('   Authorization header:', authHeader ? authHeader.substring(0, 20) + '...' : 'MISSING');
+      console.log('   Token:', token ? token.substring(0, 20) + '...' : 'NOT EXTRACTED');
+      
+      if (!token) {
+        return res.status(401).json({ 
+          success: false, 
+          error: 'No token provided',
+          authHeader: authHeader ? 'Present' : 'Missing'
+        });
+      }
+
+      // Try to find the user
+      const storage = require('../storage');
+      const users = storage.loadUsers();
+      let found = false;
+      let matchEmail = null;
+
+      for (const [email, user] of Object.entries(users)) {
+        if (user && user.token === token) {
+          found = true;
+          matchEmail = email;
+          break;
+        }
+      }
+
+      if (found) {
+        return res.json({ 
+          success: true, 
+          message: 'Token is valid',
+          email: matchEmail,
+          tokenLength: token.length
+        });
+      } else {
+        return res.status(403).json({ 
+          success: false, 
+          error: 'Token not found in users',
+          tokenLength: token.length,
+          totalUsers: Object.keys(users).length
+        });
+      }
+    } catch (err) {
+      console.error('❌ Token test error:', err.message);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
   return router;
 }
 
