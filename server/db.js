@@ -40,6 +40,7 @@ async function init() {
     models.Media = mongoose.models.Media || mongoose.model('Media', AnySchema, 'media');
     models.News = mongoose.models.News || mongoose.model('News', AnySchema, 'news');
     models.Highlight = mongoose.models.Highlight || mongoose.model('Highlight', AnySchema, 'highlights');
+    models.Career = mongoose.models.Career || mongoose.model('Career', AnySchema, 'careers');
     
     // Discussion system models
     models.DiscussionSession = mongoose.models.DiscussionSession || mongoose.model('DiscussionSession', DiscussionSessionSchema);

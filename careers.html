@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explore Careers in Renewable Energy</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        .careers-hero {
+            background: linear-gradient(135deg, var(--green-main) 0%, #005a4f 100%);
+            color: white;
+            padding: 60px 20px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .careers-hero h1 {
+            font-size: 2.5em;
+            margin: 0 0 12px 0;
+            font-weight: 700;
+        }
+
+        .careers-hero p {
+            font-size: 1.1em;
+            margin: 0;
+            opacity: 0.95;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .careers-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px 60px 20px;
+        }
+
+        .careers-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        .careers-header h2 {
+            margin: 0;
+            font-size: 1.8em;
+            color: var(--text-main);
+        }
+
+        .pdf-download-btn {
+            background: linear-gradient(135deg, var(--green-main), #00796b);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .pdf-download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(0, 121, 107, 0.3);
+        }
+
+        .careers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .career-card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .career-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 24px rgba(0, 121, 107, 0.15);
+            border-color: var(--green-main);
+        }
+
+        .career-card-image {
+            width: 100%;
+            height: 200px;
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3em;
+            overflow: hidden;
+        }
+
+        .career-card-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .career-card-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .career-card-title {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--text-main);
+            margin: 0 0 12px 0;
+        }
+
+        .career-card-desc {
+            font-size: 0.95em;
+            color: var(--text-muted);
+            margin: 0 0 16px 0;
+            flex: 1;
+            line-height: 1.5;
+        }
+
+        .career-card-meta {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            font-size: 0.85em;
+        }
+
+        .meta-badge {
+            background: rgba(0, 121, 107, 0.1);
+            color: var(--green-main);
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .view-btn {
+            background: var(--green-main);
+            color: white;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            align-self: flex-start;
+        }
+
+        .view-btn:hover {
+            background: #005a4f;
+            transform: translateX(4px);
+        }
+
+        .career-detail {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .career-detail-header {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 32px;
+            flex-wrap: wrap;
+        }
+
+        .career-detail-image {
+            width: 200px;
+            height: 200px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #e8f5e9, #c8e6c9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4em;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+
+        .career-detail-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .career-detail-title {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .career-detail-title h1 {
+            margin: 0 0 16px 0;
+            font-size: 2em;
+            color: var(--text-main);
+        }
+
+        .career-detail-section {
+            margin-bottom: 32px;
+        }
+
+        .career-detail-section h2 {
+            font-size: 1.3em;
+            color: var(--text-main);
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .career-detail-section h2 i {
+            color: var(--green-main);
+        }
+
+        .skill-list, .role-list, .path-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .skill-badge, .role-badge, .path-badge {
+            background: rgba(0, 121, 107, 0.1);
+            color: var(--green-main);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 121, 107, 0.2);
+            font-size: 0.95em;
+        }
+
+        .path-arrow {
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+        }
+
+        .back-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .back-btn:hover {
+            background: var(--green-main);
+            color: white;
+            border-color: var(--green-main);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--bg-secondary);
+            border-radius: 12px;
+        }
+
+        .empty-state i {
+            font-size: 3em;
+            color: var(--text-muted);
+            margin-bottom: 16px;
+            display: block;
+        }
+
+        .empty-state h3 {
+            font-size: 1.3em;
+            color: var(--text-main);
+            margin: 0 0 8px 0;
+        }
+
+        .empty-state p {
+            color: var(--text-muted);
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .careers-hero h1 {
+                font-size: 1.8em;
+            }
+
+            .careers-hero p {
+                font-size: 1em;
+            }
+
+            .careers-header {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .careers-header h2 {
+                font-size: 1.5em;
+            }
+
+            .pdf-download-btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .careers-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .career-detail-header {
+                flex-direction: column;
+            }
+
+            .career-detail-image {
+                width: 100%;
+            }
+
+            .career-detail {
+                padding: 20px;
+            }
+
+            .career-detail-title h1 {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav id="nav-menu" class="nav-menu" style="display: none;"></nav>
+
+    <!-- Hero Section -->
+    <div class="careers-hero">
+        <h1><i class="fas fa-briefcase" style="margin-right: 12px;"></i>Explore Careers in Renewable Energy</h1>
+        <p>Discover diverse career paths that contribute to a sustainable future. From technicians to engineers, project managers to researchers—find your role in the renewable energy revolution.</p>
+    </div>
+
+    <!-- Main Content -->
+    <div class="careers-container">
+        <!-- Careers List View -->
+        <div id="careers-view">
+            <div class="careers-header">
+                <h2>Available Careers</h2>
+                <button class="pdf-download-btn" id="download-pdf-btn" onclick="downloadCareersPDF()">
+                    <i class="fas fa-file-pdf"></i>
+                    Download All as PDF
+                </button>
+            </div>
+            <div id="careers-grid" class="careers-grid"></div>
+        </div>
+
+        <!-- Career Detail View -->
+        <div id="career-detail-view" style="display: none;">
+            <button class="back-btn" onclick="backToList()">
+                <i class="fas fa-arrow-left"></i>
+                Back to Careers
+            </button>
+            <div id="career-detail-container"></div>
+        </div>
+    </div>
+
+    <script>
+        let allCareers = [];
+
+        // Load navigation
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadNavigation();
+            await loadCareers();
+        });
+
+        async function loadNavigation() {
+            try {
+                const response = await fetch('main.js', { headers: { 'Accept': 'application/javascript' } });
+                // The nav is loaded by main.js, just ensure it's visible
+                const navMenu = document.getElementById('nav-menu');
+                if (navMenu) navMenu.style.display = 'flex';
+            } catch (err) {
+                console.error('Error loading navigation:', err);
+            }
+        }
+
+        async function loadCareers() {
+            try {
+                const response = await fetch('/api/careers');
+                const data = await response.json();
+                allCareers = data.careers || [];
+
+                const grid = document.getElementById('careers-grid');
+                if (allCareers.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <i class="fas fa-briefcase"></i>
+                            <h3>No Careers Available</h3>
+                            <p>Career paths will be available soon. Please check back later!</p>
+                        </div>
+                    `;
+                    document.getElementById('download-pdf-btn').disabled = true;
+                    return;
+                }
+
+                grid.innerHTML = allCareers.map(career => `
+                    <div class="career-card" onclick="viewCareer('${career.id}')">
+                        <div class="career-card-image">
+                            ${career.coverImage ? `<img src="${career.coverImage}" alt="${career.title}">` : '<i class="fas fa-briefcase" style="color: var(--green-main);"></i>'}
+                        </div>
+                        <div class="career-card-content">
+                            <h3 class="career-card-title">${career.title}</h3>
+                            <p class="career-card-desc">${career.shortDescription}</p>
+                            ${career.educationLevel ? `<div class="meta-badge"><i class="fas fa-graduation-cap"></i> ${career.educationLevel}</div>` : ''}
+                            <button class="view-btn" onclick="event.stopPropagation();">
+                                View Career
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Error loading careers:', err);
+                document.getElementById('careers-grid').innerHTML = `
+                    <div class="empty-state" style="grid-column: 1 / -1;">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>Error Loading Careers</h3>
+                        <p>Unable to load careers at this time. Please try again later.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function viewCareer(careerId) {
+            const career = allCareers.find(c => c.id === careerId);
+            if (!career) return;
+
+            const detail = document.getElementById('career-detail-container');
+            detail.innerHTML = `
+                <div class="career-detail">
+                    <div class="career-detail-header">
+                        <div class="career-detail-image">
+                            ${career.coverImage ? `<img src="${career.coverImage}" alt="${career.title}">` : '<i class="fas fa-briefcase" style="color: var(--green-main);"></i>'}
+                        </div>
+                        <div class="career-detail-title">
+                            <h1>${career.title}</h1>
+                            ${career.salaryRange ? `<div style="font-size: 1.1em; color: var(--green-main); font-weight: 600; margin-bottom: 12px;">💰 ${career.salaryRange}</div>` : ''}
+                            <p style="color: var(--text-muted); font-size: 1em; margin: 0; line-height: 1.6;">${career.shortDescription}</p>
+                        </div>
+                    </div>
+
+                    <div class="career-detail-section">
+                        <h2><i class="fas fa-file-alt"></i>Overview</h2>
+                        <div style="color: var(--text-main); line-height: 1.8;">${career.fullDescription || 'No description available.'}</div>
+                    </div>
+
+                    ${career.careerPath && career.careerPath.length > 0 ? `
+                        <div class="career-detail-section">
+                            <h2><i class="fas fa-road"></i>Career Path</h2>
+                            <div class="path-list">
+                                ${career.careerPath.map((step, idx) => `
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="path-badge">${step}</span>
+                                        ${idx < career.careerPath.length - 1 ? '<i class="fas fa-arrow-right path-arrow"></i>' : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${career.educationLevel ? `
+                        <div class="career-detail-section">
+                            <h2><i class="fas fa-graduation-cap"></i>Education Required</h2>
+                            <p style="color: var(--text-main); margin: 0; font-size: 1.05em;">${career.educationLevel}</p>
+                        </div>
+                    ` : ''}
+
+                    ${career.skillsRequired && career.skillsRequired.length > 0 ? `
+                        <div class="career-detail-section">
+                            <h2><i class="fas fa-tools"></i>Required Skills</h2>
+                            <div class="skill-list">
+                                ${career.skillsRequired.map(skill => `<span class="skill-badge">${skill}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${career.industryRoles && career.industryRoles.length > 0 ? `
+                        <div class="career-detail-section">
+                            <h2><i class="fas fa-briefcase"></i>Industry Roles</h2>
+                            <div class="role-list">
+                                ${career.industryRoles.map(role => `<span class="role-badge">${role}</span>`).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+
+            document.getElementById('careers-view').style.display = 'none';
+            document.getElementById('career-detail-view').style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function backToList() {
+            document.getElementById('careers-view').style.display = 'block';
+            document.getElementById('career-detail-view').style.display = 'none';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function downloadCareersPDF() {
+            try {
+                const pdfScript = document.createElement('script');
+                pdfScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js';
+                pdfScript.onload = () => {
+                    const element = document.createElement('div');
+                    element.style.padding = '40px';
+                    element.style.fontFamily = 'Arial, sans-serif';
+                    element.style.color = '#333';
+
+                    element.innerHTML = `
+                        <h1 style="text-align: center; margin-bottom: 8px;">Renewable Energy Hub</h1>
+                        <h2 style="text-align: center; color: #007b6a; margin-bottom: 24px;">Career Exploration Guide</h2>
+                        <p style="text-align: center; color: #666; margin-bottom: 32px;">Generated on ${new Date().toLocaleDateString()}</p>
+
+                        ${allCareers.map((career, idx) => `
+                            <div style="page-break-inside: avoid; margin-bottom: 32px; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">
+                                <h3 style="margin-top: 0; margin-bottom: 12px; color: #007b6a; border-bottom: 2px solid #007b6a; padding-bottom: 8px;">
+                                    ${idx + 1}. ${career.title}
+                                </h3>
+                                
+                                ${career.shortDescription ? `<p><strong>Overview:</strong> ${career.shortDescription}</p>` : ''}
+                                ${career.fullDescription ? `<p><strong>Description:</strong> ${career.fullDescription}</p>` : ''}
+
+                                ${career.careerPath && career.careerPath.length > 0 ? `
+                                    <p><strong>Career Path:</strong> ${career.careerPath.join(' → ')}</p>
+                                ` : ''}
+
+                                ${career.educationLevel ? `<p><strong>Education Required:</strong> ${career.educationLevel}</p>` : ''}
+                                ${career.salaryRange ? `<p><strong>Salary Range:</strong> ${career.salaryRange}</p>` : ''}
+
+                                ${career.skillsRequired && career.skillsRequired.length > 0 ? `
+                                    <p><strong>Skills Required:</strong> ${career.skillsRequired.join(', ')}</p>
+                                ` : ''}
+
+                                ${career.industryRoles && career.industryRoles.length > 0 ? `
+                                    <p><strong>Industry Roles:</strong> ${career.industryRoles.join(', ')}</p>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    `;
+
+                    const opt = {
+                        margin: 10,
+                        filename: `renewable-energy-careers-${new Date().toISOString().split('T')[0]}.pdf`,
+                        image: { type: 'jpeg', quality: 0.98 },
+                        html2canvas: { scale: 2 },
+                        jsPDF: { orientation: 'portrait', unit: 'mm', format: 'a4' }
+                    };
+
+                    html2pdf().set(opt).save(element);
+                };
+                document.head.appendChild(pdfScript);
+            } catch (err) {
+                console.error('Error generating PDF:', err);
+                alert('Failed to generate PDF. Please try again.');
+            }
+        }
+    </script>
+</body>
+</html>

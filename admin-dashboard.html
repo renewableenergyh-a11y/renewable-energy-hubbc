@@ -1114,6 +1114,10 @@
               <i class="fas fa-newspaper"></i>
               <span>News</span>
             </a>
+            <a href="#" class="sidebar-link" data-tab="careers">
+              <i class="fas fa-briefcase"></i>
+              <span>Careers</span>
+            </a>
           </div>
 
           <div class="sidebar-section">
@@ -2209,6 +2213,116 @@
               </div></div>
             </div>
           </div>
+
+          <!-- CAREERS MANAGEMENT PANEL -->
+          <div class="tab-panel" id="careers-panel">
+            <div style="margin-bottom: 24px;">
+              <h2 style="margin: 0 0 8px 0; font-size: 24px; color: var(--text-main);">
+                <i class="fas fa-briefcase" style="margin-right: 10px; color: var(--green-main);"></i>Careers Management
+              </h2>
+              <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Create, edit, and publish renewable energy career paths.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;">
+              <!-- CREATE/EDIT CAREER FORM -->
+              <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; margin-bottom: 20px;">
+                  <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--green-main), #00796b); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                    <i class="fas fa-plus" style="color: white; font-size: 16px;"></i>
+                  </div>
+                  <h3 id="career-form-title" style="margin: 0; font-size: 16px; color: var(--text-main);">Create Career</h3>
+                </div>
+                
+                <form id="career-form" style="display: flex; flex-direction: column; gap: 14px;">
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-heading" style="margin-right: 4px; color: var(--green-main);"></i>Title *
+                    </label>
+                    <input id="career-title" type="text" placeholder="Career title" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-paragraph" style="margin-right: 4px; color: var(--green-main);"></i>Short Description
+                    </label>
+                    <textarea id="career-short-desc" placeholder="Brief summary" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical;"></textarea>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-image" style="margin-right: 4px; color: var(--green-main);"></i>Cover Image URL
+                    </label>
+                    <input id="career-image" type="url" placeholder="https://example.com/image.jpg" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-pen" style="margin-right: 4px; color: var(--green-main);"></i>Full Description (HTML)
+                    </label>
+                    <textarea id="career-full-desc" placeholder="Full career description (HTML supported)" rows="6" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: monospace; font-size: 12px; resize: vertical;"></textarea>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-road" style="margin-right: 4px; color: var(--green-main);"></i>Career Path (comma-separated)
+                    </label>
+                    <textarea id="career-path" placeholder="e.g., Entry Level, Technician, Engineer, Project Manager" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical;"></textarea>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-graduation-cap" style="margin-right: 4px; color: var(--green-main);"></i>Education Level
+                    </label>
+                    <input id="career-education" type="text" placeholder="e.g., Bachelor's Degree" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-dollar-sign" style="margin-right: 4px; color: var(--green-main);"></i>Salary Range (optional)
+                    </label>
+                    <input id="career-salary" type="text" placeholder="e.g., $40,000 - $80,000/year" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-tools" style="margin-right: 4px; color: var(--green-main);"></i>Skills Required (comma-separated)
+                    </label>
+                    <textarea id="career-skills" placeholder="e.g., Problem Solving, Technical Knowledge, Communication" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical;"></textarea>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-briefcase" style="margin-right: 4px; color: var(--green-main);"></i>Industry Roles (comma-separated)
+                    </label>
+                    <textarea id="career-roles" placeholder="e.g., Solar Technician, Wind Engineer, Grid Operator" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical;"></textarea>
+                  </div>
+
+                  <div id="career-form-notice" style="padding: 10px 12px; border-radius: 6px; font-size: 12px; display: none; margin: 6px 0; border-left: 3px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
+
+                  <div style="display: flex; gap: 8px;">
+                    <button id="career-save-draft" class="btn" type="button" style="flex: 1; padding: 10px 12px; font-weight: 600; font-size: 12px; border-radius: 6px;">
+                      <i class="fas fa-save" style="margin-right: 4px;"></i>Save Draft
+                    </button>
+                    <button id="career-publish" class="btn-primary" type="button" style="flex: 1; padding: 10px 12px; font-weight: 600; font-size: 12px; border-radius: 6px;">
+                      <i class="fas fa-paper-plane" style="margin-right: 4px;"></i>Publish
+                    </button>
+                    <button id="career-cancel" class="btn" type="button" style="flex: 0.5; padding: 10px 12px; font-size: 12px; border-radius: 6px; display: none;">Cancel</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- CAREERS LIST -->
+              <div style="border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); overflow: hidden;">
+                <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px;">
+                  <i class="fas fa-list" style="color: var(--green-main); font-size: 16px;"></i>
+                  <h3 style="margin: 0; font-size: 14px; color: var(--text-main);">All Careers</h3>
+                  <span id="career-count" style="margin-left: auto; font-size: 12px; color: var(--text-muted);">0 careers</span>
+                </div>
+                <div id="careers-list" style="max-height: 600px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px;"></div>
+              </div>
+            </div>
+          </div>
+
           <div class="tab-panel" id="documents-panel">
             <div style="background:#f0f9ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:20px;">
               <p style="margin:0;color:#1e40af;font-size:14px;">
@@ -2610,6 +2724,7 @@
         'live-chat': 'live-chat-panel',
         'discussions': 'discussions-panel',
         'news': 'news-panel',
+        'careers': 'careers-panel',
         'modules': 'modules-panel',
         'content': 'content-panel',
         'documents': 'documents-panel'
@@ -2627,6 +2742,7 @@
         'live-chat': 'Live Chat',
         'discussions': 'Discussions',
         'news': 'News',
+        'careers': 'Careers',
         'modules': 'Modules',
         'content': 'Content',
         'documents': 'Documents'
@@ -4037,6 +4153,209 @@
       
       // Initial load
       renderNews('published');
+    }
+
+    // ----- CAREERS MANAGEMENT UI -----
+    let careerManagementInitialized = false;
+    
+    async function loadCareersManagementUI() {
+      if (careerManagementInitialized) {
+        loadCareers();
+        return;
+      }
+      careerManagementInitialized = true;
+
+      const careerForm = document.getElementById('career-form');
+      const careersList = document.getElementById('careers-list');
+      const careerFormTitle = document.getElementById('career-form-title');
+      const careerFormNotice = document.getElementById('career-form-notice');
+      const careerCount = document.getElementById('career-count');
+
+      let currentEditingId = null;
+
+      async function loadCareers() {
+        try {
+          const token = localStorage.getItem('authToken');
+          const response = await fetch('/api/careers', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+          const data = await response.json();
+          const careers = data.careers || [];
+          
+          careerCount.textContent = `${careers.length} careers`;
+          careersList.innerHTML = '';
+
+          careers.forEach(career => {
+            const careerItem = document.createElement('div');
+            careerItem.style.cssText = 'padding:12px;border:1px solid var(--border-color);border-radius:8px;background:var(--bg-main);display:flex;justify-content:space-between;align-items:center;gap:8px;cursor:pointer;transition:background 0.2s;';
+            careerItem.innerHTML = `
+              <div style="flex:1;">
+                <div style="font-weight:600;font-size:13px;color:var(--text-main);">${career.title}</div>
+                <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
+                  Status: <strong>${career.status === 'published' ? '✅ Published' : '⏳ Draft'}</strong>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button class="btn" type="button" style="padding:6px 10px;font-size:11px;" onclick="event.stopPropagation();">
+                  <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn" type="button" style="padding:6px 10px;font-size:11px;" onclick="event.stopPropagation();">
+                  <i class="fas fa-trash" style="color:#e53e3e;"></i>
+                </button>
+              </div>
+            `;
+
+            careersList.appendChild(careerItem);
+
+            // Edit button
+            const editBtn = careerItem.querySelector('button:first-child');
+            editBtn.addEventListener('click', () => editCareer(career.id));
+
+            // Delete button
+            const deleteBtn = careerItem.querySelector('button:last-child');
+            deleteBtn.addEventListener('click', async () => {
+              if (confirm(`Delete career "${career.title}"?`)) {
+                await deleteCareer(career.id);
+              }
+            });
+          });
+        } catch (err) {
+          console.error('Error loading careers:', err);
+          showAlert('Error', 'Failed to load careers', 'error');
+        }
+      }
+
+      async function saveCareer(isDraft = false) {
+        const title = document.getElementById('career-title').value.trim();
+        const shortDescription = document.getElementById('career-short-desc').value.trim();
+        const fullDescription = document.getElementById('career-full-desc').value.trim();
+        const careerPath = document.getElementById('career-path').value.split(',').map(p => p.trim()).filter(p => p);
+        const educationLevel = document.getElementById('career-education').value.trim();
+        const salaryRange = document.getElementById('career-salary').value.trim();
+        const skillsRequired = document.getElementById('career-skills').value.split(',').map(s => s.trim()).filter(s => s);
+        const industryRoles = document.getElementById('career-roles').value.split(',').map(r => r.trim()).filter(r => r);
+        const coverImage = document.getElementById('career-image').value.trim();
+
+        if (!title) {
+          showAlert('Error', 'Title is required', 'error');
+          return;
+        }
+
+        const careerData = {
+          title,
+          shortDescription,
+          fullDescription,
+          careerPath,
+          educationLevel,
+          salaryRange,
+          skillsRequired,
+          industryRoles,
+          coverImage,
+          status: isDraft ? 'draft' : 'published'
+        };
+
+        try {
+          const token = localStorage.getItem('authToken');
+          const method = currentEditingId ? 'PUT' : 'POST';
+          const url = currentEditingId ? `/api/careers/${currentEditingId}` : '/api/careers';
+
+          const response = await fetch(url, {
+            method,
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(careerData)
+          });
+
+          if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.error || 'Failed to save career');
+          }
+
+          careerFormNotice.style.display = 'block';
+          careerFormNotice.style.borderLeftColor = '#10b981';
+          careerFormNotice.textContent = `✅ Career ${currentEditingId ? 'updated' : 'created'} ${isDraft ? 'as draft' : 'and published'}!`;
+
+          careerForm.reset();
+          currentEditingId = null;
+          careerFormTitle.textContent = 'Create Career';
+
+          setTimeout(() => {
+            careerFormNotice.style.display = 'none';
+            loadCareers();
+          }, 2000);
+        } catch (err) {
+          console.error('Error saving career:', err);
+          careerFormNotice.style.display = 'block';
+          careerFormNotice.style.borderLeftColor = '#e53e3e';
+          careerFormNotice.textContent = `❌ ${err.message}`;
+        }
+      }
+
+      async function editCareer(careerId) {
+        try {
+          const token = localStorage.getItem('authToken');
+          const response = await fetch(`/api/careers/${careerId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (!response.ok) throw new Error('Failed to load career');
+          const data = await response.json();
+          const career = data.career;
+
+          document.getElementById('career-title').value = career.title;
+          document.getElementById('career-short-desc').value = career.shortDescription || '';
+          document.getElementById('career-full-desc').value = career.fullDescription || '';
+          document.getElementById('career-path').value = career.careerPath.join(', ');
+          document.getElementById('career-education').value = career.educationLevel || '';
+          document.getElementById('career-salary').value = career.salaryRange || '';
+          document.getElementById('career-skills').value = career.skillsRequired.join(', ');
+          document.getElementById('career-roles').value = career.industryRoles.join(', ');
+          document.getElementById('career-image').value = career.coverImage || '';
+
+          currentEditingId = career.id;
+          careerFormTitle.textContent = `Edit Career: ${career.title}`;
+          document.getElementById('career-cancel').style.display = 'inline-block';
+
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } catch (err) {
+          console.error('Error loading career:', err);
+          showAlert('Error', 'Failed to load career details', 'error');
+        }
+      }
+
+      async function deleteCareer(careerId) {
+        try {
+          const token = localStorage.getItem('authToken');
+          const response = await fetch(`/api/careers/${careerId}`, {
+            method: 'DELETE',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+
+          if (!response.ok) throw new Error('Failed to delete career');
+
+          showAlert('Success', 'Career deleted successfully', 'success');
+          loadCareers();
+        } catch (err) {
+          console.error('Error deleting career:', err);
+          showAlert('Error', 'Failed to delete career', 'error');
+        }
+      }
+
+      // Event listeners
+      document.getElementById('career-save-draft').addEventListener('click', () => saveCareer(true));
+      document.getElementById('career-publish').addEventListener('click', () => saveCareer(false));
+      document.getElementById('career-cancel').addEventListener('click', () => {
+        careerForm.reset();
+        currentEditingId = null;
+        careerFormTitle.textContent = 'Create Career';
+        document.getElementById('career-cancel').style.display = 'none';
+        careerFormNotice.style.display = 'none';
+      });
+
+      // Initial load
+      loadCareers();
     }
 
     // ----- Pending Documents UI (extracted for global access) -----
@@ -6325,6 +6644,7 @@
       else if (name === 'inbox') loadInboxUI();
       else if (name === 'discussions') loadDiscussionsUI();
       else if (name === 'news') loadNewsManagementUI();
+      else if (name === 'careers') loadCareersManagementUI();
       else if (name === 'modules') loadModuleManagementUI();
       else if (name === 'content') loadContentManagementUI();
       else if (name === 'documents') loadDocumentsUI();
