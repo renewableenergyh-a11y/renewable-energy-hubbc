@@ -530,15 +530,6 @@ class SettingsPanelManager {
       // Refresh UI to show updated badges
       this.renderUI();
       this.setupEventListeners();
-      
-      // Broadcast settings update to other tabs/windows
-      console.log('📢 Broadcasting settings update to other tabs...');
-      try {
-        localStorage.setItem('_settingsUpdated', Date.now().toString());
-        console.log('✅ Broadcast sent');
-      } catch (err) {
-        console.warn('Could not broadcast to other tabs:', err.message);
-      }
 
     } catch (err) {
       console.error('❌ Error saving settings:', err);

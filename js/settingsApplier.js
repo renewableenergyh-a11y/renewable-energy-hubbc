@@ -7,7 +7,6 @@ class SettingsApplier {
   constructor() {
     this.settings = null;
     this.checkInterval = null;
-    this.lastUpdateTime = 0;
   }
 
   /**
@@ -19,24 +18,12 @@ class SettingsApplier {
     // Load settings on init
     await this.loadAndApply();
     
-    // Check for settings updates every 2 seconds (detects changes from admin or other tabs)
+    // Refresh settings every 30 seconds to catch admin changes
     this.checkInterval = setInterval(() => {
-      const updateTime = localStorage.getItem('_settingsUpdated');
-      if (updateTime && parseInt(updateTime) > this.lastUpdateTime) {
-        console.log('📢 Settings update detected via localStorage');
-        this.loadAndApply();
-      }
-    }, 2000);
+      this.loadAndApply();
+    }, 30000);
     
-    // Also listen for storage events (works when other tabs change settings)
-    window.addEventListener('storage', (e) => {
-      if (e.key === '_settingsUpdated') {
-        console.log('📢 Settings update detected from storage event');
-        this.loadAndApply();
-      }
-    });
-    
-    console.log('✅ Settings Applier initialized - checking every 2 seconds');
+    console.log('✅ Settings Applier initialized');
   }
 
   /**
@@ -51,7 +38,6 @@ class SettingsApplier {
       }
 
       this.settings = await response.json();
-      this.lastUpdateTime = Date.now();
       console.log('📥 Settings loaded from public API');
       
       // Apply all settings
@@ -293,48 +279,27 @@ class SettingsApplier {
       
       // Hide premium upgrade buttons
       const upgradeBtns = document.querySelectorAll('[data-action="upgrade-premium"]');
-      upgradeBtns.forEach(btn => {
-        btn.style.display = 'none';
-        btn.setAttribute('data-hidden-by-promotion', 'true');
-      });
+      upgradeBtns.forEach(btn => btn.style.display = 'none');
       
-      // Show promotion banner (only add if not already present)
-      const existingBanner = document.querySelector('[data-component="premium-promotion-banner"]');
-      if (!existingBanner) {
-        const banner = document.createElement('div');
-        banner.style.cssText = 'padding: 15px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center; margin-bottom: 20px; border-radius: 8px; font-weight: 600;';
-        banner.innerHTML = `🎉 Special Offer: Premium access is now FREE for everyone! Enjoy all features while this promotion lasts.`;
-        banner.setAttribute('data-component', 'premium-promotion-banner');
-        
-        const mainContent = document.querySelector('main') || document.body;
-        if (mainContent.firstChild) {
-          mainContent.insertBefore(banner, mainContent.firstChild);
-        }
+      // Show promotion banner
+      const banner = document.createElement('div');
+      banner.style.cssText = 'padding: 15px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center; margin-bottom: 20px; border-radius: 8px; font-weight: 600;';
+      banner.innerHTML = `🎉 Special Offer: Premium access is now FREE for everyone! Enjoy all features while this promotion lasts.`;
+      banner.setAttribute('data-component', 'premium-promotion-banner');
+      
+      const mainContent = document.querySelector('main') || document.body;
+      if (mainContent.firstChild) {
+        mainContent.insertBefore(banner, mainContent.firstChild);
       }
       
       // Grant all users premium features
       localStorage.setItem('isPremium', 'true');
       window.userPremium = true;
     } else {
-      console.log('💳 Removing premium promotion');
-      
       // Remove promotion banner if it exists
       const banner = document.querySelector('[data-component="premium-promotion-banner"]');
-      if (banner) {
-        console.log('🗑️ Removing promotion banner');
-        banner.remove();
-      }
-      
-      // Restore upgrade buttons
-      const upgradeBtns = document.querySelectorAll('[data-action="upgrade-premium"][data-hidden-by-promotion="true"]');
-      upgradeBtns.forEach(btn => {
-        btn.style.display = '';
-        btn.removeAttribute('data-hidden-by-promotion');
-      });
-      
+      if (banner) banner.remove();
       window.premiumForAll = false;
-      localStorage.removeItem('isPremium');
-      window.userPremium = false;
     }
   }
 
