@@ -7863,21 +7863,21 @@
       
       // Create modal container
       const modalContainer = document.createElement('div');
-      modalContainer.style.cssText = 'background:#fff;border-radius:12px;overflow:hidden;max-width:90vw;max-height:90vh;width:900px;display:flex;flex-direction:column;box-shadow:0 25px 50px rgba(0,0,0,0.3);';
+      modalContainer.style.cssText = 'background:var(--bg-main);border-radius:12px;overflow:hidden;max-width:90vw;max-height:90vh;width:900px;display:flex;flex-direction:column;box-shadow:0 25px 50px rgba(0,0,0,0.3);';
       
       // Create header
       const header = document.createElement('div');
-      header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid #e5e7eb;background:#f9fafb;';
+      header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid var(--border-color);background:var(--bg-subtle);';
       
       const titleEl = document.createElement('h3');
-      titleEl.style.cssText = 'margin:0;font-size:18px;font-weight:600;color:#1f2937;';
+      titleEl.style.cssText = 'margin:0;font-size:18px;font-weight:600;color:var(--text-main);';
       titleEl.textContent = title;
       
       const closeBtn = document.createElement('button');
-      closeBtn.style.cssText = 'background:none;border:none;font-size:24px;color:#6b7280;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;';
+      closeBtn.style.cssText = 'background:none;border:none;font-size:24px;color:var(--text-muted);cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;';
       closeBtn.innerHTML = '<i class="fas fa-times"></i>';
-      closeBtn.addEventListener('mouseover', () => closeBtn.style.color = '#1f2937');
-      closeBtn.addEventListener('mouseout', () => closeBtn.style.color = '#6b7280');
+      closeBtn.addEventListener('mouseover', () => closeBtn.style.color = 'var(--text-main)');
+      closeBtn.addEventListener('mouseout', () => closeBtn.style.color = 'var(--text-muted)');
       closeBtn.addEventListener('click', () => modalOverlay.remove());
       
       header.appendChild(titleEl);
@@ -7928,21 +7928,21 @@
       
       // Create modal container
       const modalContainer = document.createElement('div');
-      modalContainer.style.cssText = 'background:#fff;border-radius:12px;overflow:hidden;max-width:90vw;max-height:90vh;width:600px;display:flex;flex-direction:column;box-shadow:0 25px 50px rgba(0,0,0,0.3);';
+      modalContainer.style.cssText = 'background:var(--bg-main);border-radius:12px;overflow:hidden;max-width:90vw;max-height:90vh;width:600px;display:flex;flex-direction:column;box-shadow:0 25px 50px rgba(0,0,0,0.3);';
       
       // Create header
       const header = document.createElement('div');
-      header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid #e5e7eb;background:#f9fafb;';
+      header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid var(--border-color);background:var(--bg-subtle);';
       
       const titleEl = document.createElement('h3');
-      titleEl.style.cssText = 'margin:0;font-size:18px;font-weight:600;color:#1f2937;';
+      titleEl.style.cssText = 'margin:0;font-size:18px;font-weight:600;color:var(--text-main);';
       titleEl.textContent = 'Edit Video';
       
       const closeBtn = document.createElement('button');
-      closeBtn.style.cssText = 'background:none;border:none;font-size:24px;color:#6b7280;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;';
+      closeBtn.style.cssText = 'background:none;border:none;font-size:24px;color:var(--text-muted);cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;';
       closeBtn.innerHTML = '<i class="fas fa-times"></i>';
-      closeBtn.addEventListener('mouseover', () => closeBtn.style.color = '#1f2937');
-      closeBtn.addEventListener('mouseout', () => closeBtn.style.color = '#6b7280');
+      closeBtn.addEventListener('mouseover', () => closeBtn.style.color = 'var(--text-main)');
+      closeBtn.addEventListener('mouseout', () => closeBtn.style.color = 'var(--text-muted)');
       closeBtn.addEventListener('click', () => modalOverlay.remove());
       
       header.appendChild(titleEl);
@@ -7958,12 +7958,12 @@
       // Title field
       const titleGroup = document.createElement('div');
       const titleLabel = document.createElement('label');
-      titleLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      titleLabel.style.cssText = 'font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:6px;display:block;';
       titleLabel.textContent = 'Video Title';
       const titleInput = document.createElement('input');
       titleInput.type = 'text';
       titleInput.value = video.title || '';
-      titleInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;';
+      titleInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;background:var(--bg-main);color:var(--text-main);';
       titleGroup.appendChild(titleLabel);
       titleGroup.appendChild(titleInput);
       form.appendChild(titleGroup);
@@ -7971,11 +7971,11 @@
       // Description field
       const descGroup = document.createElement('div');
       const descLabel = document.createElement('label');
-      descLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      descLabel.style.cssText = 'font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:6px;display:block;';
       descLabel.textContent = 'Description';
       const descInput = document.createElement('textarea');
       descInput.value = video.description || '';
-      descInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;min-height:80px;font-family:inherit;';
+      descInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;min-height:80px;font-family:inherit;background:var(--bg-main);color:var(--text-main);';
       descGroup.appendChild(descLabel);
       descGroup.appendChild(descInput);
       form.appendChild(descGroup);
@@ -7983,12 +7983,12 @@
       // Category field
       const catGroup = document.createElement('div');
       const catLabel = document.createElement('label');
-      catLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      catLabel.style.cssText = 'font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:6px;display:block;';
       catLabel.textContent = 'Category';
       const catInput = document.createElement('input');
       catInput.type = 'text';
       catInput.value = video.category || '';
-      catInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;';
+      catInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;background:var(--bg-main);color:var(--text-main);';
       catGroup.appendChild(catLabel);
       catGroup.appendChild(catInput);
       form.appendChild(catGroup);
@@ -7996,12 +7996,12 @@
       // Video file field
       const videoGroup = document.createElement('div');
       const videoLabel = document.createElement('label');
-      videoLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      videoLabel.style.cssText = 'font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:6px;display:block;';
       videoLabel.textContent = 'Video File (optional - leave empty to keep current)';
       const videoInput = document.createElement('input');
       videoInput.type = 'file';
       videoInput.accept = 'video/*';
-      videoInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;';
+      videoInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;background:var(--bg-main);color:var(--text-main);';
       videoGroup.appendChild(videoLabel);
       videoGroup.appendChild(videoInput);
       form.appendChild(videoGroup);
@@ -8009,12 +8009,12 @@
       // Thumbnail file field
       const thumbGroup = document.createElement('div');
       const thumbLabel = document.createElement('label');
-      thumbLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      thumbLabel.style.cssText = 'font-size:14px;font-weight:600;color:var(--text-main);margin-bottom:6px;display:block;';
       thumbLabel.textContent = 'Thumbnail Image (optional - leave empty to keep current)';
       const thumbInput = document.createElement('input');
       thumbInput.type = 'file';
       thumbInput.accept = 'image/*';
-      thumbInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;';
+      thumbInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid var(--border-color);border-radius:6px;font-size:14px;background:var(--bg-main);color:var(--text-main);';
       thumbGroup.appendChild(thumbLabel);
       thumbGroup.appendChild(thumbInput);
       form.appendChild(thumbGroup);
@@ -8023,14 +8023,14 @@
       
       // Create footer with buttons
       const footer = document.createElement('div');
-      footer.style.cssText = 'display:flex;gap:12px;padding:20px;border-top:1px solid #e5e7eb;background:#f9fafb;';
+      footer.style.cssText = 'display:flex;gap:12px;padding:20px;border-top:1px solid var(--border-color);background:var(--bg-subtle);';
       
       const cancelBtn = document.createElement('button');
-      cancelBtn.style.cssText = 'flex:1;padding:10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;font-weight:600;cursor:pointer;transition:all 0.2s;';
+      cancelBtn.style.cssText = 'flex:1;padding:10px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-main);color:var(--text-main);font-weight:600;cursor:pointer;transition:all 0.2s;';
       cancelBtn.textContent = 'Cancel';
       cancelBtn.addEventListener('click', () => modalOverlay.remove());
-      cancelBtn.addEventListener('mouseover', () => cancelBtn.style.background = '#f3f4f6');
-      cancelBtn.addEventListener('mouseout', () => cancelBtn.style.background = '#fff');
+      cancelBtn.addEventListener('mouseover', () => cancelBtn.style.background = 'var(--bg-subtle)');
+      cancelBtn.addEventListener('mouseout', () => cancelBtn.style.background = 'var(--bg-main)');
       
       const saveBtn = document.createElement('button');
       saveBtn.type = 'button';
