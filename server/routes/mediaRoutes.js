@@ -20,7 +20,7 @@ function setStorage(storageModule) {
   storage = storageModule;
 }
 
-// Middleware to authenticate superadmin
+// Middleware to authenticate admin (superadmin or admin)
 function authenticateSuperAdmin(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   
@@ -32,8 +32,8 @@ function authenticateSuperAdmin(req, res, next) {
     const admins = storage.loadAdmins();
     const user = Object.values(admins).find(u => u.token === token);
     
-    if (!user || user.role !== 'superadmin') {
-      return res.status(403).json({ error: 'Only SuperAdmins can access media' });
+    if (!user || (user.role !== 'superadmin' && user.role !== 'admin')) {
+      return res.status(403).json({ error: 'Only Admins can access media management' });
     }
     
     req.user = user;

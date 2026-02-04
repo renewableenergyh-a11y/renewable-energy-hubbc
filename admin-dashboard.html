@@ -4544,12 +4544,17 @@
               uploadBtn.disabled = false;
               loadMedia();
             } else {
-              throw new Error('Upload failed');
+              try {
+                const errorData = JSON.parse(xhr.responseText);
+                throw new Error(errorData.error || 'Upload failed');
+              } catch (e) {
+                throw new Error('Upload failed with status ' + xhr.status);
+              }
             }
           });
           
           xhr.addEventListener('error', () => {
-            showAlert('Error', 'Upload failed. Please try again.', 'error');
+            showAlert('Error', 'Upload failed. Please check your connection and try again.', 'error');
             uploadBtn.innerHTML = '<i class="fas fa-upload" style="margin-right:4px;"></i>Upload Video';
             uploadBtn.disabled = false;
           });
