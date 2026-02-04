@@ -200,7 +200,11 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
     // Apply updates to settings
     Object.assign(settings, updates);
     
+    console.log('📝 Updated settings object:', settings);
+    
     await settings.save();
+    
+    console.log('✅ Settings saved to database');
     
     res.json({ success: true, settings });
   } catch (err) {

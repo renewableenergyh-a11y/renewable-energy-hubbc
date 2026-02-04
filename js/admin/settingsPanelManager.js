@@ -494,6 +494,9 @@ class SettingsPanelManager {
 
       console.log('💾 Saving settings for section:', section, updates);
 
+      console.log('📤 Sending PUT request to /api/settings/' + section);
+      console.log('📦 Payload:', JSON.stringify(updates, null, 2));
+
       const response = await fetch(`/api/settings/${section}`, {
         method: 'PUT',
         headers: {
@@ -503,13 +506,17 @@ class SettingsPanelManager {
         body: JSON.stringify(updates)
       });
 
+      console.log('📥 Response status:', response.status, response.statusText);
+
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
+        console.error('❌ API Error response:', error);
         throw new Error(error.error || `HTTP ${response.status}`);
       }
 
       const result = await response.json();
-      this.currentSettings = result.settings;
+      console.log('✅ API Response:', result);
+      this.currentSettings = result.settings || result;
 
       await showAlert('Success', `${section.replace('-', ' ')} settings saved successfully!`, 'success');
 
