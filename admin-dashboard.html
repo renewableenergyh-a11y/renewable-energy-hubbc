@@ -4459,7 +4459,39 @@
 
         allMedia.forEach(video => {
           const card = document.createElement('div');
-          card.style.cssText = 'padding:12px;background:var(--bg-main);border:1px solid var(--border-color);border-radius:8px;display:flex;flex-direction:column;gap:8px;';
+          card.style.cssText = 'padding:12px;background:var(--bg-main);border:1px solid var(--border-color);border-radius:8px;display:flex;flex-direction:column;gap:8px;overflow:hidden;';
+          
+          // Thumbnail
+          const thumbnail = document.createElement('div');
+          thumbnail.style.cssText = 'height:120px;background:linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%);border-radius:4px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;cursor:pointer;transition:transform 0.2s;';
+          thumbnail.addEventListener('mouseover', () => { thumbnail.style.transform = 'scale(1.02)'; });
+          thumbnail.addEventListener('mouseout', () => { thumbnail.style.transform = 'scale(1)'; });
+          
+          if (video.thumbnail || video.cloudinaryUrl) {
+            const bgUrl = video.thumbnail || video.cloudinaryUrl?.replace('/upload/', '/upload/w_200,h_120,c_fill/');
+            thumbnail.style.backgroundImage = `url(${bgUrl})`;
+            thumbnail.style.backgroundSize = 'cover';
+            thumbnail.style.backgroundPosition = 'center';
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.2);';
+            thumbnail.appendChild(overlay);
+          }
+          
+          const playBtn = document.createElement('div');
+          playBtn.style.cssText = 'width:40px;height:40px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;box-shadow:0 2px 8px rgba(0,0,0,0.2);cursor:pointer;transition:transform 0.2s;';
+          playBtn.addEventListener('mouseover', () => { playBtn.style.transform = 'scale(1.1)'; });
+          playBtn.addEventListener('mouseout', () => { playBtn.style.transform = 'scale(1)'; });
+          playBtn.addEventListener('click', () => {
+            if (video.cloudinaryUrl) {
+              openVideoModal(video.title, video.cloudinaryUrl);
+            }
+          });
+          const icon = document.createElement('i');
+          icon.className = 'fas fa-play';
+          icon.style.cssText = 'font-size:16px;color:#6366f1;margin-left:2px;';
+          playBtn.appendChild(icon);
+          thumbnail.appendChild(playBtn);
+          card.appendChild(thumbnail);
           
           const title = document.createElement('div');
           title.style.cssText = 'font-weight:600;font-size:13px;color:var(--text-main);';
@@ -4472,9 +4504,28 @@
           const actions = document.createElement('div');
           actions.style.cssText = 'display:flex;gap:6px;margin-top:4px;';
 
+          const editBtn = document.createElement('button');
+          editBtn.style.cssText = 'flex:1;padding:6px;background:rgba(99,102,241,0.1);color:#6366f1;border:1px solid rgba(99,102,241,0.2);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;';
+          editBtn.innerHTML = '<i class="fas fa-edit" style="margin-right:4px;"></i>Edit';
+          editBtn.addEventListener('mouseover', () => {
+            editBtn.style.background = 'rgba(99,102,241,0.2)';
+          });
+          editBtn.addEventListener('mouseout', () => {
+            editBtn.style.background = 'rgba(99,102,241,0.1)';
+          });
+          editBtn.addEventListener('click', () => {
+            showAlert('Coming Soon', 'Video editing feature coming soon', 'info');
+          });
+
           const deleteBtn = document.createElement('button');
-          deleteBtn.style.cssText = 'flex:1;padding:6px;background:rgba(244,67,54,0.1);color:#f44336;border:1px solid rgba(244,67,54,0.2);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;';
+          deleteBtn.style.cssText = 'flex:1;padding:6px;background:rgba(244,67,54,0.1);color:#f44336;border:1px solid rgba(244,67,54,0.2);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;transition:all 0.2s;';
           deleteBtn.innerHTML = '<i class="fas fa-trash" style="margin-right:4px;"></i>Delete';
+          deleteBtn.addEventListener('mouseover', () => {
+            deleteBtn.style.background = 'rgba(244,67,54,0.2)';
+          });
+          deleteBtn.addEventListener('mouseout', () => {
+            deleteBtn.style.background = 'rgba(244,67,54,0.1)';
+          });
           deleteBtn.addEventListener('click', async () => {
             const confirmed = await showConfirm('Delete Video', `Delete "${video.title}"? This action cannot be undone.`, 'error');
             if (!confirmed) return;
@@ -4496,6 +4547,7 @@
             }
           });
 
+          actions.appendChild(editBtn);
           actions.appendChild(deleteBtn);
           card.appendChild(title);
           card.appendChild(category);
