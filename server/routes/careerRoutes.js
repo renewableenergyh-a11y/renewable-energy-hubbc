@@ -6,45 +6,83 @@
 const express = require('express');
 const router = express.Router();
 let db = null;
+let storage = null;
 
 /**
- * Initialize database connection
+ * Initialize database and storage connection
  */
 function setDatabase(database) {
   db = database;
 }
 
+function setStorage(storageModule) {
+  storage = storageModule;
+}
+
 /**
- * Middleware to authenticate admin
+ * Middleware to authenticate admin using token from storage
  */
 function authenticateAdmin(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) return res.status(401).json({ error: 'No token provided' });
 
+  // Check superadmins first
   try {
-    const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET || 'your-secret-key');
-    req.userEmail = decoded.email;
-    req.isAdmin = decoded.isAdmin;
-    
-    if (!req.isAdmin) {
-      return res.status(403).json({ error: 'Admin access required' });
+    const admins = storage.loadAdmins();
+    for (const admin of admins) {
+      if (admin.token === token) {
+        req.userEmail = admin.email || admin.idNumber;
+        req.isAdmin = true;
+        return next();
+      }
     }
-    next();
   } catch (err) {
-    res.status(401).json({ error: 'Invalid token' });
+    console.warn('Error checking admins:', err.message);
   }
+
+  // Check regular users
+  try {
+    const users = storage.loadUsers();
+    for (const [email, user] of Object.entries(users)) {
+      if (user.token === token) {
+        if (user.role === 'admin' || user.role === 'instructor') {
+          req.userEmail = email;
+          req.isAdmin = true;
+          return next();
+        }
+      }
+    }
+  } catch (err) {
+    console.warn('Error checking users:', err.message);
+  }
+
+  res.status(401).json({ error: 'Invalid token' });
 }
 
 /**
- * Middleware to authenticate user (optional - for stats)
+ * Middleware to authenticate user (optional - for public access)
  */
 function authenticateToken(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   if (token) {
     try {
-      const decoded = require('jsonwebtoken').verify(token, process.env.JWT_SECRET || 'your-secret-key');
-      req.userEmail = decoded.email;
-      req.isAdmin = decoded.isAdmin;
+      const admins = storage.loadAdmins();
+      for (const admin of admins) {
+        if (admin.token === token) {
+          req.userEmail = admin.email || admin.idNumber;
+          req.isAdmin = true;
+          return next();
+        }
+      }
+
+      const users = storage.loadUsers();
+      for (const [email, user] of Object.entries(users)) {
+        if (user.token === token) {
+          req.userEmail = email;
+          req.isAdmin = (user.role === 'admin' || user.role === 'instructor');
+          return next();
+        }
+      }
     } catch (err) {
       // Continue without user info
     }
@@ -433,4 +471,4 @@ router.post('/:careerIdOrTitle/unpublish', authenticateAdmin, async (req, res) =
   }
 });
 
-module.exports = { router, setDatabase };
+module.exports = { router, setDatabase, setStorage };

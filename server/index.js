@@ -16,7 +16,7 @@ const DiscussionSessionService = require('./services/DiscussionSessionService');
 const ParticipantService = require('./services/ParticipantService');
 const createDiscussionRoutes = require('./routes/discussionRoutes');
 const createHighlightRoutes = require('./routes/highlightRoutes');
-const { router: careerRoutes, setDatabase: setCareerDatabase } = require('./routes/careerRoutes');
+const { router: careerRoutes, setDatabase: setCareerDatabase, setStorage: setCareerStorage } = require('./routes/careerRoutes');
 const { initializeDiscussionSocket } = require('./sockets/discussionSocket');
 
 const app = express();
@@ -7552,6 +7552,9 @@ async function startServer() {
 
   // Register career routes (doesn't need Socket.IO)
   setCareerDatabase(db);
+  if (typeof setCareerStorage === 'function') {
+    setCareerStorage(storage);
+  }
   app.use('/api/careers', careerRoutes);
   console.log('✅ Career routes registered');
   
