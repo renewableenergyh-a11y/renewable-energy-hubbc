@@ -2450,6 +2450,9 @@
 
   <script src="js/main.js"></script>
 
+  <!-- Settings Panel Manager (SuperAdmin only) -->
+  <script src="js/admin/settingsPanelManager.js"></script>
+
   <script>
       // Load marked and Quill dynamically for content editing/preview
       const _loadEditors = (function(){
@@ -7073,6 +7076,25 @@
       else if (name === 'media') loadMediaManagementUI();
       else if (name === 'documents') loadDocumentsUI();
       else if (name === 'getting-started') loadTutorialVideos();
+    }
+
+    // Settings UI Loader
+    function loadSettingsUI() {
+      const role = localStorage.getItem('adminRole') || 'superadmin';
+      if (role !== 'superadmin') {
+        const container = document.getElementById('settings-panel');
+        if (container) {
+          container.innerHTML = '<div style="padding: 40px; text-align: center; color: var(--text-muted);"><i class="fas fa-lock" style="font-size: 32px; margin-bottom: 12px; display: block; opacity: 0.5;"></i><h3 style="margin: 0 0 8px 0;">Access Denied</h3><p style="margin: 0;">Only SuperAdmins can access the Settings Panel</p></div>';
+        }
+        return;
+      }
+      
+      // Initialize settings panel manager
+      if (typeof settingsManager !== 'undefined') {
+        settingsManager.init();
+      } else {
+        console.warn('Settings panel manager not loaded');
+      }
     }
 
     // Tab functionality (updated for new layout)
