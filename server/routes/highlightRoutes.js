@@ -173,7 +173,7 @@ function createHighlightRoutes(db) {
       // Create new highlight
       const highlightId = crypto.randomBytes(16).toString('hex');
       const highlight = new Highlight({
-        id: highlightId,  // Custom ID field (not _id)
+        // Don't pass 'id' to constructor - Mongoose maps it to _id
         contentId,
         contentType,
         text,
@@ -184,8 +184,10 @@ function createHighlightRoutes(db) {
         userEmail,
         createdAt: new Date(),
         updatedAt: new Date()
-        // NOTE: Don't set _id - let Mongoose auto-generate it as ObjectId
       });
+
+      // Set the custom id field AFTER construction to avoid _id mapping
+      highlight.id = highlightId;
 
       console.log('💾 Saving highlight:', highlightId, 'User:', userEmail);
       await highlight.save();
