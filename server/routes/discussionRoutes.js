@@ -394,14 +394,39 @@ module.exports = function(db, discussionSessionService, participantService, io =
 
       console.log('✅ [POST] Session closed successfully:', sessionId);
 
-      // Broadcast session-closed event to all clients in the room (if io is available)
+      // Broadcast session-closed event to all clients in the room
       if (io) {
-        io.to(`discussion-session:${sessionId}`).emit('session-closed', {
+        const closedReason = 'Session ended by ' + (req.user.role === 'admin' ? 'administrator' : req.user.role === 'superadmin' ? 'superadmin' : 'instructor');
+        const closureEvent = {
           sessionId: sessionId,
-          reason: 'Session ended by ' + (req.user.role === 'admin' ? 'administrator' : req.user.role === 'superadmin' ? 'superadmin' : 'instructor'),
+          reason: closedReason,
           timestamp: new Date()
-        });
+        };
+        
+        // Primary method: broadcast to room
+        io.to(`discussion-session:${sessionId}`).emit('session-closed', closureEvent);
+        
+        // Secondary method: also check if we can find sockets directly and emit to each
+        try {
+          const room = io.sockets.adapter.rooms.get(`discussion-session:${sessionId}`);
+          if (room && room.size > 0) {
+            console.log(`📡 Found ${room.size} participants in room, sending close event`);
+            room.forEach(socketId => {
+              const socket = io.sockets.sockets.get(socketId);
+              if (socket) {
+                socket.emit('session-closed', closureEvent);
+              }
+            });
+          } else {
+            console.log('⚠️ No participants found in room (might not be connected yet)');
+          }
+        } catch (broadcastErr) {
+          console.warn('Could not access room details:', broadcastErr.message);
+        }
+        
         console.log('📡 Broadcasted session-closed event for:', sessionId);
+      } else {
+        console.warn('⚠️ [POST] Socket.IO not available for broadcast');
       }
 
       res.json({
