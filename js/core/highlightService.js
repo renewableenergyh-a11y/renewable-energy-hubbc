@@ -33,6 +33,7 @@ export async function fetchHighlights(contentId, contentType = 'module') {
     });
     if (!response.ok) return [];
     const data = await response.json();
+    console.log('📥 Fetched highlights:', data.highlights?.map(h => ({ id: h.id, color: h.color })));
     return data.highlights || [];
   } catch (err) {
     console.error('Error fetching highlights:', err);
@@ -227,12 +228,16 @@ export function findHighlightSpans(container) {
 export function reapplyHighlights(contentContainer, highlights) {
   if (!highlights || highlights.length === 0) return;
 
+  console.log('🔄 Reapplying highlights:', highlights.map(h => ({ id: h.id, color: h.color, text: h.text.substring(0, 20) })));
+
   highlights.forEach(highlight => {
     try {
       // Simple approach: find text and wrap with highlight span
       const text = highlight.text;
       const color = highlight.color;
       const highlightId = highlight.id;
+
+      console.log('  ⚙️ Processing highlight:', { highlightId, color });
 
       const walker = document.createTreeWalker(
         contentContainer,

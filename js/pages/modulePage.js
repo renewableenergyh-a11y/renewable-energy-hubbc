@@ -1471,10 +1471,12 @@ function setupSingleHighlightHandler(span, highlightId, contentId, contentType) 
 async function handleUpdateHighlightColor(span, highlightId, newColor, contentId, contentType) {
   // Update DOM immediately
   span.style.backgroundColor = newColor;
+  console.log('🎨 Color updated in DOM:', { highlightId, newColor });
 
   // Update on server
   try {
-    await updateHighlight(highlightId, newColor);
+    const result = await updateHighlight(highlightId, newColor);
+    console.log('✅ Color saved to server:', { highlightId, newColor, result });
   } catch (err) {
     console.error('Error updating highlight:', err);
     // Revert on error
