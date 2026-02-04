@@ -20,7 +20,7 @@ function setStorage(storageModule) {
   storage = storageModule;
 }
 
-// Middleware to authenticate admin (superadmin or admin)
+// Middleware to authenticate SuperAdmin only
 function authenticateSuperAdmin(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   const userRole = req.headers['x-user-role'] || 'admin';
@@ -54,9 +54,9 @@ function authenticateSuperAdmin(req, res, next) {
     }
     
     const finalRole = req.user.role?.toLowerCase() || 'admin';
-    if (finalRole !== 'superadmin' && finalRole !== 'admin') {
+    if (finalRole !== 'superadmin') {
       console.error('[Media Auth] Access denied for role:', finalRole);
-      return res.status(403).json({ error: 'Only Admins can access media management' });
+      return res.status(403).json({ error: 'Only SuperAdmins can access media management' });
     }
     
     next();

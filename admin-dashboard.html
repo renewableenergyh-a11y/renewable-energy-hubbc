@@ -2680,18 +2680,15 @@
       const role = localStorage.getItem('adminRole') || 'superadmin';
       // default: show everything for superadmin
       if (role === 'superadmin') {
+        // Show media link for superadmin
+        document.getElementById('media-sidebar-link').style.display = 'flex';
         return;
       }
       // hide system-level links for non-superadmins
-      const hideForAdmin = ['.sidebar-link[data-tab="settings"]'];
+      const hideForAdmin = ['.sidebar-link[data-tab="settings"]', '.sidebar-link[data-tab="media"]'];
       const hideForInstructor = ['.sidebar-link[data-tab="users"]', '.sidebar-link[data-tab="analytics"]', '.sidebar-link[data-tab="settings"]', '.sidebar-link[data-tab="documents"]', '.sidebar-link[data-tab="media"]'];
 
       if (role === 'admin') {
-        // Hide media link with CSS for admin users only
-        const mediaLink = document.getElementById('media-sidebar-link');
-        if (mediaLink) {
-          mediaLink.style.display = 'none';
-        }
         hideForAdmin.forEach(s => { document.querySelectorAll(s).forEach(el => el.style.display = 'none'); });
       }
       if (role === 'instructor') {
