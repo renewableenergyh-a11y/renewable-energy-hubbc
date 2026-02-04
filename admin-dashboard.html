@@ -5871,6 +5871,20 @@
       };
     }
 
+    function getActualSessionStatus(session) {
+      const now = new Date();
+      const startTime = new Date(session.startTime);
+      const endTime = new Date(session.endTime);
+      
+      if (now >= startTime && now <= endTime) {
+        return 'active';
+      } else if (now < startTime) {
+        return 'upcoming';
+      } else {
+        return 'closed';
+      }
+    }
+
     async function refreshDiscussionSessions(container) {
       try {
         const response = await fetch('/api/discussions/sessions', {
