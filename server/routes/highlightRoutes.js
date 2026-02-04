@@ -111,7 +111,18 @@ function createHighlightRoutes(db) {
       }).sort({ createdAt: -1 });
 
       console.log('✅ Found', highlights.length, 'highlights');
-      res.json({ highlights: highlights || [] });
+      // Map MongoDB _id to id in response
+      const highlightData = highlights.map(h => ({
+        id: h._id.toString(),
+        contentId: h.contentId,
+        contentType: h.contentType,
+        text: h.text,
+        startOffset: h.startOffset,
+        endOffset: h.endOffset,
+        color: h.color,
+        createdAt: h.createdAt
+      }));
+      res.json({ highlights: highlightData || [] });
     } catch (err) {
       console.error('❌ Error fetching highlights:', err.message);
       console.error('   Code:', err.code);
@@ -171,9 +182,7 @@ function createHighlightRoutes(db) {
       }
 
       // Create new highlight
-      const highlightId = crypto.randomBytes(16).toString('hex');
       const highlight = new Highlight({
-        // Don't pass 'id' to constructor - Mongoose maps it to _id
         contentId,
         contentType,
         text,
@@ -186,17 +195,14 @@ function createHighlightRoutes(db) {
         updatedAt: new Date()
       });
 
-      // Set the custom id field AFTER construction to avoid _id mapping
-      highlight.id = highlightId;
-
-      console.log('💾 Saving highlight:', highlightId, 'User:', userEmail);
+      console.log('💾 Saving highlight. User:', userEmail);
       await highlight.save();
       console.log('✅ Highlight saved successfully, MongoDB _id:', highlight._id);
 
       res.status(201).json({
         message: 'Highlight created',
         highlight: {
-          id: highlight.id,  // Return our custom ID
+          id: highlight._id.toString(),  // Return MongoDB _id as id
           contentId: highlight.contentId,
           contentType: highlight.contentType,
           text: highlight.text,
@@ -236,7 +242,7 @@ function createHighlightRoutes(db) {
 
       // Find and update highlight (ensure user owns it)
       const highlight = await Highlight.findOne({
-        id: highlightId,
+        _id: highlightId,
         userEmail
       });
 
@@ -271,7 +277,7 @@ function createHighlightRoutes(db) {
 
       // Delete highlight (ensure user owns it)
       const result = await Highlight.deleteOne({
-        id: highlightId,
+        _id: highlightId,
         userEmail
       });
 
