@@ -5906,7 +5906,8 @@
 
         container.innerHTML = '';
         relevantSessions.forEach(session => {
-          const status = getSessionStatus(session.status);
+          const actualStatus = getActualSessionStatus(session);
+          const status = getSessionStatus(actualStatus);
           const startTime = new Date(session.startTime);
           const endTime = new Date(session.endTime);
           const typeClass = session.sessionType === 'peer' ? 'peer' : 'instructor';
@@ -5921,7 +5922,7 @@
               </div>
               <div style="display: flex; gap: 6px; align-items: center;">
                 <span class="disc-session-badge ${typeClass}">${session.sessionType === 'peer' ? 'Peer' : 'Instructor'}</span>
-                <span class="disc-session-badge ${session.status}">${status.label}</span>
+                <span class="disc-session-badge ${actualStatus}">${status.label}</span>
               </div>
             </div>
 
@@ -5945,7 +5946,7 @@
             </div>
 
             <div class="disc-session-actions">
-              ${session.status !== 'closed' ? `
+              ${actualStatus !== 'closed' ? `
                 <button class="disc-session-btn disc-session-btn-primary" onclick="joinDiscussionSession('${session.sessionId}')">
                   <i class="fas fa-sign-in-alt" style="margin-right: 4px;"></i>Join
                 </button>
@@ -5953,7 +5954,7 @@
               <button class="disc-session-btn disc-session-btn-secondary" onclick="viewSessionDetails('${session.sessionId}')">
                 <i class="fas fa-info-circle" style="margin-right: 4px;"></i>Details
               </button>
-              ${session.status !== 'closed' ? `
+              ${actualStatus !== 'closed' ? `
                 <button class="disc-session-btn disc-session-btn-danger" onclick="endDiscussionSession('${session.sessionId}', '${escapeHtml(session.subject)}')">
                   <i class="fas fa-stop-circle" style="margin-right: 4px;"></i>End
                 </button>
