@@ -18,10 +18,10 @@ class SettingsApplier {
     // Load settings on init
     await this.loadAndApply();
     
-    // Refresh settings every 30 seconds to catch admin changes
+    // Refresh settings every 5 seconds to catch admin changes
     this.checkInterval = setInterval(() => {
       this.loadAndApply();
-    }, 30000);
+    }, 5000);
     
     console.log('✅ Settings Applier initialized');
   }
