@@ -1236,16 +1236,22 @@ async function initializeHighlighting(contentContainer, contentId, contentType =
  * Set up text selection detection
  */
 function setupSelectionListeners(contentContainer, contentId, contentType) {
-  // Hide toolbar when user starts a new selection (mousedown/touchstart)
-  contentContainer.addEventListener('mousedown', () => {
-    if (highlightToolbar) {
-      highlightToolbar.hide();
+  // Hide toolbar only when starting a new selection (not when clicking on highlights)
+  contentContainer.addEventListener('mousedown', (e) => {
+    // Don't hide if clicking on a highlight (allow re-opening toolbar)
+    if (!e.target.classList.contains('text-highlight')) {
+      if (highlightToolbar) {
+        highlightToolbar.hide();
+      }
     }
   });
 
-  contentContainer.addEventListener('touchstart', () => {
-    if (highlightToolbar) {
-      highlightToolbar.hide();
+  contentContainer.addEventListener('touchstart', (e) => {
+    // Don't hide if touching on a highlight (allow re-opening toolbar)
+    if (!e.target.classList.contains('text-highlight')) {
+      if (highlightToolbar) {
+        highlightToolbar.hide();
+      }
     }
   });
 
@@ -1283,7 +1289,13 @@ function handleSelectionChanged(contentContainer, contentId, contentType) {
   const rect = range.getBoundingClientRect();
   
   const toolbarX = rect.left + (rect.width / 2) - 80; // Approximate center
-  const toolbarY = Math.max(10, rect.top - 60); // Above selection
+  
+  // Position toolbar higher on mobile to avoid selection menu
+  // On mobile, move it further up since there's a selection options card
+  const isMobile = window.innerWidth <= 768;
+  const toolbarY = isMobile 
+    ? Math.max(10, rect.top - 120)  // Higher on mobile
+    : Math.max(10, rect.top - 60);   // Standard position on desktop
 
   // Store current selection for toolbar actions
   window.currentTextSelection = {
@@ -1419,7 +1431,12 @@ function setupSingleHighlightHandler(span, highlightId, contentId, contentType) 
     // Get position to show toolbar
     const rect = span.getBoundingClientRect();
     const toolbarX = rect.left + (rect.width / 2) - 80;
-    const toolbarY = Math.max(10, rect.top - 60);
+    
+    // Position higher on mobile to avoid selection menu
+    const isMobile = window.innerWidth <= 768;
+    const toolbarY = isMobile
+      ? Math.max(10, rect.top - 120)  // Higher on mobile
+      : Math.max(10, rect.top - 60);   // Standard on desktop
 
     // Store color info for potential update
     window.currentHighlightColor = span.style.backgroundColor;
