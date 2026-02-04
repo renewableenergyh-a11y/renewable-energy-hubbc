@@ -233,6 +233,11 @@ function createHighlightRoutes(db) {
       const { color } = req.body;
       const userEmail = req.userEmail;
 
+      console.log('🎨 PUT /api/highlights/:highlightId - Update color');
+      console.log('   Highlight ID:', highlightId);
+      console.log('   New Color:', color);
+      console.log('   User Email:', userEmail);
+
       if (!color) {
         return res.status(400).json({ error: 'Color is required' });
       }
@@ -242,19 +247,40 @@ function createHighlightRoutes(db) {
         return res.status(500).json({ error: 'Highlight model not available' });
       }
 
-      // Find and update highlight (ensure user owns it)
-      const highlight = await Highlight.findOne({
-        _id: highlightId,
+      // Convert string ID to MongoDB ObjectId if needed
+      const mongoose = require('mongoose');
+      let query = {
         userEmail
-      });
+      };
+      
+      try {
+        // Try to convert to ObjectId
+        query._id = mongoose.Types.ObjectId(highlightId);
+      } catch (e) {
+        // If it fails, use it as a string (for custom IDs)
+        query._id = highlightId;
+      }
+
+      console.log('   Query:', JSON.stringify(query));
+
+      // Find and update highlight (ensure user owns it)
+      const highlight = await Highlight.findOne(query);
+
+      console.log('   Found highlight:', !!highlight);
+      if (highlight) {
+        console.log('   Current color:', highlight.color);
+      }
 
       if (!highlight) {
+        console.warn('   ⚠️ Highlight not found with query:', query);
         return res.status(404).json({ error: 'Highlight not found' });
       }
 
       highlight.color = color;
       highlight.updatedAt = new Date();
       await highlight.save();
+
+      console.log('   ✅ Highlight saved. New color:', highlight.color);
 
       res.json({
         message: 'Highlight updated',
@@ -271,7 +297,7 @@ function createHighlightRoutes(db) {
         }
       });
     } catch (err) {
-      console.error('Error updating highlight:', err);
+      console.error('❌ Error updating highlight:', err);
       res.status(500).json({ error: 'Failed to update highlight' });
     }
   });
@@ -290,11 +316,22 @@ function createHighlightRoutes(db) {
         return res.status(500).json({ error: 'Highlight model not available' });
       }
 
-      // Delete highlight (ensure user owns it)
-      const result = await Highlight.deleteOne({
-        _id: highlightId,
+      // Convert string ID to MongoDB ObjectId if needed
+      const mongoose = require('mongoose');
+      let query = {
         userEmail
-      });
+      };
+      
+      try {
+        // Try to convert to ObjectId
+        query._id = mongoose.Types.ObjectId(highlightId);
+      } catch (e) {
+        // If it fails, use it as a string (for custom IDs)
+        query._id = highlightId;
+      }
+
+      // Delete highlight (ensure user owns it)
+      const result = await Highlight.deleteOne(query);
 
       if (result.deletedCount === 0) {
         return res.status(404).json({ error: 'Highlight not found' });
