@@ -193,8 +193,8 @@ router.post('/upload', authenticateSuperAdmin, upload.fields([{ name: 'file', ma
   }
 });
 
-// PUT update media metadata
-router.put('/:id', authenticateSuperAdmin, async (req, res) => {
+// PUT update media metadata (and optionally files)
+router.put('/:id', authenticateSuperAdmin, upload.fields([{ name: 'file', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }]), async (req, res) => {
   try {
     const { title, description, category } = req.body;
     const Media = db.models.Media;
@@ -203,25 +203,91 @@ router.put('/:id', authenticateSuperAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Title and category are required' });
     }
 
-    const media = await Media.findByIdAndUpdate(
-      req.params.id,
-      {
-        title,
-        description: description || '',
-        category,
-        updatedAt: new Date()
-      },
-      { new: true }
-    );
-
+    const media = await Media.findById(req.params.id);
     if (!media) {
       return res.status(404).json({ error: 'Media not found' });
     }
 
-    res.json({ success: true, media, message: 'Video updated successfully' });
+    const updateData = {
+      title,
+      description: description || '',
+      category,
+      updatedAt: new Date()
+    };
+
+    // Handle video file update
+    if (req.files && req.files.file) {
+      const videoFile = req.files.file[0];
+      
+      // Delete old video from Cloudinary if exists
+      if (media.cloudinaryId) {
+        await cloudinary.uploader.destroy(media.cloudinaryId, { resource_type: 'video' });
+      }
+      
+      // Upload new video to Cloudinary
+      const cloudinaryResult = await cloudinary.uploader.upload(videoFile.path, {
+        resource_type: 'video',
+        folder: 'ret-hub/media',
+        public_id: `${Date.now()}-${title.replace(/\s+/g, '-').toLowerCase()}`,
+        eager: [
+          { width: 300, height: 300, crop: 'pad', audio_codec: 'none' }
+        ]
+      });
+
+      updateData.cloudinaryUrl = cloudinaryResult.secure_url;
+      updateData.cloudinaryId = cloudinaryResult.public_id;
+      fs.unlinkSync(videoFile.path);
+    }
+
+    // Handle thumbnail file update
+    if (req.files && req.files.thumbnail) {
+      const thumbnailFile = req.files.thumbnail[0];
+      
+      // Upload thumbnail to Cloudinary
+      const cloudinaryThumbResult = await cloudinary.uploader.upload(thumbnailFile.path, {
+        resource_type: 'image',
+        folder: 'ret-hub/thumbnails',
+        public_id: `${Date.now()}-${title.replace(/\s+/g, '-').toLowerCase()}`,
+        transformation: [
+          { width: 300, height: 180, crop: 'fill', quality: 'auto' }
+        ]
+      });
+
+      updateData.thumbnail = cloudinaryThumbResult.secure_url;
+      fs.unlinkSync(thumbnailFile.path);
+    }
+
+    // Clean up temp files if they exist
+    if (req.files) {
+      if (req.files.file && fs.existsSync(req.files.file[0].path)) {
+        fs.unlinkSync(req.files.file[0].path);
+      }
+      if (req.files.thumbnail && fs.existsSync(req.files.thumbnail[0].path)) {
+        fs.unlinkSync(req.files.thumbnail[0].path);
+      }
+    }
+
+    const updatedMedia = await Media.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true }
+    );
+
+    res.json({ success: true, media: updatedMedia, message: 'Video updated successfully' });
   } catch (err) {
     console.error('Update error:', err);
-    res.status(500).json({ error: 'Failed to update media' });
+    
+    // Clean up temp files on error
+    if (req.files) {
+      if (req.files.file && fs.existsSync(req.files.file[0].path)) {
+        fs.unlinkSync(req.files.file[0].path);
+      }
+      if (req.files.thumbnail && fs.existsSync(req.files.thumbnail[0].path)) {
+        fs.unlinkSync(req.files.thumbnail[0].path);
+      }
+    }
+    
+    res.status(500).json({ error: 'Failed to update media: ' + err.message });
   }
 });
 

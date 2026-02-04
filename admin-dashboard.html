@@ -7990,6 +7990,32 @@
       catGroup.appendChild(catInput);
       form.appendChild(catGroup);
       
+      // Video file field
+      const videoGroup = document.createElement('div');
+      const videoLabel = document.createElement('label');
+      videoLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      videoLabel.textContent = 'Video File (optional - leave empty to keep current)';
+      const videoInput = document.createElement('input');
+      videoInput.type = 'file';
+      videoInput.accept = 'video/*';
+      videoInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;';
+      videoGroup.appendChild(videoLabel);
+      videoGroup.appendChild(videoInput);
+      form.appendChild(videoGroup);
+      
+      // Thumbnail file field
+      const thumbGroup = document.createElement('div');
+      const thumbLabel = document.createElement('label');
+      thumbLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      thumbLabel.textContent = 'Thumbnail Image (optional - leave empty to keep current)';
+      const thumbInput = document.createElement('input');
+      thumbInput.type = 'file';
+      thumbInput.accept = 'image/*';
+      thumbInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;';
+      thumbGroup.appendChild(thumbLabel);
+      thumbGroup.appendChild(thumbInput);
+      form.appendChild(thumbGroup);
+      
       content.appendChild(form);
       
       // Create footer with buttons
@@ -8013,18 +8039,26 @@
           const token = localStorage.getItem('adminToken') || '';
           const role = localStorage.getItem('adminRole') || 'superadmin';
           
+          const formData = new FormData();
+          formData.append('title', titleInput.value.trim());
+          formData.append('description', descInput.value.trim());
+          formData.append('category', catInput.value.trim());
+          
+          // Add files only if selected
+          if (videoInput.files[0]) {
+            formData.append('file', videoInput.files[0]);
+          }
+          if (thumbInput.files[0]) {
+            formData.append('thumbnail', thumbInput.files[0]);
+          }
+          
           const response = await fetch(`/api/media/${video._id}`, {
             method: 'PUT',
             headers: {
-              'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`,
               'X-User-Role': role
             },
-            body: JSON.stringify({
-              title: titleInput.value.trim(),
-              description: descInput.value.trim(),
-              category: catInput.value.trim()
-            })
+            body: formData
           });
           
           if (!response.ok) throw new Error('Failed to update video');
