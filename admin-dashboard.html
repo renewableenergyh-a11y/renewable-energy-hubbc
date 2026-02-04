@@ -1468,11 +1468,10 @@
                   </div>
                 </div>
               </div>
-          <div class="tab-panel" id="users-panel">
-            <p style="color: var(--text-muted); margin-bottom: 20px;">Manage user accounts, roles, and permissions.</p>
+            </div>
           </div>
 
-          <!-- COURSES TAB -->
+          <!-- USERS TAB -->
           <div class="tab-panel" id="courses-panel">
             <p style="color: var(--text-muted); margin-bottom: 20px;">Create, edit, and manage courses and modules.</p>
           </div>
@@ -4401,13 +4400,18 @@
 
     // ----- MEDIA MANAGEMENT UI -----
     async function loadMediaManagementUI() {
+      console.log('[loadMediaManagementUI] Called');
       const container = document.getElementById('media-panel');
-      if (!container) return;
+      if (!container) {
+        console.log('[loadMediaManagementUI] media-panel container not found');
+        return;
+      }
 
-      // Check if user is superadmin
+      // Allow SuperAdmin and Admin to upload/manage media
       const role = localStorage.getItem('adminRole') || 'superadmin';
-      if (role !== 'superadmin') {
-        showAlert('Access Denied', 'Only SuperAdmins can access Media Management', 'error');
+      console.log('[loadMediaManagementUI] User role:', role);
+      if (role !== 'superadmin' && role !== 'admin') {
+        showAlert('Access Denied', 'Only Admins can access Media Management', 'error');
         return;
       }
 
@@ -4415,17 +4419,22 @@
       const uploadBtn = document.getElementById('media-upload');
       const listEl = document.getElementById('media-list');
       const countEl = document.getElementById('media-count');
+      console.log('[loadMediaManagementUI] Elements found - form:', !!form, 'uploadBtn:', !!uploadBtn, 'listEl:', !!listEl, 'countEl:', !!countEl);
       let allMedia = [];
 
       async function loadMedia() {
         try {
+          console.log('[Media] Loading media from /api/media');
           const response = await fetch('/api/media');
+          console.log('[Media] Response status:', response.status);
           const data = await response.json();
+          console.log('[Media] Data received:', data);
           allMedia = data.media || [];
+          console.log('[Media] Videos loaded:', allMedia.length);
           renderMediaList();
         } catch (err) {
           console.error('Error loading media:', err);
-          listEl.innerHTML = '<div style="color:var(--text-muted);padding:20px;text-align:center;">Error loading videos</div>';
+          listEl.innerHTML = '<div style="color:var(--text-muted);padding:20px;text-align:center;">Error loading videos: ' + err.message + '</div>';
         }
       }
 
