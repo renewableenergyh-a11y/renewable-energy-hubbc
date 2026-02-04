@@ -1122,6 +1122,10 @@
 
           <div class="sidebar-section">
             <div class="sidebar-title">System</div>
+            <a href="#" class="sidebar-link" data-tab="media" id="media-sidebar-link" style="display: none;">
+              <i class="fas fa-video"></i>
+              <span>Media</span>
+            </a>
             <a href="#" class="sidebar-link" data-tab="documents">
               <i class="fas fa-folder-open"></i>
               <span>Deploy</span>
@@ -2330,6 +2334,93 @@
             </div>
           </div>
 
+          <!-- MEDIA MANAGEMENT PANEL (SuperAdmin Only) -->
+          <div class="tab-panel" id="media-panel">
+            <div style="margin-bottom: 24px;">
+              <h2 style="margin: 0 0 8px 0; font-size: 24px; color: var(--text-main);">
+                <i class="fas fa-video" style="margin-right: 10px; color: var(--green-main);"></i>Media Management
+              </h2>
+              <p style="margin: 0; color: var(--text-muted); font-size: 14px;">Upload and manage instructional videos for the Getting Started guide. Videos help new admins learn how to use the platform.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; height: 70vh;">
+              <!-- UPLOAD VIDEO FORM -->
+              <div class="card" style="padding: 20px; border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.05); display: flex; flex-direction: column; height: 100%; overflow: hidden;">
+                <div style="display: flex; align-items: center; margin-bottom: 20px; flex-shrink: 0;">
+                  <div style="width: 36px; height: 36px; background: linear-gradient(135deg, var(--green-main), #00796b); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-right: 10px;">
+                    <i class="fas fa-plus" style="color: white; font-size: 16px;"></i>
+                  </div>
+                  <h3 style="margin: 0; font-size: 16px; color: var(--text-main);">Upload Video</h3>
+                </div>
+
+                <form id="media-form" style="display: flex; flex-direction: column; gap: 14px; flex: 1; overflow-y: auto; padding-right: 8px; min-width: 0;">
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-heading" style="margin-right: 4px; color: var(--green-main);"></i>Video Title *
+                    </label>
+                    <input id="media-title" type="text" placeholder="e.g., How to Create a Course" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-paragraph" style="margin-right: 4px; color: var(--green-main);"></i>Description
+                    </label>
+                    <textarea id="media-description" placeholder="Brief description of the video content" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical;"></textarea>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-tag" style="margin-right: 4px; color: var(--green-main);"></i>Category *
+                    </label>
+                    <select id="media-category" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;">
+                      <option value="">-- Select Category --</option>
+                      <option value="courses">Managing Courses</option>
+                      <option value="users">Managing Users</option>
+                      <option value="modules">Creating Modules</option>
+                      <option value="content">Adding Content</option>
+                      <option value="settings">System Settings</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-cloud-upload-alt" style="margin-right: 4px; color: var(--green-main);"></i>Video File *
+                    </label>
+                    <input id="media-file" type="file" accept="video/*" required style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                    <small style="color: var(--text-muted); font-size: 11px; display: block; margin-top: 4px;">MP4, WebM, or OGV (Max 500MB). Will be uploaded to Cloudinary.</small>
+                  </div>
+
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-image" style="margin-right: 4px; color: var(--green-main);"></i>Thumbnail Image URL (optional)
+                    </label>
+                    <input id="media-thumbnail" type="url" placeholder="https://example.com/thumbnail.jpg" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-size: 12px;" />
+                  </div>
+
+                  <div id="media-form-notice" style="padding: 10px 12px; border-radius: 6px; font-size: 12px; display: none; margin: 6px 0; border-left: 3px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
+
+                  <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                    <button id="media-upload" class="btn-primary" type="button" style="flex: 1; padding: 10px 12px; font-weight: 600; font-size: 12px; border-radius: 6px;">
+                      <i class="fas fa-upload" style="margin-right: 4px;"></i>Upload Video
+                    </button>
+                    <button id="media-cancel" class="btn" type="button" style="flex: 0.5; padding: 10px 12px; font-size: 12px; border-radius: 6px; display: none;">Cancel</button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- MEDIA LIST -->
+              <div style="border: 1px solid var(--border-color); border-radius: 12px; background: var(--bg-secondary); overflow: hidden; display: flex; flex-direction: column; height: 100%;">
+                <div style="padding: 16px 20px; border-bottom: 1px solid var(--border-color); display: flex; align-items: center; gap: 8px; flex-shrink: 0;">
+                  <i class="fas fa-list" style="color: var(--green-main); font-size: 16px;"></i>
+                  <h3 style="margin: 0; font-size: 14px; color: var(--text-main);">Uploaded Videos</h3>
+                  <span id="media-count" style="margin-left: auto; font-size: 12px; color: var(--text-muted);">0 videos</span>
+                </div>
+                <div id="media-list" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding: 12px;"></div>
+              </div>
+            </div>
+          </div>
+
           <div class="tab-panel" id="documents-panel">
             <div style="background:#f0f9ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:20px;">
               <p style="margin:0;color:#1e40af;font-size:14px;">
@@ -2655,10 +2746,14 @@
     function enforceRoleUI() {
       const role = localStorage.getItem('adminRole') || 'superadmin';
       // default: show everything for superadmin
-      if (role === 'superadmin') return;
+      if (role === 'superadmin') {
+        // Show media link for superadmin
+        document.getElementById('media-sidebar-link').style.display = 'flex';
+        return;
+      }
       // hide system-level links for non-superadmins
-      const hideForAdmin = ['.sidebar-link[data-tab="settings"]', '.sidebar-link[data-tab="documents"]'];
-      const hideForInstructor = ['.sidebar-link[data-tab="users"]', '.sidebar-link[data-tab="analytics"]', '.sidebar-link[data-tab="settings"]', '.sidebar-link[data-tab="documents"]'];
+      const hideForAdmin = ['.sidebar-link[data-tab="settings"]', '.sidebar-link[data-tab="documents"]', '.sidebar-link[data-tab="media"]'];
+      const hideForInstructor = ['.sidebar-link[data-tab="users"]', '.sidebar-link[data-tab="analytics"]', '.sidebar-link[data-tab="settings"]', '.sidebar-link[data-tab="documents"]', '.sidebar-link[data-tab="media"]'];
 
       if (role === 'admin') {
         hideForAdmin.forEach(s => { document.querySelectorAll(s).forEach(el => el.style.display = 'none'); });
@@ -2734,6 +2829,7 @@
         'careers': 'careers-panel',
         'modules': 'modules-panel',
         'content': 'content-panel',
+        'media': 'media-panel',
         'documents': 'documents-panel'
       };
 
@@ -2752,6 +2848,7 @@
         'careers': 'Careers',
         'modules': 'Modules',
         'content': 'Content',
+        'media': 'Media',
         'documents': 'Documents'
       };
 
@@ -4366,6 +4463,148 @@
 
       // Initial load
       loadCareers();
+    }
+
+    // ----- MEDIA MANAGEMENT UI -----
+    async function loadMediaManagementUI() {
+      const container = document.getElementById('media-panel');
+      if (!container) return;
+
+      // Check if user is superadmin
+      const role = localStorage.getItem('adminRole') || 'superadmin';
+      if (role !== 'superadmin') {
+        showAlert('Access Denied', 'Only SuperAdmins can access Media Management', 'error');
+        return;
+      }
+
+      const form = document.getElementById('media-form');
+      const uploadBtn = document.getElementById('media-upload');
+      const listEl = document.getElementById('media-list');
+      const countEl = document.getElementById('media-count');
+      let allMedia = [];
+
+      async function loadMedia() {
+        try {
+          const response = await fetch('/api/media');
+          const data = await response.json();
+          allMedia = data.media || [];
+          renderMediaList();
+        } catch (err) {
+          console.error('Error loading media:', err);
+          listEl.innerHTML = '<div style="color:var(--text-muted);padding:20px;text-align:center;">Error loading videos</div>';
+        }
+      }
+
+      function renderMediaList() {
+        listEl.innerHTML = '';
+        countEl.textContent = `${allMedia.length} video${allMedia.length !== 1 ? 's' : ''}`;
+
+        if (allMedia.length === 0) {
+          listEl.innerHTML = '<div style="color:var(--text-muted);padding:40px 20px;text-align:center;"><i class="fas fa-video" style="font-size:32px;opacity:0.2;margin-bottom:8px;display:block;"></i>No videos uploaded yet</div>';
+          return;
+        }
+
+        allMedia.forEach(video => {
+          const card = document.createElement('div');
+          card.style.cssText = 'padding:12px;background:var(--bg-main);border:1px solid var(--border-color);border-radius:8px;display:flex;flex-direction:column;gap:8px;';
+          
+          const title = document.createElement('div');
+          title.style.cssText = 'font-weight:600;font-size:13px;color:var(--text-main);';
+          title.textContent = video.title;
+
+          const category = document.createElement('div');
+          category.style.cssText = 'font-size:11px;color:var(--text-muted);';
+          category.innerHTML = `<i class="fas fa-tag" style="margin-right:4px;color:var(--green-main);"></i>${video.category || 'Other'}`;
+
+          const actions = document.createElement('div');
+          actions.style.cssText = 'display:flex;gap:6px;margin-top:4px;';
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.style.cssText = 'flex:1;padding:6px;background:rgba(244,67,54,0.1);color:#f44336;border:1px solid rgba(244,67,54,0.2);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;';
+          deleteBtn.innerHTML = '<i class="fas fa-trash" style="margin-right:4px;"></i>Delete';
+          deleteBtn.addEventListener('click', async () => {
+            const confirmed = await showConfirm('Delete Video', `Delete "${video.title}"? This action cannot be undone.`, 'error');
+            if (!confirmed) return;
+            try {
+              const token = localStorage.getItem('adminToken') || '';
+              const response = await fetch(`/api/media/${video.id}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+              });
+              if (!response.ok) throw new Error('Failed to delete');
+              await showAlert('Success', 'Video deleted successfully', 'success');
+              loadMedia();
+            } catch (err) {
+              showAlert('Error', 'Failed to delete video', 'error');
+            }
+          });
+
+          actions.appendChild(deleteBtn);
+          card.appendChild(title);
+          card.appendChild(category);
+          card.appendChild(actions);
+          listEl.appendChild(card);
+        });
+      }
+
+      uploadBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const title = document.getElementById('media-title').value.trim();
+        const description = document.getElementById('media-description').value.trim();
+        const category = document.getElementById('media-category').value.trim();
+        const fileInput = document.getElementById('media-file');
+        const thumbnail = document.getElementById('media-thumbnail').value.trim();
+
+        if (!title) {
+          showAlert('Error', 'Video title is required', 'error');
+          return;
+        }
+
+        if (!category) {
+          showAlert('Error', 'Category is required', 'error');
+          return;
+        }
+
+        if (!fileInput.files[0]) {
+          showAlert('Error', 'Please select a video file', 'error');
+          return;
+        }
+
+        try {
+          uploadBtn.disabled = true;
+          uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:4px;"></i>Uploading...';
+
+          const formData = new FormData();
+          formData.append('title', title);
+          formData.append('description', description);
+          formData.append('category', category);
+          formData.append('file', fileInput.files[0]);
+          formData.append('thumbnail', thumbnail);
+
+          const token = localStorage.getItem('adminToken') || '';
+          const response = await fetch('/api/media/upload', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` },
+            body: formData
+          });
+
+          if (!response.ok) throw new Error('Upload failed');
+
+          const data = await response.json();
+          showAlert('Success', 'Video uploaded successfully!', 'success');
+          
+          form.reset();
+          loadMedia();
+        } catch (err) {
+          console.error('Upload error:', err);
+          showAlert('Error', err.message || 'Failed to upload video', 'error');
+        } finally {
+          uploadBtn.disabled = false;
+          uploadBtn.innerHTML = '<i class="fas fa-upload" style="margin-right:4px;"></i>Upload Video';
+        }
+      });
+
+      loadMedia();
     }
 
     // ----- Pending Documents UI (extracted for global access) -----
@@ -6657,6 +6896,7 @@
       else if (name === 'careers') loadCareersManagementUI();
       else if (name === 'modules') loadModuleManagementUI();
       else if (name === 'content') loadContentManagementUI();
+      else if (name === 'media') loadMediaManagementUI();
       else if (name === 'documents') loadDocumentsUI();
     }
 

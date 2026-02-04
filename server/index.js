@@ -17,6 +17,7 @@ const ParticipantService = require('./services/ParticipantService');
 const createDiscussionRoutes = require('./routes/discussionRoutes');
 const createHighlightRoutes = require('./routes/highlightRoutes');
 const { router: careerRoutes, setDatabase: setCareerDatabase, setStorage: setCareerStorage } = require('./routes/careerRoutes');
+const { router: mediaRoutes, setDatabase: setMediaDatabase, setStorage: setMediaStorage } = require('./routes/mediaRoutes');
 const { initializeDiscussionSocket } = require('./sockets/discussionSocket');
 
 const app = express();
@@ -7557,6 +7558,14 @@ async function startServer() {
   }
   app.use('/api/careers', careerRoutes);
   console.log('✅ Career routes registered');
+
+  // Register media routes (SuperAdmin only)
+  setMediaDatabase(db);
+  if (typeof setMediaStorage === 'function') {
+    setMediaStorage(storage);
+  }
+  app.use('/api/media', mediaRoutes);
+  console.log('✅ Media routes registered');
   
   // Initialize discussion socket handlers
   if (discussionSessionService && participantService) {
