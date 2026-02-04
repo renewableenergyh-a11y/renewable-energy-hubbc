@@ -121,12 +121,6 @@ router.post('/upload', authenticateSuperAdmin, upload.fields([{ name: 'file', ma
 
     const videoFile = req.files.file[0];
     const thumbnailFile = req.files.thumbnail ? req.files.thumbnail[0] : null;
-    
-    // Create media directory if it doesn't exist
-    const mediaDir = path.join(__dirname, '../../public/media');
-    if (!fs.existsSync(mediaDir)) {
-      fs.mkdirSync(mediaDir, { recursive: true });
-    }
 
     // Upload video to Cloudinary
     const cloudinaryResult = await cloudinary.uploader.upload(videoFile.path, {
@@ -141,20 +135,22 @@ router.post('/upload', authenticateSuperAdmin, upload.fields([{ name: 'file', ma
     // Remove temp video file
     fs.unlinkSync(videoFile.path);
 
-    // Handle thumbnail upload locally
+    // Handle thumbnail upload to Cloudinary
     let thumbnailUrl = '';
     if (thumbnailFile) {
-      const ext = path.extname(thumbnailFile.originalname) || '.jpg';
-      const thumbnailName = `${Date.now()}-${title.replace(/\s+/g, '-').toLowerCase()}${ext}`;
-      const thumbnailPath = path.join(mediaDir, thumbnailName);
-      
-      // Move thumbnail to public directory
-      fs.renameSync(thumbnailFile.path, thumbnailPath);
-      thumbnailUrl = `/media/${thumbnailName}`;
-      console.log('[Media] Thumbnail saved to:', thumbnailUrl);
+      const cloudinaryThumbResult = await cloudinary.uploader.upload(thumbnailFile.path, {
+        resource_type: 'image',
+        folder: 'ret-hub/thumbnails',
+        public_id: `${Date.now()}-${title.replace(/\s+/g, '-').toLowerCase()}`,
+        transformation: [
+          { width: 300, height: 180, crop: 'fill', quality: 'auto' }
+        ]
+      });
+      thumbnailUrl = cloudinaryThumbResult.secure_url;
+      console.log('[Media] Thumbnail uploaded to Cloudinary:', thumbnailUrl);
     }
     
-    // If no thumbnail uploaded, remove temp file
+    // Remove temp thumbnail file
     if (thumbnailFile && fs.existsSync(thumbnailFile.path)) {
       fs.unlinkSync(thumbnailFile.path);
     }
