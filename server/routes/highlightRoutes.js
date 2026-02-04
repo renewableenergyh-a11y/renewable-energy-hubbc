@@ -285,37 +285,51 @@ function createHighlightRoutes(db) {
         return res.status(404).json({ error: 'Highlight not found' });
       }
 
+      console.log('   Attempting to update highlight color from', highlight.color, 'to', color);
+      
       highlight.color = color;
       highlight.updatedAt = new Date();
-      await highlight.save();
-
-      console.log('   ✅ Highlight saved. New color:', highlight.color);
       
-      // CRITICAL: Verify the save actually persisted
-      const verifyHighlight = await Highlight.findOne({ _id: highlight._id });
-      if (verifyHighlight) {
-        console.log('   🔍 VERIFY: Queried database after save - color is:', verifyHighlight.color);
-        if (verifyHighlight.color !== color) {
-          console.error('   ⚠️ MISMATCH: Database saved color does not match! Saved:', color, 'But DB has:', verifyHighlight.color);
+      try {
+        const savedHighlight = await highlight.save();
+        console.log('   ✅ Save returned successfully');
+        console.log('   ✅ Highlight saved. New color:', savedHighlight.color);
+        
+        // CRITICAL: Verify the save actually persisted by querying fresh from DB
+        const verifyHighlight = await Highlight.findOne({ _id: highlight._id, userEmail });
+        if (verifyHighlight) {
+          console.log('   🔍 VERIFY: Fresh query from database - color is:', verifyHighlight.color);
+          if (verifyHighlight.color !== color) {
+            console.error('   ❌ CRITICAL MISMATCH: Database has wrong color! Tried to save:', color, 'But DB has:', verifyHighlight.color);
+          } else {
+            console.log('   ✅ VERIFIED: Database correctly has new color');
+          }
+        } else {
+          console.error('   ❌ CRITICAL: Could not find highlight after save!');
         }
-      } else {
-        console.error('   ❌ CRITICAL: Could not find highlight after save!');
+        
+        // Return the verified data from database, not the in-memory object
+        const responseHighlight = verifyHighlight || savedHighlight;
+        
+        res.json({
+          message: 'Highlight updated',
+          highlight: {
+            id: responseHighlight._id.toString(),
+            contentId: responseHighlight.contentId,
+            contentType: responseHighlight.contentType,
+            text: responseHighlight.text,
+            startOffset: responseHighlight.startOffset,
+            endOffset: responseHighlight.endOffset,
+            color: responseHighlight.color,
+            createdAt: responseHighlight.createdAt,
+            updatedAt: responseHighlight.updatedAt
+          }
+        });
+      } catch (saveErr) {
+        console.error('   ❌ Error during save operation:', saveErr.message);
+        console.error('   Error details:', saveErr);
+        return res.status(500).json({ error: 'Failed to save highlight to database', details: saveErr.message });
       }
-
-      res.json({
-        message: 'Highlight updated',
-        highlight: {
-          id: highlight._id.toString(),
-          contentId: highlight.contentId,
-          contentType: highlight.contentType,
-          text: highlight.text,
-          startOffset: highlight.startOffset,
-          endOffset: highlight.endOffset,
-          color: highlight.color,
-          createdAt: highlight.createdAt,
-          updatedAt: highlight.updatedAt
-        }
-      });
     } catch (err) {
       console.error('❌ Error updating highlight:', err);
       res.status(500).json({ error: 'Failed to update highlight' });
