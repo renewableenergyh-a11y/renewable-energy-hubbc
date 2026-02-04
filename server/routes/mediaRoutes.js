@@ -24,7 +24,7 @@ function setStorage(storageModule) {
 // Middleware to authenticate SuperAdmin only
 function authenticateSuperAdmin(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
-  const userRole = req.headers['x-user-role'] || 'admin';
+  const userRole = (req.headers['x-user-role'] || 'admin').toLowerCase();
   
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
