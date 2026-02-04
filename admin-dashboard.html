@@ -4515,8 +4515,7 @@
 
         try {
           uploadBtn.disabled = true;
-          uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:4px;"></i>Uploading...';
-
+          
           const formData = new FormData();
           formData.append('title', title);
           formData.append('description', description);
@@ -4525,27 +4524,46 @@
           formData.append('thumbnail', thumbnail);
 
           const token = localStorage.getItem('adminToken') || '';
-          const response = await fetch('/api/media/upload', {
-            method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` },
-            body: formData
-          });
-
-          if (!response.ok) throw new Error('Upload failed');
-
-          const data = await response.json();
-          showAlert('Success', 'Video uploaded successfully!', 'success');
           
-          form.reset();
-          loadMedia();
+          // Use XMLHttpRequest for progress tracking
+          const xhr = new XMLHttpRequest();
+          
+          xhr.upload.addEventListener('progress', (e) => {
+            if (e.lengthComputable) {
+              const percentComplete = Math.round((e.loaded / e.total) * 100);
+              uploadBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:4px;"></i>Uploading... ' + percentComplete + '%';
+            }
+          });
+          
+          xhr.addEventListener('load', async () => {
+            if (xhr.status === 200) {
+              const response = JSON.parse(xhr.responseText);
+              showAlert('Success', 'Video uploaded successfully!', 'success');
+              form.reset();
+              uploadBtn.innerHTML = '<i class="fas fa-upload" style="margin-right:4px;"></i>Upload Video';
+              uploadBtn.disabled = false;
+              loadMedia();
+            } else {
+              throw new Error('Upload failed');
+            }
+          });
+          
+          xhr.addEventListener('error', () => {
+            showAlert('Error', 'Upload failed. Please try again.', 'error');
+            uploadBtn.innerHTML = '<i class="fas fa-upload" style="margin-right:4px;"></i>Upload Video';
+            uploadBtn.disabled = false;
+          });
+          
+          xhr.open('POST', '/api/media/upload', true);
+          xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+          xhr.send(formData);
+          
         } catch (err) {
           console.error('Upload error:', err);
           showAlert('Error', err.message || 'Failed to upload video', 'error');
-        } finally {
           uploadBtn.disabled = false;
           uploadBtn.innerHTML = '<i class="fas fa-upload" style="margin-right:4px;"></i>Upload Video';
         }
-      });
 
       loadMedia();
     }
