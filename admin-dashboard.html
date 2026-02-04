@@ -4425,7 +4425,14 @@
       async function loadMedia() {
         try {
           console.log('[Media] Loading media from /api/media');
-          const response = await fetch('/api/media');
+          const token = localStorage.getItem('adminToken') || '';
+          const role = localStorage.getItem('adminRole') || 'admin';
+          const response = await fetch('/api/media', {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'X-User-Role': role
+            }
+          });
           console.log('[Media] Response status:', response.status);
           const data = await response.json();
           console.log('[Media] Data received:', data);
@@ -4568,6 +4575,7 @@
           
           xhr.open('POST', '/api/media/upload', true);
           xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+          xhr.setRequestHeader('X-User-Role', role);
           xhr.send(formData);
           
         } catch (err) {

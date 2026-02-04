@@ -23,6 +23,7 @@ function setStorage(storageModule) {
 // Middleware to authenticate SuperAdmin only
 function authenticateSuperAdmin(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
+  const userRole = req.headers['x-user-role'] || 'admin';
   
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });
@@ -32,32 +33,34 @@ function authenticateSuperAdmin(req, res, next) {
     const admins = storage.loadAdmins();
     console.log('[Media Auth] Loaded admins count:', admins?.length || 0);
     console.log('[Media Auth] Token received:', token.substring(0, 20) + '...');
+    console.log('[Media Auth] User role from header:', userRole);
     
     let user = (admins || []).find(u => u.token === token);
     
-    // If token not found in admins file, it might be from database
-    // For now, allow any authenticated token through
+    // If token not found in admins file, check if it's a valid token format
     if (!user) {
-      console.log('[Media Auth] Token not found in admins file - might be from DB');
-      // Check if this looks like a valid token (at least 32 chars hex)
+      console.log('[Media Auth] Token not found in admins file - validating format');
+      // Check if this looks like a valid token (at least 20 chars hex)
       if (token.length >= 20 && /^[a-f0-9]+$/.test(token)) {
-        console.log('[Media Auth] Token appears valid, allowing through');
-        req.user = { email: 'authenticated-user', role: 'admin' };
-        next();
-        return;
+        console.log('[Media Auth] Token format valid, using role from header:', userRole);
+        req.user = { email: 'authenticated-user', role: userRole };
+      } else {
+        return res.status(401).json({ error: 'Invalid token' });
       }
-      return res.status(401).json({ error: 'Invalid token' });
+    } else {
+      const dbRole = user.role?.toLowerCase() || 'admin';
+      console.log('[Media Auth] User found in admins - role:', dbRole, 'User:', user.email);
+      req.user = user;
     }
     
-    const userRole = user.role?.toLowerCase() || 'admin';
-    console.log('[Media Auth] User role:', userRole, 'User:', user.email);
-    
-    if (userRole !== 'superadmin') {
-      console.error('[Media Auth] Access denied for role:', userRole);
+    const finalRole = req.user.role?.toLowerCase() || 'admin';
+    if (finalRole !== 'superadmin') {
+      console.error('[Media Auth] Access denied for role:', finalRole);
       return res.status(403).json({ error: 'Only SuperAdmins can access media management' });
     }
     
-    req.user = user;
+    next();
+
     next();
   } catch (err) {
     console.error('[Media Auth] Error:', err);
@@ -66,7 +69,7 @@ function authenticateSuperAdmin(req, res, next) {
 }
 
 // GET all media (only from media panel)
-router.get('/', async (req, res) => {
+router.get('/', authenticateSuperAdmin, async (req, res) => {
   try {
     const Media = db.models.Media;
     // Only return videos uploaded through the Media Management panel
