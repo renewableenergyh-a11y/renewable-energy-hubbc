@@ -4679,7 +4679,7 @@
         container.innerHTML = '';
         videos.forEach(video => {
           const card = document.createElement('div');
-          card.style.cssText = 'border-radius:8px;overflow:hidden;background:#fff;display:flex;flex-direction:column;transition:transform 0.2s, box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.08);';
+          card.style.cssText = 'border-radius:8px;overflow:hidden;background:var(--bg-main);display:flex;flex-direction:column;transition:transform 0.2s, box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.08);';
           card.addEventListener('mouseenter', () => {
             card.style.transform = 'translateY(-4px)';
             card.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
@@ -4736,28 +4736,28 @@
 
           // Content
           const content = document.createElement('div');
-          content.style.cssText = 'padding:16px;flex:1;display:flex;flex-direction:column;';
+          content.style.cssText = 'padding:16px;flex:1;display:flex;flex-direction:column;background:var(--bg-main);';
 
           const title = document.createElement('h4');
-          title.style.cssText = 'margin:0 0 6px 0;font-size:15px;font-weight:600;color:#1f2937;';
+          title.style.cssText = 'margin:0 0 6px 0;font-size:15px;font-weight:600;color:var(--text-main);';
           title.textContent = video.title;
 
           const description = document.createElement('p');
-          description.style.cssText = 'margin:0 0 12px 0;font-size:13px;color:#6b7280;line-height:1.4;flex:1;';
+          description.style.cssText = 'margin:0 0 12px 0;font-size:13px;color:var(--text-muted);line-height:1.4;flex:1;';
           description.textContent = video.description || 'Tutorial video';
 
           const footer = document.createElement('div');
-          footer.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #e5e7eb;';
+          footer.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid var(--border-color);';
 
           const category = document.createElement('span');
-          category.style.cssText = 'font-size:12px;color:#6b7280;display:flex;align-items:center;gap:4px;';
+          category.style.cssText = 'font-size:12px;color:var(--text-muted);display:flex;align-items:center;gap:4px;';
           category.innerHTML = '<i class="fas fa-tag" style="color:#6366f1;"></i>' + (video.category || 'Tutorial');
 
           const watchBtn = document.createElement('button');
-          watchBtn.style.cssText = 'padding:8px 12px;background:#00796b;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.2s;';
+          watchBtn.style.cssText = 'padding:8px 12px;background:var(--green-main);color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.2s;';
           watchBtn.textContent = 'Watch Video';
           watchBtn.addEventListener('mouseover', () => watchBtn.style.background = '#005a4f');
-          watchBtn.addEventListener('mouseout', () => watchBtn.style.background = '#00796b');
+          watchBtn.addEventListener('mouseout', () => watchBtn.style.background = 'var(--green-main)');
           watchBtn.addEventListener('click', () => {
             if (video.cloudinaryUrl) {
               openVideoModal(video.title, video.cloudinaryUrl);
