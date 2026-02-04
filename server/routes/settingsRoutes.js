@@ -63,14 +63,71 @@ function authenticateSuperAdmin(req, res, next) {
   }
 }
 
-// GET platform settings
-router.get('/', authenticateSuperAdmin, async (req, res) => {
+// GET public settings (no auth required - used by public pages for side effects)
+router.get('/public/settings', async (req, res) => {
   try {
-    console.log('🔍 Fetching settings from database...');
+    console.log('🔍 [PUBLIC] Fetching settings from database...');
     let settings = await db.models.PlatformSettings.findOne({});
     
     if (!settings) {
-      console.log('📝 No settings found, creating defaults...');
+      console.log('📝 [PUBLIC] No settings found, creating defaults...');
+      // Create default settings if none exist
+      settings = await db.models.PlatformSettings.create({
+        // Core Platform
+        siteName: 'Aubie RET Hub',
+        maintenanceMode: false,
+        maintenanceMessage: '',
+        allowNewUserRegistration: true,
+        defaultTimezone: 'UTC',
+        
+        // Certificates
+        enableCertificateGeneration: true,
+        minimumQuizPassPercentage: 70,
+        allowCertificateRedownload: true,
+        
+        // News & Careers
+        enableNewsSystem: true,
+        enableLikesReactions: true,
+        enableCareersPage: true,
+        allowCareersPdfDownload: true,
+        
+        // AI Assistant
+        enableAiAssistant: true,
+        aiAccessMode: 'Premium Only',
+        aiPromotionDurationDays: 0,
+        aiDailyQuestionLimit: 50,
+        showAiBetaNotice: true,
+        
+        // Premium & Trial
+        enablePremiumSystem: true,
+        freeTrialDurationDays: 7,
+        enablePremiumForAll: false,
+        premiumPromotionActive: false,
+        premiumPromotionStartAt: null,
+        premiumPromotionEndAt: null,
+        premiumPromotionDurationValue: 0,
+        premiumPromotionDurationUnit: 'days',
+      });
+      console.log('✅ [PUBLIC] Default settings created');
+    }
+    
+    console.log('📤 [PUBLIC] Returning settings');
+    const plainSettings = settings.toObject ? settings.toObject() : settings;
+    res.json(plainSettings);
+  } catch (err) {
+    console.error('❌ [PUBLIC] Error fetching settings:', err);
+    res.status(500).json({ error: 'Failed to fetch settings' });
+  }
+});
+
+// GET platform settings (admin only)
+router.get('/', authenticateSuperAdmin, async (req, res) => {
+  try {
+    console.log('🔍 [ADMIN] Fetching settings from database...');
+    let settings = await db.models.PlatformSettings.findOne({});
+    
+    if (!settings) {
+      console.log('📝 [ADMIN] No settings found, creating defaults...');
       // Create default settings if none exist
       settings = await db.models.PlatformSettings.create({
         // Core Platform

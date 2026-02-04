@@ -31,14 +31,14 @@ class SettingsApplier {
    */
   async loadAndApply() {
     try {
-      const response = await fetch('/api/settings');
+      const response = await fetch('/api/settings/public/settings');
       if (!response.ok) {
-        console.warn('⚠️ Could not load settings');
+        console.warn('⚠️ Could not load settings, status:', response.status);
         return;
       }
 
       this.settings = await response.json();
-      console.log('📥 Settings loaded from API');
+      console.log('📥 Settings loaded from public API');
       
       // Apply all settings
       this.applySettings();
@@ -51,7 +51,15 @@ class SettingsApplier {
    * Main function to apply all settings
    */
   applySettings() {
-    if (!this.settings) return;
+    if (!this.settings) {
+      console.warn('⚠️ No settings available to apply');
+      return;
+    }
+
+    console.log('🔄 Applying all settings...');
+    console.log('   maintenanceMode:', this.settings.maintenanceMode);
+    console.log('   premiumForAll:', this.settings.enablePremiumForAll);
+    console.log('   newsEnabled:', this.settings.enableNewsSystem);
 
     // Apply platform settings
     this.applyPlatformSettings();
@@ -67,6 +75,8 @@ class SettingsApplier {
     
     // Apply premium/trial settings
     this.applyPremiumSettings();
+    
+    console.log('✅ All settings applied');
   }
 
   /**
@@ -75,22 +85,27 @@ class SettingsApplier {
   applyPlatformSettings() {
     const s = this.settings;
     
-    // Site name
-    if (s.siteName) {
-      document.title = `${s.siteName} - Aubie RET Hub`;
-      const siteNameElements = document.querySelectorAll('[data-site-name]');
-      siteNameElements.forEach(el => el.textContent = s.siteName);
-    }
+    console.log('🔧 Applying platform settings...');
 
     // Maintenance Mode - Block access entirely
     if (s.maintenanceMode) {
-      console.log('🚧 MAINTENANCE MODE ENABLED');
+      console.log('🚧 MAINTENANCE MODE ENABLED - Blocking all access');
       this.showMaintenanceMode(s.maintenanceMessage);
       return; // Stop all other processing
     }
 
+    // Site name
+    if (s.siteName) {
+      document.title = `${s.siteName} - Aubie RET Hub`;
+      const siteNameElements = document.querySelectorAll('[data-site-name]');
+      if (siteNameElements.length > 0) {
+        siteNameElements.forEach(el => el.textContent = s.siteName);
+      }
+    }
+
     // Allow New User Registration
     if (s.allowNewUserRegistration === false) {
+      console.log('🚫 Registration disabled');
       const signupBtn = document.querySelector('[data-action="signup"]');
       const signupForm = document.getElementById('signupForm');
       if (signupBtn) signupBtn.style.display = 'none';
@@ -102,10 +117,14 @@ class SettingsApplier {
         signupForm.parentNode.insertBefore(message, signupForm);
       }
     } else {
+      // Re-show signup if it was hidden
       const signupBtn = document.querySelector('[data-action="signup"]');
       const signupForm = document.getElementById('signupForm');
       if (signupBtn) signupBtn.style.display = '';
       if (signupForm) signupForm.style.display = '';
+      // Remove closed message if it exists
+      const closedMsg = document.querySelector('[data-component="registration-closed"]');
+      if (closedMsg) closedMsg.remove();
     }
 
     // Default Timezone (store for user settings)
