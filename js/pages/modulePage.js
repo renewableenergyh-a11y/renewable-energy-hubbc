@@ -1318,7 +1318,8 @@ function handleSelectionChanged(contentContainer, contentId, contentType) {
   };
 
   if (highlightToolbar) {
-    highlightToolbar.show(toolbarX, toolbarY);
+    // Show toolbar in create mode (editMode = false, no delete button)
+    highlightToolbar.show(toolbarX, toolbarY, false);
   }
 }
 
@@ -1458,7 +1459,8 @@ function setupSingleHighlightHandler(span, highlightId, contentId, contentType) 
       highlightToolbar.onColorSelect = (newColor, colorName) => {
         handleUpdateHighlightColor(span, highlightId, newColor, contentId, contentType);
       };
-      highlightToolbar.show(toolbarX, toolbarY);
+      // Show toolbar in edit mode (editMode = true, show delete button)
+      highlightToolbar.show(toolbarX, toolbarY, true);
     }
   });
 }

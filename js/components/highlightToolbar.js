@@ -18,6 +18,8 @@ export class HighlightToolbar {
     this.onDelete = onDelete;
     this.toolbar = null;
     this.isVisible = false;
+    this.editMode = false;
+    this.deleteBtn = null;
   }
 
   /**
@@ -44,7 +46,10 @@ export class HighlightToolbar {
       button.addEventListener('click', (e) => {
         e.stopPropagation();
         this.onColorSelect(colorValue, colorName);
-        this.hide();
+        // Don't hide if in edit mode - let the highlight stay selected for further changes
+        if (!this.editMode) {
+          this.hide();
+        }
       });
 
       colorContainer.appendChild(button);
@@ -56,6 +61,7 @@ export class HighlightToolbar {
     deleteBtn.innerHTML = '<i class="fas fa-trash-alt"></i>';
     deleteBtn.title = 'Delete highlight';
     deleteBtn.setAttribute('aria-label', 'Delete highlight');
+    deleteBtn.style.display = 'none'; // Hidden by default until in edit mode
 
     deleteBtn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -63,6 +69,7 @@ export class HighlightToolbar {
       this.hide();
     });
 
+    this.deleteBtn = deleteBtn;
     toolbar.appendChild(colorContainer);
     toolbar.appendChild(deleteBtn);
 
@@ -81,10 +88,18 @@ export class HighlightToolbar {
    * Show toolbar at specified position
    * @param {number} x - X coordinate
    * @param {number} y - Y coordinate (slightly above selection)
+   * @param {boolean} editMode - Whether toolbar is in edit mode (show delete button)
    */
-  show(x, y) {
+  show(x, y, editMode = false) {
     if (!this.toolbar) {
       this.create();
+    }
+
+    this.editMode = editMode;
+    
+    // Show or hide delete button based on edit mode
+    if (this.deleteBtn) {
+      this.deleteBtn.style.display = editMode ? 'block' : 'none';
     }
 
     this.toolbar.style.display = 'flex';
