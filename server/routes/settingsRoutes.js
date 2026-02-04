@@ -212,8 +212,11 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
     
     console.log('✅ Settings saved to database successfully');
     
-    // Convert to plain object and return
-    const plainSettings = settings.toObject ? settings.toObject() : settings;
+    // IMPORTANT: Refetch from database to ensure we're returning what was actually saved
+    const refreshedSettings = await db.models.PlatformSettings.findOne({});
+    console.log('🔄 Refetched settings after save:', JSON.stringify(refreshedSettings.toObject ? refreshedSettings.toObject() : refreshedSettings, null, 2));
+    
+    const plainSettings = refreshedSettings.toObject ? refreshedSettings.toObject() : refreshedSettings;
     res.json({ success: true, settings: plainSettings });
   } catch (err) {
     console.error('Error updating settings:', err);
