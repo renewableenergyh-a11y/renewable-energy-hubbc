@@ -4426,7 +4426,7 @@
         try {
           console.log('[Media] Loading media from /api/media');
           const token = localStorage.getItem('adminToken') || '';
-          const role = localStorage.getItem('adminRole') || 'admin';
+          const role = localStorage.getItem('adminRole') || 'superadmin';
           const response = await fetch('/api/media', {
             headers: {
               'Authorization': `Bearer ${token}`,
