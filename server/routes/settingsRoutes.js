@@ -199,24 +199,28 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
     
     // When disabling Premium for All, mark promotion as inactive
     if (section === 'premium-trial' && updates.enablePremiumForAll === false) {
-      settings.premiumPromotionActive = false;
+      updates.premiumPromotionActive = false;
     }
     
-    // Apply updates to settings
-    console.log('📝 Applying updates to settings...');
-    Object.assign(settings, updates);
+    // Apply updates to settings using findByIdAndUpdate for proper persistence
+    console.log('📝 Updating settings document with:', JSON.stringify(updates, null, 2));
     
-    console.log('📝 Updated settings object:', JSON.stringify(settings.toObject ? settings.toObject() : settings, null, 2));
+    const updatedSettings = await db.models.PlatformSettings.findByIdAndUpdate(
+      settings._id,
+      { $set: updates },
+      { new: true, runValidators: false }
+    );
     
-    await settings.save();
+    console.log('✅ Settings updated via findByIdAndUpdate');
+    console.log('🔍 Returned document maintenanceMode:', updatedSettings.maintenanceMode);
+    console.log('🔍 Returned document maintenanceMessage:', updatedSettings.maintenanceMessage);
     
-    console.log('✅ Settings saved to database successfully');
+    // Double-check by refetching
+    const doubleCheckSettings = await db.models.PlatformSettings.findOne({});
+    console.log('🔄 Double-check from DB - maintenanceMode:', doubleCheckSettings.maintenanceMode);
+    console.log('🔄 Double-check from DB - maintenanceMessage:', doubleCheckSettings.maintenanceMessage);
     
-    // IMPORTANT: Refetch from database to ensure we're returning what was actually saved
-    const refreshedSettings = await db.models.PlatformSettings.findOne({});
-    console.log('🔄 Refetched settings after save:', JSON.stringify(refreshedSettings.toObject ? refreshedSettings.toObject() : refreshedSettings, null, 2));
-    
-    const plainSettings = refreshedSettings.toObject ? refreshedSettings.toObject() : refreshedSettings;
+    const plainSettings = doubleCheckSettings.toObject ? doubleCheckSettings.toObject() : doubleCheckSettings;
     res.json({ success: true, settings: plainSettings });
   } catch (err) {
     console.error('Error updating settings:', err);
