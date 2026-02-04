@@ -65,12 +65,38 @@
       background: var(--bg-secondary);
       border: 1px solid var(--border-color);
       border-radius: 10px;
-      padding: 20px;
+      padding: 0;
       cursor: pointer;
       transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
       min-height: 260px;
+      overflow: hidden;
+    }
+
+    .career-card-image {
+      width: 100%;
+      height: 180px;
+      background: linear-gradient(135deg, rgba(0, 121, 107, 0.1), rgba(0, 121, 107, 0.05));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      font-size: 2.5em;
+      color: var(--green-main);
+    }
+
+    .career-card-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .career-card-content {
+      padding: 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
     }
 
     .career-card:hover {
@@ -169,6 +195,33 @@
       margin-bottom: 30px;
       border-bottom: 2px solid var(--border-color);
       padding-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 20px;
+    }
+
+    .detail-image {
+      width: 180px;
+      height: 180px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      background: linear-gradient(135deg, rgba(0, 121, 107, 0.1), rgba(0, 121, 107, 0.05));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3em;
+      color: var(--green-main);
+      overflow: hidden;
+    }
+
+    .detail-image img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .detail-header-text {
+      flex: 1;
     }
 
     .detail-title {
@@ -289,8 +342,22 @@
         min-height: auto;
       }
 
+      .career-card-image {
+        height: 150px;
+      }
+
       .detail-container {
         padding: 20px;
+      }
+
+      .detail-header {
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .detail-image {
+        width: 100%;
+        height: 200px;
       }
 
       .detail-title {
@@ -313,7 +380,15 @@
       }
 
       .career-card {
-        padding: 16px;
+        padding: 0;
+      }
+
+      .career-card-image {
+        height: 120px;
+      }
+
+      .career-card-content {
+        padding: 12px;
       }
 
       .career-card-title {
@@ -331,6 +406,12 @@
 
       .detail-container {
         padding: 16px;
+      }
+
+      .detail-image {
+        width: 100%;
+        height: 150px;
+        font-size: 2em;
       }
 
       .detail-title {
@@ -468,15 +549,20 @@
 
       grid.innerHTML = allCareers.map(career => `
         <div class="career-card" onclick="showCareerDetail('${career.id}')">
-          <h3 class="career-card-title">${career.title}</h3>
-          <p class="career-card-desc">${career.shortDescription || 'Career in renewable energy'}</p>
-          <div class="career-meta">
-            ${career.educationLevel ? `<span class="career-badge"><i class="fas fa-graduation-cap"></i> ${career.educationLevel}</span>` : ''}
-            ${career.salaryRange ? `<span class="career-badge"><i class="fas fa-dollar-sign"></i> ${career.salaryRange}</span>` : ''}
+          <div class="career-card-image">
+            ${career.coverImage ? `<img src="${career.coverImage}" alt="${career.title}">` : '<i class="fas fa-briefcase"></i>'}
           </div>
-          <button class="view-career-btn" onclick="event.stopPropagation(); showCareerDetail('${career.id}');">
-            View Details
-          </button>
+          <div class="career-card-content">
+            <h3 class="career-card-title">${career.title}</h3>
+            <p class="career-card-desc">${career.shortDescription || 'Career in renewable energy'}</p>
+            <div class="career-meta">
+              ${career.educationLevel ? `<span class="career-badge"><i class="fas fa-graduation-cap"></i> ${career.educationLevel}</span>` : ''}
+              ${career.salaryRange ? `<span class="career-badge"><i class="fas fa-dollar-sign"></i> ${career.salaryRange}</span>` : ''}
+            </div>
+            <button class="view-career-btn" onclick="event.stopPropagation(); showCareerDetail('${career.id}');">
+              View Details
+            </button>
+          </div>
         </div>
       `).join('');
     } catch (err) {
@@ -497,9 +583,14 @@
 
     const html = `
       <div class="detail-header">
-        <h2 class="detail-title">${career.title}</h2>
-        ${career.salaryRange ? `<div class="detail-salary">💰 ${career.salaryRange}</div>` : ''}
-        <p style="color: var(--text-muted); margin: 12px 0 0 0;">${career.shortDescription}</p>
+        <div class="detail-image">
+          ${career.coverImage ? `<img src="${career.coverImage}" alt="${career.title}">` : '<i class="fas fa-briefcase"></i>'}
+        </div>
+        <div class="detail-header-text">
+          <h2 class="detail-title">${career.title}</h2>
+          ${career.salaryRange ? `<div class="detail-salary">💰 ${career.salaryRange}</div>` : ''}
+          <p style="color: var(--text-muted); margin: 12px 0 0 0;">${career.shortDescription}</p>
+        </div>
       </div>
 
       ${career.fullDescription ? `
