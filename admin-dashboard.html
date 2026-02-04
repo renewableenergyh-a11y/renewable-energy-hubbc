@@ -4536,20 +4536,25 @@
           });
           
           xhr.addEventListener('load', async () => {
-            if (xhr.status === 200) {
-              const response = JSON.parse(xhr.responseText);
-              showAlert('Success', 'Video uploaded successfully!', 'success');
-              form.reset();
+            try {
+              if (xhr.status === 200) {
+                const response = JSON.parse(xhr.responseText);
+                showAlert('Success', 'Video uploaded successfully!', 'success');
+                form.reset();
+                uploadBtn.innerHTML = '<i class="fas fa-upload" style="margin-right:4px;"></i>Upload Video';
+                uploadBtn.disabled = false;
+                loadMedia();
+              } else {
+                const errorData = JSON.parse(xhr.responseText);
+                showAlert('Error', errorData.error || 'Upload failed with status ' + xhr.status, 'error');
+                uploadBtn.innerHTML = '<i class="fas fa-upload" style="margin-right:4px;"></i>Upload Video';
+                uploadBtn.disabled = false;
+              }
+            } catch (e) {
+              console.error('Upload response error:', e);
+              showAlert('Error', 'Upload failed: ' + (e.message || 'Unknown error'), 'error');
               uploadBtn.innerHTML = '<i class="fas fa-upload" style="margin-right:4px;"></i>Upload Video';
               uploadBtn.disabled = false;
-              loadMedia();
-            } else {
-              try {
-                const errorData = JSON.parse(xhr.responseText);
-                throw new Error(errorData.error || 'Upload failed');
-              } catch (e) {
-                throw new Error('Upload failed with status ' + xhr.status);
-              }
             }
           });
           
