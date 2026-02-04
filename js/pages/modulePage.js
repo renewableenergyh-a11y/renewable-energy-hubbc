@@ -4,11 +4,18 @@ import { logModuleView, logQuizCompletion } from "../core/attendanceService.js";
 import { getToken } from "../core/auth.js";
 import { renderComments } from "../components/commentsComponent.js";
 import { awardPoints } from "../core/gamificationService.js";
+import { fetchHighlights, saveHighlight, updateHighlight, deleteHighlight, getTextSelection, applyHighlightToDOM, removeHighlightFromDOM, findHighlightSpans, reapplyHighlights } from "../core/highlightService.js";
+import { HighlightToolbar } from "../components/highlightToolbar.js";
 
 let moduleStartTime = Date.now();
 let moduleId = null;
 let courseId = null;
 let gamificationAwardedForView = false;
+
+// Highlighting system variables
+let highlightToolbar = null;
+const highlightedSpans = new Map(); // tempId/serverId -> { spanElement, serverId }
+let pendingHighlights = []; // Highlights waiting for server response
 
 document.addEventListener("DOMContentLoaded", async () => {
   // Check if user is logged in
@@ -268,6 +275,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
     renderMarkdown(container, markdown, { objectives: resolvedObjectives });
+
+    // Initialize highlighting system
+    await initializeHighlighting(container, moduleId, 'module');
 
     // Helper function for escaping HTML
     function escapeHtml(text) {
@@ -1186,3 +1196,249 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 });
+
+/**
+ * Initialize highlighting system
+ */
+async function initializeHighlighting(contentContainer, contentId, contentType = 'module') {
+  if (!contentContainer || !getToken()) return;
+
+  // Create toolbar
+  highlightToolbar = new HighlightToolbar(
+    handleColorSelect,
+    handleDeleteHighlight
+  );
+
+  // Load existing highlights from server
+  const serverHighlights = await fetchHighlights(contentId, contentType);
+  
+  // Reapply highlights to the DOM
+  if (serverHighlights.length > 0) {
+    reapplyHighlights(contentContainer, serverHighlights);
+    
+    // Store highlight refs
+    serverHighlights.forEach(h => {
+      const span = contentContainer.querySelector(`[data-highlight-id="${h.id}"]`);
+      if (span) {
+        highlightedSpans.set(h.id, { spanElement: span, serverId: h.id });
+      }
+    });
+  }
+
+  // Set up selection listeners
+  setupSelectionListeners(contentContainer, contentId, contentType);
+
+  // Set up existing highlight click handlers
+  setupExistingHighlightHandlers(contentContainer);
+}
+
+/**
+ * Set up text selection detection
+ */
+function setupSelectionListeners(contentContainer, contentId, contentType) {
+  // Listen for selection changes and mouse/touch events
+  document.addEventListener('selectionchange', () => {
+    handleSelectionChanged(contentContainer, contentId, contentType);
+  });
+
+  contentContainer.addEventListener('mouseup', () => {
+    handleSelectionChanged(contentContainer, contentId, contentType);
+  });
+
+  contentContainer.addEventListener('touchend', () => {
+    setTimeout(() => {
+      handleSelectionChanged(contentContainer, contentId, contentType);
+    }, 50);
+  });
+}
+
+/**
+ * Handle text selection
+ */
+function handleSelectionChanged(contentContainer, contentId, contentType) {
+  const selection = getTextSelection(contentContainer);
+
+  if (!selection || selection.text.length === 0) {
+    // Hide toolbar if no valid selection
+    if (highlightToolbar) {
+      highlightToolbar.hide();
+    }
+    return;
+  }
+
+  // Position toolbar above selection
+  const range = window.getSelection().getRangeAt(0);
+  const rect = range.getBoundingClientRect();
+  
+  const toolbarX = rect.left + (rect.width / 2) - 80; // Approximate center
+  const toolbarY = Math.max(10, rect.top - 60); // Above selection
+
+  // Store current selection for toolbar actions
+  window.currentTextSelection = {
+    text: selection.text,
+    startOffset: selection.startOffset,
+    endOffset: selection.endOffset,
+    contentId,
+    contentType
+  };
+
+  if (highlightToolbar) {
+    highlightToolbar.show(toolbarX, toolbarY);
+  }
+}
+
+/**
+ * Handle color selection from toolbar
+ */
+async function handleColorSelect(color, colorName) {
+  if (!window.currentTextSelection) return;
+
+  const { text, startOffset, endOffset, contentId, contentType } = window.currentTextSelection;
+
+  // Generate temporary ID
+  const tempId = 'temp-' + Math.random().toString(36).substr(2, 9);
+
+  // Get the actual DOM node to wrap
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+
+  const range = selection.getRangeAt(0);
+  
+  // Create span with highlight
+  const span = document.createElement('span');
+  span.className = 'text-highlight';
+  span.dataset.highlightId = tempId;
+  span.style.backgroundColor = color;
+  
+  try {
+    range.surroundContents(span);
+  } catch (e) {
+    // If surroundContents fails (e.g., crossing multiple nodes), use extractContents
+    const contents = range.extractContents();
+    span.appendChild(contents);
+    range.insertNode(span);
+  }
+
+  // Store in local map
+  highlightedSpans.set(tempId, { spanElement: span, serverId: null });
+  pendingHighlights.push({ tempId, span });
+
+  // Clear selection
+  window.getSelection().removeAllRanges();
+
+  // Save to server in background
+  const highlight = {
+    tempId,
+    contentId,
+    contentType,
+    text,
+    startOffset,
+    endOffset,
+    color,
+    parentSelector: 'module-content'
+  };
+
+  try {
+    const serverHighlight = await saveHighlight(highlight);
+    
+    if (serverHighlight && serverHighlight.id) {
+      // Replace temp ID with server ID
+      span.dataset.highlightId = serverHighlight.id;
+      highlightedSpans.delete(tempId);
+      highlightedSpans.set(serverHighlight.id, { spanElement: span, serverId: serverHighlight.id });
+      pendingHighlights = pendingHighlights.filter(h => h.tempId !== tempId);
+
+      // Re-setup click handler for this highlight
+      setupSingleHighlightHandler(span, serverHighlight.id, contentId, contentType);
+    }
+  } catch (err) {
+    console.error('Error saving highlight:', err);
+    // Remove highlight from DOM on error
+    removeHighlightFromDOM(span);
+    highlightedSpans.delete(tempId);
+  }
+}
+
+/**
+ * Handle delete highlight request
+ */
+async function handleDeleteHighlight() {
+  if (!window.currentHighlightElement) return;
+
+  const span = window.currentHighlightElement;
+  const highlightId = span.dataset.highlightId;
+
+  // Remove from DOM immediately
+  removeHighlightFromDOM(span);
+  highlightedSpans.delete(highlightId);
+
+  // Delete from server
+  try {
+    await deleteHighlight(highlightId);
+  } catch (err) {
+    console.error('Error deleting highlight:', err);
+  }
+}
+
+/**
+ * Set up click handlers for existing highlights
+ */
+function setupExistingHighlightHandlers(contentContainer) {
+  const highlights = findHighlightSpans(contentContainer);
+  highlights.forEach(span => {
+    const highlightId = span.dataset.highlightId;
+    if (highlightId) {
+      setupSingleHighlightHandler(span, highlightId, moduleId, 'module');
+    }
+  });
+}
+
+/**
+ * Set up single highlight click handler
+ */
+function setupSingleHighlightHandler(span, highlightId, contentId, contentType) {
+  span.addEventListener('click', (e) => {
+    e.stopPropagation();
+
+    // Store reference for toolbar action
+    window.currentHighlightElement = span;
+    window.currentHighlightId = highlightId;
+
+    // Get position to show toolbar
+    const rect = span.getBoundingClientRect();
+    const toolbarX = rect.left + (rect.width / 2) - 80;
+    const toolbarY = Math.max(10, rect.top - 60);
+
+    // Store color info for potential update
+    window.currentHighlightColor = span.style.backgroundColor;
+
+    // Show toolbar with update handler
+    if (highlightToolbar) {
+      // Replace color handler with update handler
+      highlightToolbar.onColorSelect = (newColor, colorName) => {
+        handleUpdateHighlightColor(span, highlightId, newColor, contentId, contentType);
+      };
+      highlightToolbar.show(toolbarX, toolbarY);
+    }
+  });
+}
+
+/**
+ * Handle highlight color update
+ */
+async function handleUpdateHighlightColor(span, highlightId, newColor, contentId, contentType) {
+  // Update DOM immediately
+  span.style.backgroundColor = newColor;
+
+  // Update on server
+  try {
+    await updateHighlight(highlightId, newColor);
+  } catch (err) {
+    console.error('Error updating highlight:', err);
+    // Revert on error
+    span.style.backgroundColor = window.currentHighlightColor;
+  }
+
+  // Reset color handler
+  highlightToolbar.onColorSelect = handleColorSelect;
+}

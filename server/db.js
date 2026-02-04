@@ -39,6 +39,7 @@ async function init() {
     models.Notification = mongoose.models.Notification || mongoose.model('Notification', AnySchema, 'notifications');
     models.Media = mongoose.models.Media || mongoose.model('Media', AnySchema, 'media');
     models.News = mongoose.models.News || mongoose.model('News', AnySchema, 'news');
+    models.Highlight = mongoose.models.Highlight || mongoose.model('Highlight', AnySchema, 'highlights');
     
     // Discussion system models
     models.DiscussionSession = mongoose.models.DiscussionSession || mongoose.model('DiscussionSession', DiscussionSessionSchema);

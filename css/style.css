@@ -6599,3 +6599,119 @@ body.dark .notification-detail-actions {
   }
 }
 
+/* =====================
+   HIGHLIGHT STYLES
+===================== */
+
+/* Highlighted text span */
+.text-highlight {
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+  border-radius: 2px;
+}
+
+.text-highlight:hover {
+  opacity: 0.8;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.1);
+}
+
+/* Highlight toolbar */
+.highlight-toolbar {
+  position: fixed;
+  display: none;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: white;
+  border-radius: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10000;
+  pointer-events: auto;
+  user-select: none;
+}
+
+body.dark .highlight-toolbar {
+  background: #1a2332;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Color buttons container */
+.highlight-toolbar-colors {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Individual color button */
+.highlight-color-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+  padding: 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.highlight-color-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.highlight-color-btn:active {
+  transform: scale(0.95);
+}
+
+/* Delete button */
+.highlight-delete-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: #e0e0e0;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.1s ease, transform 0.1s ease;
+  padding: 0;
+  flex-shrink: 0;
+  font-size: 14px;
+}
+
+.highlight-delete-btn:hover {
+  background: #d0d0d0;
+  transform: scale(1.1);
+}
+
+.highlight-delete-btn:active {
+  transform: scale(0.95);
+}
+
+body.dark .highlight-delete-btn {
+  background: #3a4a5a;
+  color: #e0e0e0;
+}
+
+body.dark .highlight-delete-btn:hover {
+  background: #4a5a6a;
+}
+
+/* Mobile/touch adjustments */
+@media (max-width: 768px) {
+  .highlight-toolbar {
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .highlight-color-btn,
+  .highlight-delete-btn {
+    width: 36px;
+    height: 36px;
+  }
+}
+

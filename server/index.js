@@ -15,6 +15,7 @@ const cloudinary = require('cloudinary').v2;
 const DiscussionSessionService = require('./services/DiscussionSessionService');
 const ParticipantService = require('./services/ParticipantService');
 const createDiscussionRoutes = require('./routes/discussionRoutes');
+const createHighlightRoutes = require('./routes/highlightRoutes');
 const { initializeDiscussionSocket } = require('./sockets/discussionSocket');
 
 const app = express();
@@ -671,6 +672,11 @@ const initializeDiscussionServices = (ioInstance = null) => {
     const discussionRoutes = createDiscussionRoutes(db, discussionSessionService, participantService, ioInstance);
     app.use('/api/discussions', discussionRoutes);
     console.log('✅ Discussion routes registered');
+
+    // Register highlight routes
+    const highlightRoutes = createHighlightRoutes(db);
+    app.use('/api/highlights', highlightRoutes);
+    console.log('✅ Highlight routes registered');
   }
 };
 
@@ -7540,6 +7546,11 @@ async function startServer() {
     app.use('/api/discussions', discussionRoutes);
     console.log('✅ Discussion routes re-registered with Socket.IO');
   }
+
+  // Register highlight routes (doesn't need Socket.IO)
+  const highlightRoutes = createHighlightRoutes(db);
+  app.use('/api/highlights', highlightRoutes);
+  console.log('✅ Highlight routes registered');
   
   // Initialize discussion socket handlers
   if (discussionSessionService && participantService) {
