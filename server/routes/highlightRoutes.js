@@ -80,11 +80,28 @@ function createHighlightRoutes(db) {
         return res.status(400).json({ error: 'Invalid content type' });
       }
 
-      // Query database for highlights
-      const Highlight = db.models.Highlight;
+      // Get the Highlight model - ensure db is initialized
+      if (!db || !db.models) {
+        console.error('❌ Database not initialized properly');
+        return res.status(500).json({ error: 'Database service not available' });
+      }
+
+      let Highlight = db.models.Highlight;
+      
+      // Fallback: ensure Highlight model exists
       if (!Highlight) {
-        console.error('❌ Highlight model not available in db.models');
-        return res.status(500).json({ error: 'Highlight model not available' });
+        console.warn('⚠️ Highlight model not found, attempting to create...');
+        try {
+          const mongoose = require('mongoose');
+          const Schema = mongoose.Schema;
+          const AnySchema = new Schema({}, { strict: false });
+          Highlight = mongoose.models.Highlight || mongoose.model('Highlight', AnySchema, 'highlights');
+          db.models.Highlight = Highlight;
+          console.log('✅ Highlight model created dynamically');
+        } catch (modelErr) {
+          console.error('❌ Failed to create Highlight model:', modelErr.message);
+          return res.status(500).json({ error: 'Highlight model initialization failed' });
+        }
       }
 
       const highlights = await Highlight.find({
@@ -97,6 +114,8 @@ function createHighlightRoutes(db) {
       res.json({ highlights: highlights || [] });
     } catch (err) {
       console.error('❌ Error fetching highlights:', err.message);
+      console.error('   Code:', err.code);
+      console.error('   Name:', err.name);
       console.error('   Stack:', err.stack);
       res.status(500).json({ error: 'Failed to fetch highlights', details: err.message });
     }
@@ -127,10 +146,28 @@ function createHighlightRoutes(db) {
         return res.status(400).json({ error: 'Invalid offset values' });
       }
 
-      const Highlight = db.models.Highlight;
+      // Get the Highlight model - ensure db is initialized
+      if (!db || !db.models) {
+        console.error('❌ Database not initialized properly');
+        return res.status(500).json({ error: 'Database service not available' });
+      }
+
+      let Highlight = db.models.Highlight;
+      
+      // Fallback: ensure Highlight model exists
       if (!Highlight) {
-        console.error('❌ Highlight model not available in db.models');
-        return res.status(500).json({ error: 'Highlight model not available' });
+        console.warn('⚠️ Highlight model not found, attempting to create...');
+        try {
+          const mongoose = require('mongoose');
+          const Schema = mongoose.Schema;
+          const AnySchema = new Schema({}, { strict: false });
+          Highlight = mongoose.models.Highlight || mongoose.model('Highlight', AnySchema, 'highlights');
+          db.models.Highlight = Highlight;
+          console.log('✅ Highlight model created dynamically');
+        } catch (modelErr) {
+          console.error('❌ Failed to create Highlight model:', modelErr.message);
+          return res.status(500).json({ error: 'Highlight model initialization failed' });
+        }
       }
 
       // Create new highlight
@@ -149,7 +186,7 @@ function createHighlightRoutes(db) {
         updatedAt: new Date()
       });
 
-      console.log('💾 Saving highlight:', highlightId);
+      console.log('💾 Saving highlight:', highlightId, 'User:', userEmail);
       await highlight.save();
       console.log('✅ Highlight saved successfully');
 
@@ -168,6 +205,8 @@ function createHighlightRoutes(db) {
       });
     } catch (err) {
       console.error('❌ Error creating highlight:', err.message);
+      console.error('   Code:', err.code);
+      console.error('   Name:', err.name);
       console.error('   Stack:', err.stack);
       res.status(500).json({ error: 'Failed to create highlight', details: err.message });
     }
