@@ -120,7 +120,8 @@ function createHighlightRoutes(db) {
         startOffset: h.startOffset,
         endOffset: h.endOffset,
         color: h.color,
-        createdAt: h.createdAt
+        createdAt: h.createdAt,
+        updatedAt: h.updatedAt
       }));
       res.json({ highlights: highlightData || [] });
     } catch (err) {
@@ -209,7 +210,8 @@ function createHighlightRoutes(db) {
           startOffset: highlight.startOffset,
           endOffset: highlight.endOffset,
           color: highlight.color,
-          createdAt: highlight.createdAt
+          createdAt: highlight.createdAt,
+          updatedAt: highlight.updatedAt
         }
       });
     } catch (err) {
@@ -254,7 +256,20 @@ function createHighlightRoutes(db) {
       highlight.updatedAt = new Date();
       await highlight.save();
 
-      res.json({ message: 'Highlight updated', highlight });
+      res.json({
+        message: 'Highlight updated',
+        highlight: {
+          id: highlight._id.toString(),
+          contentId: highlight.contentId,
+          contentType: highlight.contentType,
+          text: highlight.text,
+          startOffset: highlight.startOffset,
+          endOffset: highlight.endOffset,
+          color: highlight.color,
+          createdAt: highlight.createdAt,
+          updatedAt: highlight.updatedAt
+        }
+      });
     } catch (err) {
       console.error('Error updating highlight:', err);
       res.status(500).json({ error: 'Failed to update highlight' });
