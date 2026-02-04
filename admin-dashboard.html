@@ -4427,7 +4427,9 @@
           console.log('[Media] Loading media from /api/media');
           const token = localStorage.getItem('adminToken') || '';
           const role = localStorage.getItem('adminRole') || 'superadmin';
-          console.log('[Media] Sending request with role:', role, 'token present:', !!token);
+          console.log('[Media] Stored adminRole:', localStorage.getItem('adminRole'));
+          console.log('[Media] Using role:', role, 'token present:', !!token, 'token length:', token.length);
+          console.log('[Media] Headers that will be sent:', { 'Authorization': 'Bearer ' + (token ? '***' : ''), 'X-User-Role': role });
           const response = await fetch('/api/media', {
             headers: {
               'Authorization': `Bearer ${token}`,

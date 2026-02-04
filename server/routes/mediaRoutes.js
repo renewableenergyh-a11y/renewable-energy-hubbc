@@ -26,7 +26,13 @@ function authenticateSuperAdmin(req, res, next) {
   const token = req.headers.authorization?.split(' ')[1];
   const userRole = (req.headers['x-user-role'] || 'admin').toLowerCase();
   
+  console.log('[Media Auth] ===== AUTHENTICATION CHECK =====');
+  console.log('[Media Auth] Headers received:', Object.keys(req.headers));
+  console.log('[Media Auth] x-user-role header:', req.headers['x-user-role']);
+  console.log('[Media Auth] Processed userRole:', userRole);
+  
   if (!token) {
+    console.log('[Media Auth] No token provided');
     return res.status(401).json({ error: 'No token provided' });
   }
 
@@ -46,6 +52,7 @@ function authenticateSuperAdmin(req, res, next) {
         console.log('[Media Auth] Token format valid, using role from header:', userRole);
         req.user = { email: 'authenticated-user', role: userRole };
       } else {
+        console.log('[Media Auth] Token format invalid, token:', token);
         return res.status(401).json({ error: 'Invalid token' });
       }
     } else {
@@ -55,11 +62,13 @@ function authenticateSuperAdmin(req, res, next) {
     }
     
     const finalRole = req.user.role?.toLowerCase() || 'admin';
+    console.log('[Media Auth] Final role check: finalRole=', finalRole, ', req.user.role=', req.user.role);
     if (finalRole !== 'superadmin') {
       console.error('[Media Auth] Access denied for role:', finalRole);
       return res.status(403).json({ error: 'Only SuperAdmins can access media management' });
     }
     
+    console.log('[Media Auth] Authentication passed for user:', req.user.email);
     next();
   } catch (err) {
     console.error('[Media Auth] Error:', err);
