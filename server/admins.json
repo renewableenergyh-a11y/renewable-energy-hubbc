@@ -7,7 +7,8 @@
     "lastLogin": "2026-01-29T09:19:54.135Z",
     "name": "Aubrey Mkhulana",
     "password": "d1ba6de4004c51bc2b4d80edfa0c5cb1d26802de6704300733b57d4214b44d65",
-    "token": "a5449317cb780e3fa146f1e55581c6d749e8f652e94a43c24590916ccc8463bf"
+    "token": "a5449317cb780e3fa146f1e55581c6d749e8f652e94a43c24590916ccc8463bf",
+    "role": "superadmin"
   },
   {
     "_id": "695fa7a6ee20aa3997823f46",
@@ -17,6 +18,7 @@
     "name": "Chrissie Kamanga",
     "password": "992d65b213774daf99de0175e4e58fe98a84a3be7008a5621a13ef6ff1e726ea",
     "lastLogin": "2026-01-20T09:46:33.831Z",
-    "token": "aa6010d81c28ae085912aa64987107b1173933253fb19f1938ccc89ee0e63aab"
+    "token": "aa6010d81c28ae085912aa64987107b1173933253fb19f1938ccc89ee0e63aab",
+    "role": "admin"
   }
 ]
