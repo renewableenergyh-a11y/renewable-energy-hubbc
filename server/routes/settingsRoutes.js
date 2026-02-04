@@ -24,6 +24,7 @@ function authenticateSuperAdmin(req, res, next) {
   try {
     const admins = storage.loadAdmins();
     let user = (admins || []).find(u => u.token === token);
+    let isAdmin = !!user; // Track if user is in admins file
     
     // If token not found in admins file, check users database
     if (!user) {
@@ -37,6 +38,7 @@ function authenticateSuperAdmin(req, res, next) {
         }
       } catch (e) {
         // Ignore user load errors
+        console.error('❌ Error loading users:', e.message);
       }
     }
     
@@ -44,15 +46,19 @@ function authenticateSuperAdmin(req, res, next) {
       return res.status(401).json({ error: 'Invalid token' });
     }
     
-    // Must be SuperAdmin
+    // Must be SuperAdmin - check if in admins file OR has superadmin role
     const userRole = (user.role || 'admin').toLowerCase();
-    if (userRole !== 'superadmin') {
+    const isSuperAdmin = isAdmin || userRole === 'superadmin';
+    
+    if (!isSuperAdmin) {
+      console.warn(`⚠️ User ${user.email} tried to access settings without SuperAdmin role. Role: ${userRole}, IsAdmin: ${isAdmin}`);
       return res.status(403).json({ error: 'Only Super Admin can access settings' });
     }
     
     req.user = user;
     next();
   } catch (err) {
+    console.error('❌ Authentication error:', err);
     res.status(401).json({ error: 'Authentication failed' });
   }
 }

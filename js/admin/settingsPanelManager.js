@@ -22,12 +22,19 @@ class SettingsPanelManager {
         throw new Error('Authentication required');
       }
 
+      console.log('🔑 Token length:', token.length, 'First 10 chars:', token.substring(0, 10));
+      console.log('📤 Sending request to /api/settings with Bearer token');
+
       const response = await fetch('/api/settings', {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
+      console.log('📥 Response status:', response.status);
+
       if (!response.ok) {
-        throw new Error('Failed to load settings');
+        const errorData = await response.json().catch(() => ({}));
+        console.error('⚠️ API Error:', errorData);
+        throw new Error(`API Error (${response.status}): ${errorData.error || 'Unknown error'}`);
       }
 
       this.currentSettings = await response.json();
