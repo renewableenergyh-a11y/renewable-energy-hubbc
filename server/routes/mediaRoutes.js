@@ -203,5 +203,8 @@ router.get('/public/tutorial-videos', async (req, res) => {
   }
 });
 
+module.exports = {
+  router,
+  setDatabase,
   setStorage
 };
