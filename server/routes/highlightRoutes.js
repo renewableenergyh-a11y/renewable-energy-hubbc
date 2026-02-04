@@ -23,36 +23,43 @@ function createHighlightRoutes(db) {
     req.userEmail = getUserEmailFromToken(token);
 
     if (!req.userEmail) {
+      console.warn('❌ Invalid token for highlights:', token.substring(0, 10) + '...');
       return res.status(403).json({ error: 'Invalid token' });
     }
 
+    console.log('✅ Highlight user authenticated:', req.userEmail);
     next();
   }
 
   // Helper to get user email from token
   function getUserEmailFromToken(token) {
     try {
-      // This assumes you have a way to validate tokens
-      // You'll need to implement this based on your auth system
-      // For now, return a placeholder - adjust based on your storage
-      const allUsers = loadAllUsers();
+      const storage = require('../storage');
+      
+      // Check regular users
+      const allUsers = storage.loadUsers();
       for (const [email, user] of Object.entries(allUsers)) {
         if (user && user.token === token) {
           return email;
         }
       }
-      return null;
-    } catch (err) {
-      return null;
-    }
-  }
 
-  function loadAllUsers() {
-    try {
-      const storage = require('../storage');
-      return storage.loadUsers();
+      // Check admins
+      try {
+        const admins = storage.loadAdmins();
+        for (const admin of admins) {
+          if (admin.token === token) {
+            return admin.email || admin.idNumber;
+          }
+        }
+      } catch (e) {
+        // Admins might not exist
+      }
+
+      return null;
     } catch (err) {
-      return {};
+      console.error('❌ Error getting user email from token:', err.message);
+      return null;
     }
   }
 
@@ -65,6 +72,9 @@ function createHighlightRoutes(db) {
       const { contentType, contentId } = req.params;
       const userEmail = req.userEmail;
 
+      console.log('🔍 GET /api/highlights - User:', userEmail);
+      console.log('   Content:', contentType, contentId);
+
       // Validate content type
       if (!['module', 'course'].includes(contentType)) {
         return res.status(400).json({ error: 'Invalid content type' });
@@ -73,6 +83,7 @@ function createHighlightRoutes(db) {
       // Query database for highlights
       const Highlight = db.models.Highlight;
       if (!Highlight) {
+        console.error('❌ Highlight model not available in db.models');
         return res.status(500).json({ error: 'Highlight model not available' });
       }
 
@@ -82,10 +93,12 @@ function createHighlightRoutes(db) {
         userEmail
       }).sort({ createdAt: -1 });
 
+      console.log('✅ Found', highlights.length, 'highlights');
       res.json({ highlights: highlights || [] });
     } catch (err) {
-      console.error('Error fetching highlights:', err);
-      res.status(500).json({ error: 'Failed to fetch highlights' });
+      console.error('❌ Error fetching highlights:', err.message);
+      console.error('   Stack:', err.stack);
+      res.status(500).json({ error: 'Failed to fetch highlights', details: err.message });
     }
   });
 
@@ -98,24 +111,32 @@ function createHighlightRoutes(db) {
       const { contentId, contentType, text, startOffset, endOffset, color, parentSelector, tempId } = req.body;
       const userEmail = req.userEmail;
 
+      console.log('📝 POST /api/highlights - User:', userEmail);
+      console.log('   Content:', contentType, contentId);
+      console.log('   Text:', text?.substring(0, 50) + '...');
+
       // Validate required fields
       if (!contentId || !contentType || !text || color === undefined) {
+        console.warn('⚠️ Missing required fields:', { contentId, contentType, text: !!text, color });
         return res.status(400).json({ error: 'Missing required fields' });
       }
 
       // Validate offsets
       if (typeof startOffset !== 'number' || typeof endOffset !== 'number') {
+        console.warn('⚠️ Invalid offset values:', { startOffset, endOffset });
         return res.status(400).json({ error: 'Invalid offset values' });
       }
 
       const Highlight = db.models.Highlight;
       if (!Highlight) {
+        console.error('❌ Highlight model not available in db.models');
         return res.status(500).json({ error: 'Highlight model not available' });
       }
 
       // Create new highlight
+      const highlightId = crypto.randomBytes(16).toString('hex');
       const highlight = new Highlight({
-        id: crypto.randomBytes(16).toString('hex'),
+        id: highlightId,
         contentId,
         contentType,
         text,
@@ -128,7 +149,9 @@ function createHighlightRoutes(db) {
         updatedAt: new Date()
       });
 
+      console.log('💾 Saving highlight:', highlightId);
       await highlight.save();
+      console.log('✅ Highlight saved successfully');
 
       res.status(201).json({
         message: 'Highlight created',
@@ -144,8 +167,9 @@ function createHighlightRoutes(db) {
         }
       });
     } catch (err) {
-      console.error('Error creating highlight:', err);
-      res.status(500).json({ error: 'Failed to create highlight' });
+      console.error('❌ Error creating highlight:', err.message);
+      console.error('   Stack:', err.stack);
+      res.status(500).json({ error: 'Failed to create highlight', details: err.message });
     }
   });
 

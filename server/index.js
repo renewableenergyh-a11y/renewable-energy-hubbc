@@ -673,10 +673,7 @@ const initializeDiscussionServices = (ioInstance = null) => {
     app.use('/api/discussions', discussionRoutes);
     console.log('✅ Discussion routes registered');
 
-    // Register highlight routes
-    const highlightRoutes = createHighlightRoutes(db);
-    app.use('/api/highlights', highlightRoutes);
-    console.log('✅ Highlight routes registered');
+    // Note: Highlight routes are registered later after Socket.IO init to avoid duplicates
   }
 };
 
