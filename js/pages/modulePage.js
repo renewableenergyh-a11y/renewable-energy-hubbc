@@ -1473,12 +1473,18 @@ async function handleUpdateHighlightColor(span, highlightId, newColor, contentId
   span.style.backgroundColor = newColor;
   console.log('🎨 Color updated in DOM:', { highlightId, newColor });
 
+  // Hide toolbar immediately
+  if (highlightToolbar) {
+    highlightToolbar.hide();
+  }
+
   // Update on server
   try {
+    console.log('📤 Sending color update to server:', { highlightId, newColor });
     const result = await updateHighlight(highlightId, newColor);
     console.log('✅ Color saved to server:', { highlightId, newColor, result });
   } catch (err) {
-    console.error('Error updating highlight:', err);
+    console.error('❌ Error updating highlight:', err);
     // Revert on error
     span.style.backgroundColor = window.currentHighlightColor;
   }

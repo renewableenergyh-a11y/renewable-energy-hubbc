@@ -91,6 +91,7 @@ export async function updateHighlight(highlightId, color) {
   if (!token) return false;
 
   try {
+    console.log('📡 Updating highlight on server:', { highlightId, color });
     const response = await fetch(`${API_BASE}/highlights/${highlightId}`, {
       method: 'PUT',
       headers: {
@@ -100,14 +101,21 @@ export async function updateHighlight(highlightId, color) {
       body: JSON.stringify({ color })
     });
 
+    console.log('📥 Server response status:', response.status);
+    const responseData = await response.json();
+    console.log('📥 Server response data:', responseData);
+
     if (!response.ok) {
-      console.error('Server error updating highlight');
+      console.error('❌ Server error updating highlight:', responseData);
       return false;
     }
 
+    console.log('✅ Server confirmed update:', responseData);
     return true;
   } catch (err) {
-    console.error('Error updating highlight:', err);
+    console.error('❌ Network error updating highlight:', err);
+    return false;
+  }
     return false;
   }
 }
