@@ -1236,11 +1236,25 @@ async function initializeHighlighting(contentContainer, contentId, contentType =
  * Set up text selection detection
  */
 function setupSelectionListeners(contentContainer, contentId, contentType) {
-  // Show toolbar only after selection is complete (on mouseup/touchend)
-  // Don't show during selection (avoid showing during drag)
-  
+  // Hide toolbar when user starts a new selection (mousedown/touchstart)
+  contentContainer.addEventListener('mousedown', () => {
+    if (highlightToolbar) {
+      highlightToolbar.hide();
+    }
+  });
+
+  contentContainer.addEventListener('touchstart', () => {
+    if (highlightToolbar) {
+      highlightToolbar.hide();
+    }
+  });
+
+  // Show toolbar after selection is complete (mouseup/touchend)
   contentContainer.addEventListener('mouseup', () => {
-    handleSelectionChanged(contentContainer, contentId, contentType);
+    // Small delay to ensure selection is fully registered
+    setTimeout(() => {
+      handleSelectionChanged(contentContainer, contentId, contentType);
+    }, 10);
   });
 
   contentContainer.addEventListener('touchend', () => {
