@@ -4524,6 +4524,8 @@
           formData.append('thumbnail', thumbnail);
 
           const token = localStorage.getItem('adminToken') || '';
+          console.log('[Upload] Token:', token.substring(0, 20) + '...');
+          console.log('[Upload] User role:', role);
           
           // Use XMLHttpRequest for progress tracking
           const xhr = new XMLHttpRequest();

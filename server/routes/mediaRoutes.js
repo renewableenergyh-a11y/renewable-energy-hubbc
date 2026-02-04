@@ -32,13 +32,23 @@ function authenticateSuperAdmin(req, res, next) {
     const admins = storage.loadAdmins();
     const user = Object.values(admins).find(u => u.token === token);
     
-    if (!user || (user.role !== 'superadmin' && user.role !== 'admin')) {
+    if (!user) {
+      console.error('[Media Auth] User not found with token');
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+    
+    const userRole = user.role?.toLowerCase() || '';
+    console.log('[Media Auth] User role:', userRole, 'User:', user.email);
+    
+    if (userRole !== 'superadmin' && userRole !== 'admin') {
+      console.error('[Media Auth] Access denied for role:', userRole);
       return res.status(403).json({ error: 'Only Admins can access media management' });
     }
     
     req.user = user;
     next();
   } catch (err) {
+    console.error('[Media Auth] Error:', err);
     res.status(401).json({ error: 'Invalid token' });
   }
 }
