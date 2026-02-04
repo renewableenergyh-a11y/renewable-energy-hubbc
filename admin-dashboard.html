@@ -1390,85 +1390,7 @@
                 </div>
               </div>
 
-              <!-- 4. VIDEO & GIF WALKTHROUGHS -->
-              <div class="feature-card">
-                <div class="feature-header">
-                  <div class="feature-icon">
-                    <i class="fas fa-video"></i>
-                  </div>
-                  <div>
-                    <h3 class="feature-title">Video & GIF Walkthroughs</h3>
-                    <p class="feature-subtitle">Visual guides to help you get started quickly</p>
-                  </div>
-                </div>
-                <div class="feature-content" style="margin-bottom: 20px;">
-                  <p>Watch these step-by-step tutorials to learn how to perform common admin tasks:</p>
-                </div>
-                <div class="media-grid">
-                  <div class="media-item">
-                    <div class="media-placeholder">
-                      <i class="fas fa-play-circle"></i>
-                    </div>
-                    <div class="media-info">
-                      <div class="media-title">Creating Your First Course</div>
-                      <div class="media-description">Learn how to create a new course and add modules in 5 minutes.</div>
-                      <button style="margin-top: 12px; padding: 8px 12px; background: var(--green-main); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Watch Video</button>
-                    </div>
-                  </div>
-                  <div class="media-item">
-                    <div class="media-placeholder">
-                      <i class="fas fa-play-circle"></i>
-                    </div>
-                    <div class="media-info">
-                      <div class="media-title">Managing User Accounts</div>
-                      <div class="media-description">See how to add, edit, and manage student and instructor accounts.</div>
-                      <button style="margin-top: 12px; padding: 8px 12px; background: var(--green-main); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Watch Video</button>
-                    </div>
-                  </div>
-                  <div class="media-item">
-                    <div class="media-placeholder">
-                      <i class="fas fa-play-circle"></i>
-                    </div>
-                    <div class="media-info">
-                      <div class="media-title">Dashboard Analytics Overview</div>
-                      <div class="media-description">Understand key metrics and performance indicators on the dashboard.</div>
-                      <button style="margin-top: 12px; padding: 8px 12px; background: var(--green-main); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Watch Video</button>
-                    </div>
-                  </div>
-                  <div class="media-item">
-                    <div class="media-placeholder">
-                      <i class="fas fa-play-circle"></i>
-                    </div>
-                    <div class="media-info">
-                      <div class="media-title">Configuring Platform Settings</div>
-                      <div class="media-description">Customize your platform appearance and settings to match your brand.</div>
-                      <button style="margin-top: 12px; padding: 8px 12px; background: var(--green-main); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Watch Video</button>
-                    </div>
-                  </div>
-                  <div class="media-item">
-                    <div class="media-placeholder">
-                      <i class="fas fa-play-circle"></i>
-                    </div>
-                    <div class="media-info">
-                      <div class="media-title">Security Best Practices</div>
-                      <div class="media-description">Learn essential security measures to protect your platform and user data.</div>
-                      <button style="margin-top: 12px; padding: 8px 12px; background: var(--green-main); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Watch Video</button>
-                    </div>
-                  </div>
-                  <div class="media-item">
-                    <div class="media-placeholder">
-                      <i class="fas fa-play-circle"></i>
-                    </div>
-                    <div class="media-info">
-                      <div class="media-title">Troubleshooting Common Issues</div>
-                      <div class="media-description">Solutions to frequently encountered problems and how to resolve them.</div>
-                      <button style="margin-top: 12px; padding: 8px 12px; background: var(--green-main); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;">Watch Video</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- 5. COMMON TERMINOLOGY -->
+              <!-- 4. COMMON TERMINOLOGY -->
               <div class="feature-card">
                 <div class="feature-header">
                   <div class="feature-icon">
@@ -1539,17 +1461,13 @@
                 </div>
                 <p style="color: var(--text-muted); margin-bottom: 20px; line-height: 1.5;">Watch video guides to learn how to manage the platform effectively. These tutorials cover key features and best practices.</p>
                 
-                <div id="tutorial-videos-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; min-height: 100px;">
+                <div id="tutorial-videos-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; min-height: 100px;">
                   <div style="grid-column: 1 / -1; text-align: center; color: var(--text-muted); padding: 30px 20px;">
                     <i class="fas fa-spinner fa-spin" style="font-size: 24px; margin-bottom: 12px;"></i>
                     <p>Loading tutorial videos...</p>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          <!-- USERS TAB -->
           <div class="tab-panel" id="users-panel">
             <p style="color: var(--text-muted); margin-bottom: 20px;">Manage user accounts, roles, and permissions.</p>
           </div>
@@ -4643,69 +4561,76 @@
         container.innerHTML = '';
         videos.forEach(video => {
           const card = document.createElement('div');
-          card.style.cssText = 'border:1px solid var(--border-color);border-radius:8px;overflow:hidden;background:var(--bg-secondary);display:flex;flex-direction:column;transition:transform 0.2s, box-shadow 0.2s;';
+          card.style.cssText = 'border-radius:8px;overflow:hidden;background:#fff;display:flex;flex-direction:column;transition:transform 0.2s, box-shadow 0.2s;box-shadow:0 2px 8px rgba(0,0,0,0.08);';
           card.addEventListener('mouseenter', () => {
-            card.style.transform = 'translateY(-2px)';
-            card.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+            card.style.transform = 'translateY(-4px)';
+            card.style.boxShadow = '0 8px 16px rgba(0,0,0,0.12)';
           });
           card.addEventListener('mouseleave', () => {
             card.style.transform = 'none';
-            card.style.boxShadow = 'none';
+            card.style.boxShadow = '0 2px 8px rgba(0,0,0,0.08)';
           });
 
-          // Thumbnail
+          // Thumbnail with purple gradient and centered play button
           const thumbnail = document.createElement('div');
-          if (video.thumbnail) {
-            thumbnail.style.cssText = 'height:160px;background:url(' + video.thumbnail + ') center / cover;';
-          } else if (video.cloudinaryUrl) {
-            // Use Cloudinary thumbnail if available
-            const thumbUrl = video.cloudinaryUrl.replace('/upload/', '/upload/w_300,h_160,c_fill/');
-            thumbnail.style.cssText = 'height:160px;background:url(' + thumbUrl + ') center / cover;';
-          } else {
-            thumbnail.style.cssText = 'height:160px;background:linear-gradient(135deg, var(--green-main) 0%, #005a4f 100%);display:flex;align-items:center;justify-content:center;';
-            const icon = document.createElement('i');
-            icon.className = 'fas fa-video';
-            icon.style.cssText = 'font-size:48px;color:rgba(255,255,255,0.3);';
-            thumbnail.appendChild(icon);
+          thumbnail.style.cssText = 'height:180px;background:linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%);display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;';
+          
+          if (video.thumbnail || video.cloudinaryUrl) {
+            // Add subtle overlay if image exists
+            thumbnail.style.backgroundImage = video.thumbnail ? `url(${video.thumbnail})` : `url(${video.cloudinaryUrl?.replace('/upload/', '/upload/w_300,h_180,c_fill/') || ''})`;
+            thumbnail.style.backgroundSize = 'cover';
+            thumbnail.style.backgroundPosition = 'center';
+            // Add semi-transparent overlay
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);';
+            thumbnail.appendChild(overlay);
           }
+
+          // White play button
+          const playIcon = document.createElement('div');
+          playIcon.style.cssText = 'width:60px;height:60px;background:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;box-shadow:0 4px 12px rgba(0,0,0,0.2);';
+          const icon = document.createElement('i');
+          icon.className = 'fas fa-play';
+          icon.style.cssText = 'font-size:24px;color:#6366f1;margin-left:4px;';
+          playIcon.appendChild(icon);
+          thumbnail.appendChild(playIcon);
 
           // Content
           const content = document.createElement('div');
-          content.style.cssText = 'padding:12px;flex:1;display:flex;flex-direction:column;';
+          content.style.cssText = 'padding:16px;flex:1;display:flex;flex-direction:column;';
 
           const title = document.createElement('h4');
-          title.style.cssText = 'margin:0 0 6px 0;font-size:14px;font-weight:600;color:var(--text-main);';
+          title.style.cssText = 'margin:0 0 6px 0;font-size:15px;font-weight:600;color:#1f2937;';
           title.textContent = video.title;
 
           const description = document.createElement('p');
-          description.style.cssText = 'margin:0 0 8px 0;font-size:12px;color:var(--text-muted);line-height:1.4;flex:1;';
-          description.textContent = video.description || 'No description';
+          description.style.cssText = 'margin:0 0 12px 0;font-size:13px;color:#6b7280;line-height:1.4;flex:1;';
+          description.textContent = video.description || 'Tutorial video';
 
-          const meta = document.createElement('div');
-          meta.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding-top:8px;border-top:1px solid var(--border-color);';
+          const footer = document.createElement('div');
+          footer.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding-top:12px;border-top:1px solid #e5e7eb;';
 
           const category = document.createElement('span');
-          category.style.cssText = 'font-size:11px;color:var(--text-muted);';
-          category.innerHTML = '<i class="fas fa-tag" style="margin-right:4px;color:var(--green-main);"></i>' + (video.category || 'Other');
+          category.style.cssText = 'font-size:12px;color:#6b7280;display:flex;align-items:center;gap:4px;';
+          category.innerHTML = '<i class="fas fa-tag" style="color:#6366f1;"></i>' + (video.category || 'Tutorial');
 
-          const playBtn = document.createElement('button');
-          playBtn.style.cssText = 'padding:6px 12px;background:var(--green-main);color:#fff;border:none;border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:4px;transition:background 0.2s;';
-          playBtn.innerHTML = '<i class="fas fa-play"></i>Watch';
-          playBtn.addEventListener('mouseover', () => playBtn.style.background = '#00796b');
-          playBtn.addEventListener('mouseout', () => playBtn.style.background = 'var(--green-main)');
-          playBtn.addEventListener('click', () => {
-            // Open video in modal or new tab
+          const watchBtn = document.createElement('button');
+          watchBtn.style.cssText = 'padding:8px 12px;background:#00796b;color:#fff;border:none;border-radius:4px;font-size:12px;font-weight:600;cursor:pointer;transition:background 0.2s;';
+          watchBtn.textContent = 'Watch Video';
+          watchBtn.addEventListener('mouseover', () => watchBtn.style.background = '#005a4f');
+          watchBtn.addEventListener('mouseout', () => watchBtn.style.background = '#00796b');
+          watchBtn.addEventListener('click', () => {
             if (video.cloudinaryUrl) {
               window.open(video.cloudinaryUrl, '_blank');
             }
           });
 
-          meta.appendChild(category);
-          meta.appendChild(playBtn);
+          footer.appendChild(category);
+          footer.appendChild(watchBtn);
 
           content.appendChild(title);
           content.appendChild(description);
-          content.appendChild(meta);
+          content.appendChild(footer);
 
           card.appendChild(thumbnail);
           card.appendChild(content);
