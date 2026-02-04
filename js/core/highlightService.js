@@ -116,8 +116,6 @@ export async function updateHighlight(highlightId, color) {
     console.error('❌ Network error updating highlight:', err);
     return false;
   }
-    return false;
-  }
 }
 
 /**
