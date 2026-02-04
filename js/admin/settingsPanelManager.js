@@ -530,6 +530,15 @@ class SettingsPanelManager {
       // Refresh UI to show updated badges
       this.renderUI();
       this.setupEventListeners();
+      
+      // Immediately trigger settings applier refresh on all pages
+      if (window.settingsApplier) {
+        console.log('🔄 Triggering immediate settings applier refresh...');
+        window.settingsApplier.loadAndApply();
+      }
+      
+      // Also broadcast to other tabs via storage event
+      localStorage.setItem('settingsUpdated', Date.now().toString());
 
     } catch (err) {
       console.error('❌ Error saving settings:', err);

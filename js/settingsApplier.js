@@ -23,6 +23,14 @@ class SettingsApplier {
       this.loadAndApply();
     }, 30000);
     
+    // Listen for immediate settings updates from admin panel or other tabs
+    window.addEventListener('storage', (e) => {
+      if (e.key === 'settingsUpdated') {
+        console.log('📢 Settings update detected from admin panel or another tab');
+        this.loadAndApply();
+      }
+    });
+    
     console.log('✅ Settings Applier initialized');
   }
 
@@ -279,27 +287,48 @@ class SettingsApplier {
       
       // Hide premium upgrade buttons
       const upgradeBtns = document.querySelectorAll('[data-action="upgrade-premium"]');
-      upgradeBtns.forEach(btn => btn.style.display = 'none');
+      upgradeBtns.forEach(btn => {
+        btn.style.display = 'none';
+        btn.setAttribute('data-hidden-by-promotion', 'true');
+      });
       
-      // Show promotion banner
-      const banner = document.createElement('div');
-      banner.style.cssText = 'padding: 15px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center; margin-bottom: 20px; border-radius: 8px; font-weight: 600;';
-      banner.innerHTML = `🎉 Special Offer: Premium access is now FREE for everyone! Enjoy all features while this promotion lasts.`;
-      banner.setAttribute('data-component', 'premium-promotion-banner');
-      
-      const mainContent = document.querySelector('main') || document.body;
-      if (mainContent.firstChild) {
-        mainContent.insertBefore(banner, mainContent.firstChild);
+      // Show promotion banner (only add if not already present)
+      const existingBanner = document.querySelector('[data-component="premium-promotion-banner"]');
+      if (!existingBanner) {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'padding: 15px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center; margin-bottom: 20px; border-radius: 8px; font-weight: 600;';
+        banner.innerHTML = `🎉 Special Offer: Premium access is now FREE for everyone! Enjoy all features while this promotion lasts.`;
+        banner.setAttribute('data-component', 'premium-promotion-banner');
+        
+        const mainContent = document.querySelector('main') || document.body;
+        if (mainContent.firstChild) {
+          mainContent.insertBefore(banner, mainContent.firstChild);
+        }
       }
       
       // Grant all users premium features
       localStorage.setItem('isPremium', 'true');
       window.userPremium = true;
     } else {
+      console.log('💳 Removing premium promotion');
+      
       // Remove promotion banner if it exists
       const banner = document.querySelector('[data-component="premium-promotion-banner"]');
-      if (banner) banner.remove();
+      if (banner) {
+        console.log('🗑️ Removing promotion banner');
+        banner.remove();
+      }
+      
+      // Restore upgrade buttons
+      const upgradeBtns = document.querySelectorAll('[data-action="upgrade-premium"][data-hidden-by-promotion="true"]');
+      upgradeBtns.forEach(btn => {
+        btn.style.display = '';
+        btn.removeAttribute('data-hidden-by-promotion');
+      });
+      
       window.premiumForAll = false;
+      localStorage.removeItem('isPremium');
+      window.userPremium = false;
     }
   }
 
