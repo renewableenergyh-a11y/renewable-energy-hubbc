@@ -197,6 +197,38 @@ router.post('/upload', authenticateSuperAdmin, upload.fields([{ name: 'file', ma
   }
 });
 
+// PUT update media metadata
+router.put('/:id', authenticateSuperAdmin, async (req, res) => {
+  try {
+    const { title, description, category } = req.body;
+    const Media = db.models.Media;
+    
+    if (!title || !category) {
+      return res.status(400).json({ error: 'Title and category are required' });
+    }
+
+    const media = await Media.findByIdAndUpdate(
+      req.params.id,
+      {
+        title,
+        description: description || '',
+        category,
+        updatedAt: new Date()
+      },
+      { new: true }
+    );
+
+    if (!media) {
+      return res.status(404).json({ error: 'Media not found' });
+    }
+
+    res.json({ success: true, media, message: 'Video updated successfully' });
+  } catch (err) {
+    console.error('Update error:', err);
+    res.status(500).json({ error: 'Failed to update media' });
+  }
+});
+
 // DELETE media
 router.delete('/:id', authenticateSuperAdmin, async (req, res) => {
   try {

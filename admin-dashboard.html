@@ -4514,7 +4514,7 @@
             editBtn.style.background = 'rgba(99,102,241,0.1)';
           });
           editBtn.addEventListener('click', () => {
-            showAlert('Coming Soon', 'Video editing feature coming soon', 'info');
+            openEditVideoModal(video);
           });
 
           const deleteBtn = document.createElement('button');
@@ -4692,9 +4692,17 @@
           
           if (video.thumbnail || video.cloudinaryUrl) {
             // Add subtle overlay if image exists
-            thumbnail.style.backgroundImage = video.thumbnail ? `url(${video.thumbnail})` : `url(${video.cloudinaryUrl?.replace('/upload/', '/upload/w_300,h_180,c_fill/') || ''})`;
-            thumbnail.style.backgroundSize = 'cover';
-            thumbnail.style.backgroundPosition = 'center';
+            let bgUrl = '';
+            if (video.thumbnail) {
+              bgUrl = video.thumbnail.startsWith('http') ? video.thumbnail : `/media/${video.thumbnail}`;
+            } else if (video.cloudinaryUrl) {
+              bgUrl = video.cloudinaryUrl?.replace('/upload/', '/upload/w_300,h_180,c_fill/');
+            }
+            if (bgUrl) {
+              thumbnail.style.backgroundImage = `url(${bgUrl})`;
+              thumbnail.style.backgroundSize = 'cover';
+              thumbnail.style.backgroundPosition = 'center';
+            }
             // Add semi-transparent overlay
             const overlay = document.createElement('div');
             overlay.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.3);';
@@ -7909,7 +7917,154 @@
         }
       });
     }
-  </script>
+
+    function openEditVideoModal(video) {
+      // Create modal overlay
+      const modalOverlay = document.createElement('div');
+      modalOverlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.85);display:flex;align-items:center;justify-content:center;z-index:10000;';
+      
+      // Create modal container
+      const modalContainer = document.createElement('div');
+      modalContainer.style.cssText = 'background:#fff;border-radius:12px;overflow:hidden;max-width:90vw;max-height:90vh;width:600px;display:flex;flex-direction:column;box-shadow:0 25px 50px rgba(0,0,0,0.3);';
+      
+      // Create header
+      const header = document.createElement('div');
+      header.style.cssText = 'display:flex;justify-content:space-between;align-items:center;padding:20px;border-bottom:1px solid #e5e7eb;background:#f9fafb;';
+      
+      const titleEl = document.createElement('h3');
+      titleEl.style.cssText = 'margin:0;font-size:18px;font-weight:600;color:#1f2937;';
+      titleEl.textContent = 'Edit Video';
+      
+      const closeBtn = document.createElement('button');
+      closeBtn.style.cssText = 'background:none;border:none;font-size:24px;color:#6b7280;cursor:pointer;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:color 0.2s;';
+      closeBtn.innerHTML = '<i class="fas fa-times"></i>';
+      closeBtn.addEventListener('mouseover', () => closeBtn.style.color = '#1f2937');
+      closeBtn.addEventListener('mouseout', () => closeBtn.style.color = '#6b7280');
+      closeBtn.addEventListener('click', () => modalOverlay.remove());
+      
+      header.appendChild(titleEl);
+      header.appendChild(closeBtn);
+      
+      // Create content
+      const content = document.createElement('div');
+      content.style.cssText = 'padding:24px;overflow-y:auto;flex:1;';
+      
+      const form = document.createElement('form');
+      form.style.cssText = 'display:flex;flex-direction:column;gap:16px;';
+      
+      // Title field
+      const titleGroup = document.createElement('div');
+      const titleLabel = document.createElement('label');
+      titleLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      titleLabel.textContent = 'Video Title';
+      const titleInput = document.createElement('input');
+      titleInput.type = 'text';
+      titleInput.value = video.title || '';
+      titleInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;';
+      titleGroup.appendChild(titleLabel);
+      titleGroup.appendChild(titleInput);
+      form.appendChild(titleGroup);
+      
+      // Description field
+      const descGroup = document.createElement('div');
+      const descLabel = document.createElement('label');
+      descLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      descLabel.textContent = 'Description';
+      const descInput = document.createElement('textarea');
+      descInput.value = video.description || '';
+      descInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;min-height:80px;font-family:inherit;';
+      descGroup.appendChild(descLabel);
+      descGroup.appendChild(descInput);
+      form.appendChild(descGroup);
+      
+      // Category field
+      const catGroup = document.createElement('div');
+      const catLabel = document.createElement('label');
+      catLabel.style.cssText = 'font-size:14px;font-weight:600;color:#1f2937;margin-bottom:6px;display:block;';
+      catLabel.textContent = 'Category';
+      const catInput = document.createElement('input');
+      catInput.type = 'text';
+      catInput.value = video.category || '';
+      catInput.style.cssText = 'width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:14px;';
+      catGroup.appendChild(catLabel);
+      catGroup.appendChild(catInput);
+      form.appendChild(catGroup);
+      
+      content.appendChild(form);
+      
+      // Create footer with buttons
+      const footer = document.createElement('div');
+      footer.style.cssText = 'display:flex;gap:12px;padding:20px;border-top:1px solid #e5e7eb;background:#f9fafb;';
+      
+      const cancelBtn = document.createElement('button');
+      cancelBtn.style.cssText = 'flex:1;padding:10px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;font-weight:600;cursor:pointer;transition:all 0.2s;';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.addEventListener('click', () => modalOverlay.remove());
+      cancelBtn.addEventListener('mouseover', () => cancelBtn.style.background = '#f3f4f6');
+      cancelBtn.addEventListener('mouseout', () => cancelBtn.style.background = '#fff');
+      
+      const saveBtn = document.createElement('button');
+      saveBtn.style.cssText = 'flex:1;padding:10px;border:none;border-radius:6px;background:#6366f1;color:#fff;font-weight:600;cursor:pointer;transition:background 0.2s;';
+      saveBtn.textContent = 'Save Changes';
+      saveBtn.addEventListener('mouseover', () => saveBtn.style.background = '#4f46e5');
+      saveBtn.addEventListener('mouseout', () => saveBtn.style.background = '#6366f1');
+      saveBtn.addEventListener('click', async () => {
+        try {
+          const token = localStorage.getItem('adminToken') || '';
+          const role = localStorage.getItem('adminRole') || 'superadmin';
+          
+          const response = await fetch(`/api/media/${video._id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+              'X-User-Role': role
+            },
+            body: JSON.stringify({
+              title: titleInput.value.trim(),
+              description: descInput.value.trim(),
+              category: catInput.value.trim()
+            })
+          });
+          
+          if (!response.ok) throw new Error('Failed to update video');
+          await showAlert('Success', 'Video updated successfully', 'success');
+          modalOverlay.remove();
+          loadMedia();
+        } catch (err) {
+          showAlert('Error', err.message || 'Failed to save changes', 'error');
+        }
+      });
+      
+      footer.appendChild(cancelBtn);
+      footer.appendChild(saveBtn);
+      
+      // Assemble modal
+      modalContainer.appendChild(header);
+      modalContainer.appendChild(content);
+      modalContainer.appendChild(footer);
+      modalOverlay.appendChild(modalContainer);
+      
+      // Add to page
+      document.body.appendChild(modalOverlay);
+      
+      // Close on escape key
+      const handleEscape = (e) => {
+        if (e.key === 'Escape') {
+          modalOverlay.remove();
+          document.removeEventListener('keydown', handleEscape);
+        }
+      };
+      document.addEventListener('keydown', handleEscape);
+      
+      // Close on overlay click
+      modalOverlay.addEventListener('click', (e) => {
+        if (e.target === modalOverlay) {
+          modalOverlay.remove();
+          document.removeEventListener('keydown', handleEscape);
+        }
+      });
+    }
 
   <script>
     (function(){
