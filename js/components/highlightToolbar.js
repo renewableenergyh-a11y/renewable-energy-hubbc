@@ -105,6 +105,11 @@ export class HighlightToolbar {
     this.toolbar.style.display = 'flex';
     this.toolbar.style.left = x + 'px';
     this.toolbar.style.top = y + 'px';
+    
+    // Force browser reflow to ensure immediate rendering
+    // This fixes mobile issue where toolbar doesn't show until scroll
+    void this.toolbar.offsetHeight;
+    
     this.isVisible = true;
   }
 

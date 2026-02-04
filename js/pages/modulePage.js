@@ -1299,14 +1299,29 @@ function handleSelectionChanged(contentContainer, contentId, contentType) {
   const range = window.getSelection().getRangeAt(0);
   const rect = range.getBoundingClientRect();
   
-  const toolbarX = rect.left + (rect.width / 2) - 80; // Approximate center
+  // Horizontal: center toolbar above selection
+  const toolbarX = Math.max(10, rect.left + (rect.width / 2) - 80);
   
-  // Position toolbar higher on mobile to avoid selection menu
-  // On mobile, move it further up since there's a selection options card
+  // Vertical positioning - adjust for mobile vs desktop
   const isMobile = window.innerWidth <= 768;
-  const toolbarY = isMobile 
-    ? Math.max(10, rect.top - 120)  // Higher on mobile
-    : Math.max(10, rect.top - 60);   // Standard position on desktop
+  let toolbarY;
+  
+  if (isMobile) {
+    // On mobile: place toolbar above text with buffer to avoid selection menu
+    // If text is too high on screen, place toolbar below instead
+    const spacedAbove = rect.top - 10; // Space available above with 10px margin
+    
+    if (spacedAbove > 80) {
+      // Enough room above - place toolbar 120px above selection
+      toolbarY = rect.top - 120;
+    } else {
+      // Not enough room above - place below selection
+      toolbarY = rect.bottom + 20;
+    }
+  } else {
+    // Desktop: place 60px above selection
+    toolbarY = Math.max(10, rect.top - 60);
+  }
 
   // Store current selection for toolbar actions
   window.currentTextSelection = {
