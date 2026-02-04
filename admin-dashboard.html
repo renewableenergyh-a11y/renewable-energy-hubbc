@@ -4399,6 +4399,10 @@
     }
 
     // ----- MEDIA MANAGEMENT UI -----
+    // Global variable to store loadMedia function for use in modals
+    let loadMedia = null;
+    let allMedia = [];
+
     async function loadMediaManagementUI() {
       console.log('[loadMediaManagementUI] Called');
       const container = document.getElementById('media-panel');
@@ -4420,9 +4424,8 @@
       const listEl = document.getElementById('media-list');
       const countEl = document.getElementById('media-count');
       console.log('[loadMediaManagementUI] Elements found - form:', !!form, 'uploadBtn:', !!uploadBtn, 'listEl:', !!listEl, 'countEl:', !!countEl);
-      let allMedia = [];
 
-      async function loadMedia() {
+      loadMedia = async function() {
         try {
           console.log('[Media] Loading media from /api/media');
           const token = localStorage.getItem('adminToken') || '';
@@ -4446,7 +4449,7 @@
           console.error('Error loading media:', err);
           listEl.innerHTML = '<div style="color:var(--text-muted);padding:20px;text-align:center;">Error loading videos: ' + err.message + '</div>';
         }
-      }
+      };
 
       function renderMediaList() {
         listEl.innerHTML = '';
