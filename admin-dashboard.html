@@ -2297,6 +2297,13 @@
                     <textarea id="career-roles" placeholder="e.g., Solar Technician, Wind Engineer, Grid Operator" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical;"></textarea>
                   </div>
 
+                  <div>
+                    <label style="display: block; font-size: 12px; font-weight: 600; color: var(--text-main); margin-bottom: 6px;">
+                      <i class="fas fa-book" style="margin-right: 4px; color: var(--green-main);"></i>Related Courses (comma-separated)
+                    </label>
+                    <textarea id="career-courses" placeholder="e.g., Solar Panel Installation 101, Wind Energy Basics, Grid Management" rows="2" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box; font-family: inherit; font-size: 12px; resize: vertical;"></textarea>
+                  </div>
+
                   <div id="career-form-notice" style="padding: 10px 12px; border-radius: 6px; font-size: 12px; display: none; margin: 6px 0; border-left: 3px solid var(--green-main); background: rgba(0, 121, 107, 0.08);"></div>
 
                   <div style="display: flex; gap: 8px;">
@@ -4234,6 +4241,7 @@
         const salaryRange = document.getElementById('career-salary').value.trim();
         const skillsRequired = document.getElementById('career-skills').value.split(',').map(s => s.trim()).filter(s => s);
         const industryRoles = document.getElementById('career-roles').value.split(',').map(r => r.trim()).filter(r => r);
+        const relatedCourses = document.getElementById('career-courses').value.split(',').map(c => c.trim()).filter(c => c);
         const coverImage = document.getElementById('career-image').value.trim();
 
         if (!title) {
@@ -4250,6 +4258,7 @@
           salaryRange,
           skillsRequired,
           industryRoles,
+          relatedCourses,
           coverImage,
           status: isDraft ? 'draft' : 'published'
         };
@@ -4312,6 +4321,7 @@
           document.getElementById('career-salary').value = career.salaryRange || '';
           document.getElementById('career-skills').value = career.skillsRequired.join(', ');
           document.getElementById('career-roles').value = career.industryRoles.join(', ');
+          document.getElementById('career-courses').value = (career.relatedCourses || []).join(', ');
           document.getElementById('career-image').value = career.coverImage || '';
 
           currentEditingId = career.id;

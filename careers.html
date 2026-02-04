@@ -771,6 +771,15 @@
           </div>
         </div>
       ` : ''}
+
+      ${career.relatedCourses && career.relatedCourses.length > 0 ? `
+        <div class="detail-section">
+          <h3><i class="fas fa-book"></i>Related Courses</h3>
+          <div class="badge-list">
+            ${career.relatedCourses.map(course => `<span class="badge">${course}</span>`).join('')}
+          </div>
+        </div>
+      ` : ''}
     `;
 
     document.getElementById('career-detail-content').innerHTML = html;
