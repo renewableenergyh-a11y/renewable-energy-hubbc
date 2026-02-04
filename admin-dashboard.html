@@ -4175,7 +4175,7 @@
 
       async function loadCareers() {
         try {
-          const token = localStorage.getItem('authToken');
+          const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
           const response = await fetch('/api/careers', {
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -4255,7 +4255,7 @@
         };
 
         try {
-          const token = localStorage.getItem('authToken');
+          const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
           const method = currentEditingId ? 'PUT' : 'POST';
           const url = currentEditingId ? `/api/careers/${currentEditingId}` : '/api/careers';
 
@@ -4295,7 +4295,7 @@
 
       async function editCareer(careerId) {
         try {
-          const token = localStorage.getItem('authToken');
+          const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
           const response = await fetch(`/api/careers/${careerId}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           });
@@ -4327,7 +4327,7 @@
 
       async function deleteCareer(careerId) {
         try {
-          const token = localStorage.getItem('authToken');
+          const token = localStorage.getItem('adminToken') || localStorage.getItem('authToken');
           const response = await fetch(`/api/careers/${careerId}`, {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
