@@ -207,20 +207,86 @@ db.highlights.deleteOne({ id: "highlight_id" })
 - Verify content container has correct ID
 - Check browser console for errors
 
-### Highlights Not Persisting
-- Verify token is being sent: Check Network tab → Authorization header
-- Check database connection: Server logs should show "Connected to MongoDB"
-- Verify user email is correct in token
+### Toolbar Not Hiding After Color Change
+- **Status:** ✅ FIXED (Commit 1a75d56)
+- Verify: Click highlight → change color → toolbar closes
+- If not working: Clear browser cache (Ctrl+Shift+Delete)
+
+### Highlights Not Persisting on Reload
+- **Status:** ❌ KNOWN ISSUE (Under investigation)
+- Check console logs: Open F12 → Console
+- Look for these logs when changing color:
+  - `📤 Sending color update to server` (client sending)
+  - `📥 Server response status: 200` (server responding)
+  - `📥 Server response data:` (check if color field is present)
+- Reload page and watch for:
+  - `📥 Fetched highlights:` (check if new color is retrieved)
+  - `🔄 Reapplying highlights:` (applying to DOM)
+- Full diagnostic guide: [HIGHLIGHTING_DEBUG_GUIDE.md](HIGHLIGHTING_DEBUG_GUIDE.md)
 
 ### Colors Not Showing
 - Check if Font Awesome icons load (trash icon)
 - Verify CSS file is loaded: Check `css/style.css`
 - Check for CSS conflicts: Inspect element in DevTools
 
+### Mobile Toolbar Overflow
+- **Status:** ✅ FIXED (Commit b8e892d)
+- Verify: View module on mobile, toolbar should fit
+- If overflowing: Clear cache (Ctrl+Shift+Delete)
+
 ### Mobile Touch Not Working
 - Verify `touchend` listener is active
 - Long-press may require explicit selection
 - Check if iOS requires additional permissions
+
+---
+
+## Latest Updates (Current Session)
+
+### ✅ Features Deployed
+
+1. **Toolbar Hides Immediately on Color Change** (Commit 1a75d56)
+   - Added `highlightToolbar.hide()` immediately after DOM update
+   - Toolbar closes without requiring user to click outside
+   - Files: [js/pages/modulePage.js](js/pages/modulePage.js#L1478)
+
+2. **Comprehensive Console Logging** (Commit 1a75d56)
+   - Track every step of color update and retrieval
+   - Helps diagnose persistence issue
+   - Files: [js/pages/modulePage.js](js/pages/modulePage.js), [js/core/highlightService.js](js/core/highlightService.js)
+
+3. **Mobile Layout Fixes** (Commit b8e892d)
+   - Toolbar size optimized for mobile
+   - Overflow prevention with `max-width` constraint
+   - Files: [css/style.css](css/style.css)
+
+### ❌ Known Issues
+
+1. **Color Persistence on Reload** (Under Investigation)
+   - Changed colors revert to original when page reloads
+   - Logging framework deployed to identify failure point
+   - See: [HIGHLIGHTING_DEBUG_GUIDE.md](HIGHLIGHTING_DEBUG_GUIDE.md) for testing
+
+### 📚 Documentation Added
+
+- [HIGHLIGHTING_DEBUG_GUIDE.md](HIGHLIGHTING_DEBUG_GUIDE.md) - Step-by-step debugging procedure
+- [HIGHLIGHTING_STATUS.md](HIGHLIGHTING_STATUS.md) - Current system status and testing
+- [SESSION_SUMMARY_HIGHLIGHTING.md](SESSION_SUMMARY_HIGHLIGHTING.md) - Detailed session work summary
+
+### 🔍 Console Log Reference (New)
+
+| Log | Meaning |
+|-----|---------|
+| 🎨 Color updated in DOM | DOM element color changed |
+| 📤 Sending color update | About to call server |
+| 📡 Updating highlight on server | Server processing request |
+| 📥 Server response status | Server responded (200 = good) |
+| 📥 Server response data | Data server returned |
+| ✅ Server confirmed update | Save was successful |
+| 📥 Fetched highlights | Page reload retrieved colors |
+| 🔄 Reapplying highlights | Applying colors to DOM |
+| ⚙️ Processing highlight | Processing individual highlight |
+| ❌ Error | Operation failed |
 
 ---
 
