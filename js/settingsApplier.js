@@ -7,6 +7,7 @@ class SettingsApplier {
   constructor() {
     this.settings = null;
     this.checkInterval = null;
+    this.lastUpdateTime = 0;
   }
 
   /**
@@ -18,20 +19,24 @@ class SettingsApplier {
     // Load settings on init
     await this.loadAndApply();
     
-    // Refresh settings every 30 seconds to catch admin changes
+    // Check for settings updates every 2 seconds (detects changes from admin or other tabs)
     this.checkInterval = setInterval(() => {
-      this.loadAndApply();
-    }, 30000);
+      const updateTime = localStorage.getItem('_settingsUpdated');
+      if (updateTime && parseInt(updateTime) > this.lastUpdateTime) {
+        console.log('📢 Settings update detected via localStorage');
+        this.loadAndApply();
+      }
+    }, 2000);
     
-    // Listen for immediate settings updates from admin panel or other tabs
+    // Also listen for storage events (works when other tabs change settings)
     window.addEventListener('storage', (e) => {
       if (e.key === '_settingsUpdated') {
-        console.log('📢 Settings update detected from admin panel or another tab');
+        console.log('📢 Settings update detected from storage event');
         this.loadAndApply();
       }
     });
     
-    console.log('✅ Settings Applier initialized');
+    console.log('✅ Settings Applier initialized - checking every 2 seconds');
   }
 
   /**
@@ -46,6 +51,7 @@ class SettingsApplier {
       }
 
       this.settings = await response.json();
+      this.lastUpdateTime = Date.now();
       console.log('📥 Settings loaded from public API');
       
       // Apply all settings
