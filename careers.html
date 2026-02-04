@@ -617,7 +617,7 @@
                             <h3 class="career-card-title">${career.title}</h3>
                             <p class="career-card-desc">${career.shortDescription}</p>
                             ${career.educationLevel ? `<div class="meta-badge"><i class="fas fa-graduation-cap"></i> ${career.educationLevel}</div>` : ''}
-                            <button class="view-btn" onclick="event.stopPropagation();">
+                            <button class="view-btn" onclick="event.stopPropagation(); viewCareer('${career.id}');">
                                 View Career
                             </button>
                         </div>
