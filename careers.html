@@ -33,16 +33,19 @@
       background: linear-gradient(135deg, var(--green-main), #005a4f);
       color: white;
       border: none;
-      padding: 10px 18px;
+      padding: 10px 12px;
       border-radius: 6px;
       cursor: pointer;
       font-weight: 600;
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      gap: 0;
       transition: all 0.3s ease;
       white-space: nowrap;
-      font-size: 0.95em;
+      font-size: 1.1em;
+      width: 40px;
+      height: 40px;
     }
 
     .pdf-btn:hover {
@@ -305,8 +308,10 @@
       }
 
       .pdf-btn {
-        width: 100%;
-        justify-content: center;
+        width: auto;
+        height: auto;
+        padding: 10px 12px;
+        font-size: 1em;
       }
 
       #careers-grid {
@@ -449,9 +454,8 @@
       <div id="careers-list-view">
         <div class="careers-header">
           <h2><i class="fas fa-briefcase" style="margin-right: 10px;"></i>Careers in Renewable Energy</h2>
-          <button class="pdf-btn" id="download-pdf-btn" onclick="downloadPDF()">
-            <i class="fas fa-file-pdf"></i>
-            Download PDF
+          <button class="pdf-btn" id="download-pdf-btn" onclick="downloadPDF()" title="Download PDF">
+            <i class="fas fa-download"></i>
           </button>
         </div>
         <div id="careers-grid"></div>
