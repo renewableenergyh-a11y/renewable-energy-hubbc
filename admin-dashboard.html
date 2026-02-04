@@ -4480,9 +4480,13 @@
             if (!confirmed) return;
             try {
               const token = localStorage.getItem('adminToken') || '';
-              const response = await fetch(`/api/media/${video.id}`, {
+              const role = localStorage.getItem('adminRole') || 'superadmin';
+              const response = await fetch(`/api/media/${video._id}`, {
                 method: 'DELETE',
-                headers: { 'Authorization': `Bearer ${token}` }
+                headers: { 
+                  'Authorization': `Bearer ${token}`,
+                  'X-User-Role': role
+                }
               });
               if (!response.ok) throw new Error('Failed to delete');
               await showAlert('Success', 'Video deleted successfully', 'success');
