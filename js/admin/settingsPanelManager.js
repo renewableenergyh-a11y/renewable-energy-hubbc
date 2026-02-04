@@ -517,6 +517,10 @@ class SettingsPanelManager {
       const result = await response.json();
       console.log('✅ API Response:', result);
       this.currentSettings = result.settings || result;
+      
+      console.log('💾 Stored settings in memory:', this.currentSettings);
+      console.log('✔️ maintenanceMode is now:', this.currentSettings.maintenanceMode);
+      console.log('✔️ maintenanceMessage is now:', this.currentSettings.maintenanceMessage);
 
       await showAlert('Success', `${section.replace('-', ' ')} settings saved successfully!`, 'success');
 

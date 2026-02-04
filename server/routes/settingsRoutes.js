@@ -66,9 +66,11 @@ function authenticateSuperAdmin(req, res, next) {
 // GET platform settings
 router.get('/', authenticateSuperAdmin, async (req, res) => {
   try {
+    console.log('🔍 Fetching settings from database...');
     let settings = await db.models.PlatformSettings.findOne({});
     
     if (!settings) {
+      console.log('📝 No settings found, creating defaults...');
       // Create default settings if none exist
       settings = await db.models.PlatformSettings.create({
         // Core Platform
@@ -106,9 +108,12 @@ router.get('/', authenticateSuperAdmin, async (req, res) => {
         premiumPromotionDurationValue: 0,
         premiumPromotionDurationUnit: 'days', // 'minutes', 'hours', 'days'
       });
+      console.log('✅ Default settings created');
     }
     
-    res.json(settings);
+    console.log('📤 Returning settings:', JSON.stringify(settings.toObject ? settings.toObject() : settings, null, 2));
+    const plainSettings = settings.toObject ? settings.toObject() : settings;
+    res.json(plainSettings);
   } catch (err) {
     console.error('Error fetching settings:', err);
     res.status(500).json({ error: 'Failed to fetch settings' });
@@ -198,15 +203,18 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
     }
     
     // Apply updates to settings
+    console.log('📝 Applying updates to settings...');
     Object.assign(settings, updates);
     
-    console.log('📝 Updated settings object:', settings);
+    console.log('📝 Updated settings object:', JSON.stringify(settings.toObject ? settings.toObject() : settings, null, 2));
     
     await settings.save();
     
-    console.log('✅ Settings saved to database');
+    console.log('✅ Settings saved to database successfully');
     
-    res.json({ success: true, settings });
+    // Convert to plain object and return
+    const plainSettings = settings.toObject ? settings.toObject() : settings;
+    res.json({ success: true, settings: plainSettings });
   } catch (err) {
     console.error('Error updating settings:', err);
     res.status(500).json({ error: 'Failed to update settings' });
