@@ -544,25 +544,27 @@ class SettingsApplier {
     const s = this.settings;
     
     console.log('🤖 Applying AI Assistant settings...');
+    console.log('   Input: enableAiAssistant=%s, aiAccessMode=%s', s.enableAiAssistant, s.aiAccessMode);
 
     // Disable AI entirely
     if (s.enableAiAssistant === false) {
-      console.log('  ✓ AI Assistant DISABLED');
+      console.log('  ❌ AI Assistant DISABLED - not showing button');
       window.aiEnabled = false;
       this.hideElement('[data-section="ai"], #ai-section, [data-action="open-ai"]');
       return;
     }
 
-    console.log('  ✓ AI Assistant ENABLED');
+    console.log('  ✅ AI Assistant ENABLED');
     window.aiEnabled = true;
     this.showElement('[data-section="ai"], #ai-section, [data-action="open-ai"]');
 
     // AI Access Mode
-    window.aiAccessMode = s.aiAccessMode || 'Premium Only';
-    console.log('  ✓ AI Access Mode:', window.aiAccessMode);
+    const accessMode = s.aiAccessMode || 'Premium Only';
+    window.aiAccessMode = accessMode;
+    console.log('  📋 Setting window.aiAccessMode to:', accessMode);
     
-    if (s.aiAccessMode === 'Everyone (Promotion)') {
-      console.log('  ✓ AI available to EVERYONE (Promotion)');
+    if (accessMode === 'Everyone (Promotion)') {
+      console.log('  🎉 AI PROMOTION MODE ACTIVE - Everyone gets access when logged in');
       window.aiRestrictedToPremium = false;
       
       // Show AI promotion banner
@@ -571,6 +573,7 @@ class SettingsApplier {
       // Remove upsell if it exists
       const upsell = document.querySelector('[data-component="ai-upsell"]');
       if (upsell) {
+        console.log('  🗑️ Removing premium upsell');
         upsell.remove();
       }
       
@@ -579,8 +582,8 @@ class SettingsApplier {
       if (aiInterface) {
         aiInterface.style.display = '';
       }
-    } else if (s.aiAccessMode === 'Premium Only') {
-      console.log('  ✓ AI restricted to PREMIUM ONLY');
+    } else if (accessMode === 'Premium Only') {
+      console.log('  🔐 AI PREMIUM ONLY MODE - restricted to premium users');
       window.aiRestrictedToPremium = true;
       
       // Remove AI promotion banner if it exists
