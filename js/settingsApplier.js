@@ -697,9 +697,10 @@ class SettingsApplier {
       // Hide billing.html links during promotion
       this.addCSSRule('a[href*="billing.html"]', 'display: none !important;');
       
-      // Show promotion banner if not already present
+      // Show promotion banner if not already present and not dismissed
+      const isDismissed = sessionStorage.getItem('promotion-banner-dismissed') === 'true';
       const existingBanner = document.querySelector('[data-component="premium-promotion-banner"]');
-      if (!existingBanner) {
+      if (!existingBanner && !isDismissed) {
         const banner = document.createElement('div');
         banner.setAttribute('data-component', 'premium-promotion-banner');
         banner.style.cssText = `
@@ -747,6 +748,7 @@ class SettingsApplier {
           banner.style.display = 'none';
           // Remember dismissal for this session
           sessionStorage.setItem('promotion-banner-dismissed', 'true');
+          console.log('📌 Banner dismissed - will stay hidden until browser closes');
         };
         
         banner.innerHTML = `🎉 <strong>Special Offer:</strong> Premium access is FREE for everyone! Enjoy all features until ${endDate}`;
@@ -758,6 +760,8 @@ class SettingsApplier {
         } else {
           mainContent.appendChild(banner);
         }
+      } else if (isDismissed) {
+        console.log('📌 Banner dismissed - skipping display');
       }
       
       console.log('  ✓ Premium for all promotion enabled');
@@ -772,6 +776,10 @@ class SettingsApplier {
         banner.remove();
         console.log('  ✓ Removed promotion banner');
       }
+      
+      // Clear dismissal state since promotion ended
+      sessionStorage.removeItem('promotion-banner-dismissed');
+      console.log('  ✓ Cleared banner dismissal state');
       
       // Remove billing.html hiding CSS rule
       this.removeCSSRule('a[href*="billing.html"]');
