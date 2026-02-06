@@ -522,7 +522,7 @@ class SettingsPanelManager {
       console.log('✔️ maintenanceMode is now:', this.currentSettings.maintenanceMode);
       console.log('✔️ maintenanceMessage is now:', this.currentSettings.maintenanceMessage);
 
-      await showAlert('Success', `${section.replace('-', ' ')} settings saved successfully! The page will refresh in 1 second to apply changes...`, 'success');
+      await showAlert('Success', `${section.replace('-', ' ')} settings saved successfully!`, 'success');
 
       button.disabled = false;
       button.innerHTML = originalText;
@@ -530,12 +530,6 @@ class SettingsPanelManager {
       // Refresh UI to show updated badges
       this.renderUI();
       this.setupEventListeners();
-      
-      // Auto-refresh the entire page to apply all setting changes immediately
-      console.log('🔄 Auto-refreshing page to apply setting changes...');
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500); // Wait 1.5 seconds before refresh so user sees the success message
 
     } catch (err) {
       console.error('❌ Error saving settings:', err);
