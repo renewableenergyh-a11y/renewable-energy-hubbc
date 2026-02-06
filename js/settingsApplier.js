@@ -262,18 +262,22 @@ class SettingsApplier {
     if (s.enableNewsSystem === false) {
       console.log('  ✓ News system DISABLED');
       
-      // Add CSS rule to hide all news-related elements
-      this.addCSSRule('a[href="news.html"], a[href*="/news.html"]', 'display: none !important;');
+      // Add CSS rules to hide all news-related elements permanently
+      this.addCSSRule('a[href="news.html"]', 'display: none !important;');
+      this.addCSSRule('a[href*="/news.html"]', 'display: none !important;');
+      this.addCSSRule('.news-list', 'display: none !important;');
       this.addCSSRule('#newsList', 'display: none !important;');
       this.addCSSRule('#pagination', 'display: none !important;');
+      this.addCSSRule('.news-container', 'display: none !important;');
+      this.addCSSRule('.sort-controls', 'display: none !important;');
       
-      // Hide news page and links
+      // Hide news links immediately
       document.querySelectorAll('a[href="news.html"], a[href*="/news.html"]').forEach(link => {
         link.style.display = 'none';
         link.setAttribute('data-disabled-by-settings', 'true');
       });
       
-      // Hide news list and pagination if they exist
+      // Hide news content if it exists
       const newsList = document.getElementById('newsList');
       if (newsList) {
         newsList.style.display = 'none';
@@ -284,31 +288,52 @@ class SettingsApplier {
         pagination.style.display = 'none';
         pagination.setAttribute('data-disabled-by-settings', 'true');
       }
+      const newsContainer = document.querySelector('.news-container');
+      if (newsContainer) {
+        newsContainer.style.display = 'none';
+        newsContainer.setAttribute('data-disabled-by-settings', 'true');
+      }
       
-      // Show notice if on news page
-      const newsSection = document.querySelector('main');
-      if (newsSection && window.location.pathname.includes('news')) {
-        const existingNotice = document.querySelector('[data-component="news-disabled-notice"]');
-        if (!existingNotice) {
-          const notice = document.createElement('div');
-          notice.setAttribute('data-component', 'news-disabled-notice');
-          notice.style.cssText = 'padding: 40px 20px; text-align: center; background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; margin: 40px;';
-          notice.innerHTML = `
-            <div style="font-size: 48px; margin-bottom: 16px;">📰</div>
-            <h2 style="color: #333; margin: 0 0 10px 0; font-size: 24px;">News Disabled</h2>
-            <p style="color: #666; margin: 0 0 15px 0; font-size: 16px;">The news system is currently disabled by the administrator.</p>
-            <p style="color: #666; margin: 0; font-size: 14px;">Please check back later.</p>
-          `;
-          newsSection.appendChild(notice);
+      // If currently on news page, redirect or show notice
+      if (window.location.pathname.includes('/news') && !window.location.pathname.includes('/news-detail')) {
+        // On news.html listing page
+        console.log('  📍 Currently on news page, redirecting to home');
+        setTimeout(() => {
+          window.location.href = 'index.html';
+        }, 500);
+      } else if (window.location.pathname.includes('news')) {
+        // Show notice
+        const main = document.querySelector('main');
+        if (main) {
+          const existingNotice = document.querySelector('[data-component="news-disabled-notice"]');
+          if (!existingNotice) {
+            const notice = document.createElement('div');
+            notice.setAttribute('data-component', 'news-disabled-notice');
+            notice.style.cssText = 'padding: 40px 20px; text-align: center; background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; margin: 40px; min-height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center;';
+            notice.innerHTML = `
+              <div style="font-size: 48px; margin-bottom: 16px;">📰</div>
+              <h2 style="color: #333; margin: 0 0 10px 0; font-size: 24px;">News Disabled</h2>
+              <p style="color: #666; margin: 0 0 15px 0; font-size: 16px;">The news system is currently disabled by the administrator.</p>
+              <p style="color: #666; margin: 0; font-size: 14px;">Please check back later.</p>
+            `;
+            main.innerHTML = '';
+            main.appendChild(notice);
+          }
         }
       }
+      
+      console.log('  ✓ News system hidden and CSS rules applied');
     } else {
       console.log('  ✓ News system ENABLED');
       
       // Remove CSS rules
-      this.removeCSSRule('a[href="news.html"], a[href*="/news.html"]');
+      this.removeCSSRule('a[href="news.html"]');
+      this.removeCSSRule('a[href*="/news.html"]');
+      this.removeCSSRule('.news-list');
       this.removeCSSRule('#newsList');
       this.removeCSSRule('#pagination');
+      this.removeCSSRule('.news-container');
+      this.removeCSSRule('.sort-controls');
       
       // Show news page and links
       document.querySelectorAll('a[href="news.html"][data-disabled-by-settings="true"], a[href*="/news.html"][data-disabled-by-settings="true"]').forEach(link => {
@@ -327,10 +352,17 @@ class SettingsApplier {
         pagination.style.display = '';
         pagination.removeAttribute('data-disabled-by-settings');
       }
+      const newsContainer = document.querySelector('.news-container');
+      if (newsContainer && newsContainer.getAttribute('data-disabled-by-settings') === 'true') {
+        newsContainer.style.display = '';
+        newsContainer.removeAttribute('data-disabled-by-settings');
+      }
       
       // Remove notice if it exists
       const notice = document.querySelector('[data-component="news-disabled-notice"]');
       if (notice) notice.remove();
+      
+      console.log('  ✓ News system shown and CSS rules removed');
     }
 
     // Likes & Reactions Toggle
@@ -338,6 +370,7 @@ class SettingsApplier {
       console.log('  ✓ Likes/Reactions DISABLED');
       
       // Add CSS rules to hide all like/reaction elements permanently
+      this.addCSSRule('#engagementSection', 'display: none !important;');
       this.addCSSRule('#likeSection', 'display: none !important;');
       this.addCSSRule('.like-btn', 'display: none !important;');
       this.addCSSRule('#likeBtn', 'display: none !important;');
@@ -346,14 +379,17 @@ class SettingsApplier {
       this.addCSSRule('.engagement-buttons', 'display: none !important;');
       
       // Also hide them immediately if they exist
-      document.querySelectorAll('#likeSection, .like-btn, #likeBtn, #reactionsContainer, .reaction-btn, .engagement-buttons').forEach(el => {
+      document.querySelectorAll('#engagementSection, #likeSection, .like-btn, #likeBtn, #reactionsContainer, .reaction-btn, .engagement-buttons').forEach(el => {
         el.style.display = 'none';
         el.setAttribute('data-disabled-by-settings', 'true');
       });
+      
+      console.log('  ✓ Hidden engagement section and all reaction elements');
     } else {
       console.log('  ✓ Likes/Reactions ENABLED');
       
       // Remove CSS rules
+      this.removeCSSRule('#engagementSection');
       this.removeCSSRule('#likeSection');
       this.removeCSSRule('.like-btn');
       this.removeCSSRule('#likeBtn');
@@ -362,10 +398,12 @@ class SettingsApplier {
       this.removeCSSRule('.engagement-buttons');
       
       // Show like buttons and reactions
-      document.querySelectorAll('#likeSection[data-disabled-by-settings="true"], .like-btn[data-disabled-by-settings="true"], #likeBtn[data-disabled-by-settings="true"], #reactionsContainer[data-disabled-by-settings="true"], .reaction-btn[data-disabled-by-settings="true"], .engagement-buttons[data-disabled-by-settings="true"]').forEach(el => {
+      document.querySelectorAll('#engagementSection[data-disabled-by-settings="true"], #likeSection[data-disabled-by-settings="true"], .like-btn[data-disabled-by-settings="true"], #likeBtn[data-disabled-by-settings="true"], #reactionsContainer[data-disabled-by-settings="true"], .reaction-btn[data-disabled-by-settings="true"], .engagement-buttons[data-disabled-by-settings="true"]').forEach(el => {
         el.style.display = '';
         el.removeAttribute('data-disabled-by-settings');
       });
+      
+      console.log('  ✓ Shown engagement section and all reaction elements');
     }
 
     // Careers Page Toggle
