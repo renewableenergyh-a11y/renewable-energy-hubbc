@@ -8,7 +8,6 @@ class SettingsApplier {
     this.settings = null;
     this.checkInterval = null;
     this.lastAppliedSettings = null;
-    this.hasRefreshedOnce = false; // Track if we've already refreshed once
   }
 
   /**
@@ -42,21 +41,21 @@ class SettingsApplier {
       const newSettings = await response.json();
       console.log('📥 Settings loaded from public API:', newSettings);
       
-      // Check if settings have changed
+      // Check if settings have changed (including removals and disables)
       if (this.lastAppliedSettings && this.hasSettingsChanged(this.lastAppliedSettings, newSettings)) {
-        console.log('🔄 Settings have changed! Detected changes:', this.getSettingsDifferences(this.lastAppliedSettings, newSettings));
+        const differences = this.getSettingsDifferences(this.lastAppliedSettings, newSettings);
+        console.log('🔄 Settings have changed! Detected changes:', differences);
         this.settings = newSettings;
         this.lastAppliedSettings = JSON.parse(JSON.stringify(newSettings)); // Deep copy for comparison
         this.applySettings();
         
         // Auto-refresh page to apply changes (but skip admin dashboard)
-        if (!window.location.pathname.includes('/admin') && this.hasRefreshedOnce) {
+        // Refresh on ANY change: enabled, disabled, or removed
+        if (!window.location.pathname.includes('/admin')) {
           console.log('🌀 Auto-refreshing page to apply setting changes...');
           setTimeout(() => {
             window.location.reload();
           }, 800);
-        } else {
-          this.hasRefreshedOnce = true;
         }
       } else if (!this.lastAppliedSettings) {
         // First load - just apply without refresh
