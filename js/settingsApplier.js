@@ -7,6 +7,7 @@ class SettingsApplier {
   constructor() {
     this.settings = null;
     this.checkInterval = null;
+    this.lastAppliedSettings = null;
   }
 
   /**
@@ -38,7 +39,7 @@ class SettingsApplier {
       }
 
       this.settings = await response.json();
-      console.log('📥 Settings loaded from public API');
+      console.log('📥 Settings loaded from public API:', this.settings);
       
       // Apply all settings
       this.applySettings();
@@ -58,8 +59,10 @@ class SettingsApplier {
 
     console.log('🔄 Applying all settings...');
     console.log('   maintenanceMode:', this.settings.maintenanceMode);
-    console.log('   premiumForAll:', this.settings.enablePremiumForAll);
-    console.log('   newsEnabled:', this.settings.enableNewsSystem);
+    console.log('   enablePremiumForAll:', this.settings.enablePremiumForAll);
+    console.log('   enableNewsSystem:', this.settings.enableNewsSystem);
+    console.log('   enableAiAssistant:', this.settings.enableAiAssistant);
+    console.log('   allowNewUserRegistration:', this.settings.allowNewUserRegistration);
 
     // Apply platform settings
     this.applyPlatformSettings();
@@ -88,7 +91,7 @@ class SettingsApplier {
     console.log('🔧 Applying platform settings...');
 
     // Maintenance Mode - Block access entirely
-    if (s.maintenanceMode) {
+    if (s.maintenanceMode === true) {
       console.log('🚧 MAINTENANCE MODE ENABLED - Blocking all access');
       this.showMaintenanceMode(s.maintenanceMessage);
       return; // Stop all other processing
@@ -105,31 +108,86 @@ class SettingsApplier {
 
     // Allow New User Registration
     if (s.allowNewUserRegistration === false) {
-      console.log('🚫 Registration disabled');
-      const signupBtn = document.querySelector('[data-action="signup"]');
-      const signupForm = document.getElementById('signupForm');
-      if (signupBtn) signupBtn.style.display = 'none';
-      if (signupForm) {
-        signupForm.style.display = 'none';
-        const message = document.createElement('div');
-        message.style.cssText = 'padding: 20px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; margin: 20px 0;';
-        message.innerHTML = '<strong>Registration Closed:</strong> New user registration is currently disabled. Please contact support.';
-        signupForm.parentNode.insertBefore(message, signupForm);
-      }
+      console.log('🚫 Registration DISABLED');
+      this.disableRegistration();
     } else {
-      // Re-show signup if it was hidden
-      const signupBtn = document.querySelector('[data-action="signup"]');
-      const signupForm = document.getElementById('signupForm');
-      if (signupBtn) signupBtn.style.display = '';
-      if (signupForm) signupForm.style.display = '';
-      // Remove closed message if it exists
-      const closedMsg = document.querySelector('[data-component="registration-closed"]');
-      if (closedMsg) closedMsg.remove();
+      console.log('✅ Registration ENABLED');
+      this.enableRegistration();
     }
 
     // Default Timezone (store for user settings)
     if (s.defaultTimezone) {
       window.platformTimezone = s.defaultTimezone;
+      console.log('🕐 Timezone set to:', s.defaultTimezone);
+    }
+  }
+
+  /**
+   * Disable user registration
+   */
+  disableRegistration() {
+    // Hide signup button
+    const signupBtn = document.querySelector('[data-action="signup"]');
+    if (signupBtn) {
+      signupBtn.style.display = 'none';
+      console.log('✓ Signup button hidden');
+    }
+
+    // Hide signup form on dedicated page
+    const signupForm = document.getElementById('signupForm');
+    if (signupForm) {
+      signupForm.style.display = 'none';
+      console.log('✓ Signup form hidden');
+      
+      // Show notice
+      const existingNotice = signupForm.nextElementSibling;
+      if (!existingNotice || !existingNotice.getAttribute('data-component')) {
+        const message = document.createElement('div');
+        message.setAttribute('data-component', 'registration-closed');
+        message.style.cssText = 'padding: 20px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; margin: 20px 0; text-align: center;';
+        message.innerHTML = '<strong>Registration Closed:</strong> New user registration is currently disabled by the administrator. Please contact support for assistance.';
+        signupForm.parentNode.insertBefore(message, signupForm);
+      }
+    }
+
+    // Hide from login page
+    const loginSignupLink = document.querySelector('a[href*="signup"], a[href*="register"]');
+    if (loginSignupLink) {
+      loginSignupLink.style.display = 'none';
+      console.log('✓ Login signup link hidden');
+    }
+  }
+
+  /**
+   * Enable user registration
+   */
+  enableRegistration() {
+    // Show signup button
+    const signupBtn = document.querySelector('[data-action="signup"]');
+    if (signupBtn) {
+      signupBtn.style.display = '';
+      console.log('✓ Signup button shown');
+    }
+
+    // Show signup form
+    const signupForm = document.getElementById('signupForm');
+    if (signupForm) {
+      signupForm.style.display = '';
+      console.log('✓ Signup form shown');
+      
+      // Remove notice if it exists
+      const notice = signupForm.nextElementSibling;
+      if (notice && notice.getAttribute('data-component') === 'registration-closed') {
+        notice.remove();
+        console.log('✓ Registration closed notice removed');
+      }
+    }
+
+    // Show login signup link
+    const loginSignupLink = document.querySelector('a[href*="signup"], a[href*="register"]');
+    if (loginSignupLink) {
+      loginSignupLink.style.display = '';
+      console.log('✓ Login signup link shown');
     }
   }
 
@@ -139,22 +197,46 @@ class SettingsApplier {
   applyCertificateSettings() {
     const s = this.settings;
     
+    console.log('🎓 Applying certificate settings...');
+    
     // Disable certificate generation entirely
     if (s.enableCertificateGeneration === false) {
-      console.log('🎓 Certificates disabled');
+      console.log('  ✓ Certificates DISABLED - hiding download buttons');
       const certButtons = document.querySelectorAll('[data-action="download-certificate"]');
-      certButtons.forEach(btn => btn.style.display = 'none');
+      certButtons.forEach(btn => {
+        btn.style.display = 'none';
+        btn.setAttribute('data-disabled-by-settings', 'true');
+      });
+    } else {
+      console.log('  ✓ Certificates ENABLED - showing download buttons');
+      const certButtons = document.querySelectorAll('[data-action="download-certificate"][data-disabled-by-settings="true"]');
+      certButtons.forEach(btn => {
+        btn.style.display = '';
+        btn.removeAttribute('data-disabled-by-settings');
+      });
     }
 
-    // Minimum pass percentage - enforce on quiz results
+    // Minimum pass percentage - store for backend use
     if (s.minimumQuizPassPercentage) {
       window.minimumPassPercentage = s.minimumQuizPassPercentage;
+      console.log('  ✓ Min pass percentage set to:', s.minimumQuizPassPercentage);
     }
 
     // Disable certificate re-download
     if (s.allowCertificateRedownload === false) {
+      console.log('  ✓ Certificate re-download DISABLED');
       const redownloadBtns = document.querySelectorAll('[data-action="redownload-certificate"]');
-      redownloadBtns.forEach(btn => btn.style.display = 'none');
+      redownloadBtns.forEach(btn => {
+        btn.style.display = 'none';
+        btn.setAttribute('data-disabled-by-settings', 'true');
+      });
+    } else {
+      console.log('  ✓ Certificate re-download ENABLED');
+      const redownloadBtns = document.querySelectorAll('[data-action="redownload-certificate"][data-disabled-by-settings="true"]');
+      redownloadBtns.forEach(btn => {
+        btn.style.display = '';
+        btn.removeAttribute('data-disabled-by-settings');
+      });
     }
   }
 
@@ -164,32 +246,68 @@ class SettingsApplier {
   applyNewsCareerSettings() {
     const s = this.settings;
     
-    // Disable news system
+    console.log('📰 Applying News & Careers settings...');
+
+    // News System Toggle
     if (s.enableNewsSystem === false) {
-      console.log('📰 News system disabled');
-      const newsSection = document.getElementById('news-section') || document.querySelector('[data-section="news"]');
-      if (newsSection) newsSection.style.display = 'none';
+      console.log('  ✓ News system DISABLED');
+      this.hideElement('[data-section="news"], #news-section');
+    } else {
+      console.log('  ✓ News system ENABLED');
+      this.showElement('[data-section="news"], #news-section');
     }
 
-    // Disable likes/reactions
+    // Likes & Reactions Toggle
     if (s.enableLikesReactions === false) {
-      const likeButtons = document.querySelectorAll('[data-action="like"], .like-btn, .react-btn');
-      likeButtons.forEach(btn => btn.style.display = 'none');
+      console.log('  ✓ Likes/Reactions DISABLED');
+      const likeButtons = document.querySelectorAll('[data-action="like"], .like-btn, [data-action="react"], .react-btn');
+      likeButtons.forEach(btn => {
+        btn.style.display = 'none';
+        btn.setAttribute('data-disabled-by-settings', 'true');
+      });
+    } else {
+      console.log('  ✓ Likes/Reactions ENABLED');
+      const likeButtons = document.querySelectorAll('[data-action="like"][data-disabled-by-settings="true"], .like-btn[data-disabled-by-settings="true"], [data-action="react"][data-disabled-by-settings="true"], .react-btn[data-disabled-by-settings="true"]');
+      likeButtons.forEach(btn => {
+        btn.style.display = '';
+        btn.removeAttribute('data-disabled-by-settings');
+      });
     }
 
-    // Disable careers page
+    // Careers Page Toggle
     if (s.enableCareersPage === false) {
-      console.log('💼 Careers page disabled');
-      const careersLink = document.querySelector('a[href*="careers"]');
-      if (careersLink) careersLink.parentNode.style.display = 'none';
-      const careersSection = document.getElementById('careers-section') || document.querySelector('[data-section="careers"]');
-      if (careersSection) careersSection.style.display = 'none';
+      console.log('  ✓ Careers page DISABLED');
+      const careersLinks = document.querySelectorAll('a[href*="careers"], a[href*="career"]');
+      careersLinks.forEach(link => {
+        link.style.display = 'none';
+        link.setAttribute('data-disabled-by-settings', 'true');
+      });
+      this.hideElement('[data-section="careers"], #careers-section');
+    } else {
+      console.log('  ✓ Careers page ENABLED');
+      const careersLinks = document.querySelectorAll('a[href*="careers"][data-disabled-by-settings="true"], a[href*="career"][data-disabled-by-settings="true"]');
+      careersLinks.forEach(link => {
+        link.style.display = '';
+        link.removeAttribute('data-disabled-by-settings');
+      });
+      this.showElement('[data-section="careers"], #careers-section');
     }
 
-    // Disable PDF downloads from careers
+    // PDF Downloads from Careers Toggle
     if (s.allowCareersPdfDownload === false) {
+      console.log('  ✓ Careers PDF downloads DISABLED');
       const pdfDownloads = document.querySelectorAll('[data-action="download-pdf"], .pdf-download-btn');
-      pdfDownloads.forEach(btn => btn.style.display = 'none');
+      pdfDownloads.forEach(btn => {
+        btn.style.display = 'none';
+        btn.setAttribute('data-disabled-by-settings', 'true');
+      });
+    } else {
+      console.log('  ✓ Careers PDF downloads ENABLED');
+      const pdfDownloads = document.querySelectorAll('[data-action="download-pdf"][data-disabled-by-settings="true"], .pdf-download-btn[data-disabled-by-settings="true"]');
+      pdfDownloads.forEach(btn => {
+        btn.style.display = '';
+        btn.removeAttribute('data-disabled-by-settings');
+      });
     }
   }
 
@@ -199,50 +317,72 @@ class SettingsApplier {
   applyAiSettings() {
     const s = this.settings;
     
+    console.log('🤖 Applying AI Assistant settings...');
+
     // Disable AI entirely
     if (s.enableAiAssistant === false) {
-      console.log('🤖 AI Assistant disabled');
-      const aiSection = document.getElementById('ai-section') || document.querySelector('[data-section="ai"]');
-      if (aiSection) aiSection.style.display = 'none';
-      const aiBtn = document.querySelector('[data-action="open-ai"]');
-      if (aiBtn) aiBtn.style.display = 'none';
+      console.log('  ✓ AI Assistant DISABLED');
       window.aiEnabled = false;
+      this.hideElement('[data-section="ai"], #ai-section, [data-action="open-ai"]');
       return;
     }
 
+    console.log('  ✓ AI Assistant ENABLED');
     window.aiEnabled = true;
+    this.showElement('[data-section="ai"], #ai-section, [data-action="open-ai"]');
 
     // AI Access Mode
     if (s.aiAccessMode === 'Premium Only') {
-      console.log('🔒 AI restricted to premium users');
+      console.log('  ✓ AI restricted to PREMIUM ONLY');
       window.aiRestrictedToPremium = true;
       
-      const aiInterface = document.querySelector('[data-component="ai-chat"]');
       const userRole = localStorage.getItem('userRole');
       const isPremium = localStorage.getItem('isPremium') === 'true';
       
-      if (aiInterface && userRole === 'user' && !isPremium) {
-        aiInterface.style.display = 'none';
-        const upsell = document.createElement('div');
-        upsell.style.cssText = 'padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; margin: 20px 0; text-align: center;';
-        upsell.innerHTML = '<h3>Upgrade to Premium</h3><p>AI Assistant is available for premium members only.</p><button class="btn-primary" onclick="navigateToPremium()">Upgrade Now</button>';
-        aiInterface.parentNode.insertBefore(upsell, aiInterface);
+      if (userRole === 'user' && !isPremium) {
+        const aiInterface = document.querySelector('[data-component="ai-chat"]');
+        if (aiInterface) {
+          aiInterface.style.display = 'none';
+          const existingUpsell = document.querySelector('[data-component="ai-upsell"]');
+          if (!existingUpsell) {
+            const upsell = document.createElement('div');
+            upsell.setAttribute('data-component', 'ai-upsell');
+            upsell.style.cssText = 'padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px; margin: 20px 0; text-align: center;';
+            upsell.innerHTML = '<h3 style="margin: 0 0 10px 0;">Upgrade to Premium</h3><p style="margin: 0 0 15px 0;">AI Assistant is available for premium members only.</p><button class="btn-primary" onclick="navigateToPremium()" style="background: white; color: #764ba2; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600;">Upgrade Now</button>';
+            aiInterface.parentNode.insertBefore(upsell, aiInterface);
+          }
+        }
       }
     } else if (s.aiAccessMode === 'Everyone') {
-      console.log('🟢 AI available to everyone');
+      console.log('  ✓ AI available to EVERYONE');
       window.aiRestrictedToPremium = false;
+      
+      // Remove upsell if it exists
+      const upsell = document.querySelector('[data-component="ai-upsell"]');
+      if (upsell) {
+        upsell.remove();
+      }
+      
+      // Show AI interface
+      const aiInterface = document.querySelector('[data-component="ai-chat"]');
+      if (aiInterface) {
+        aiInterface.style.display = '';
+      }
     }
 
     // Daily question limit
     if (s.aiDailyQuestionLimit) {
       window.aiDailyQuestionLimit = s.aiDailyQuestionLimit;
+      console.log('  ✓ AI daily question limit set to:', s.aiDailyQuestionLimit);
     }
 
     // Show beta notice
-    if (s.showAiBetaNotice) {
+    if (s.showAiBetaNotice === true) {
+      console.log('  ✓ AI Beta notice SHOWN');
       const betaBadge = document.querySelector('[data-component="ai-beta-badge"]');
       if (betaBadge) betaBadge.style.display = 'inline-block';
     } else {
+      console.log('  ✓ AI Beta notice HIDDEN');
       const betaBadge = document.querySelector('[data-component="ai-beta-badge"]');
       if (betaBadge) betaBadge.style.display = 'none';
     }
@@ -254,53 +394,95 @@ class SettingsApplier {
   applyPremiumSettings() {
     const s = this.settings;
     
+    console.log('💎 Applying Premium settings...');
+
     // Disable premium system entirely
     if (s.enablePremiumSystem === false) {
-      console.log('💳 Premium system disabled');
+      console.log('  ✓ Premium system DISABLED');
       window.premiumEnabled = false;
-      const premiumBtn = document.querySelector('[data-action="upgrade-premium"]');
-      if (premiumBtn) premiumBtn.style.display = 'none';
-      const premiumSection = document.getElementById('premium-section') || document.querySelector('[data-section="premium"]');
-      if (premiumSection) premiumSection.style.display = 'none';
+      this.hideElement('[data-action="upgrade-premium"], [data-section="premium"], #premium-section');
       return;
     }
 
+    console.log('  ✓ Premium system ENABLED');
     window.premiumEnabled = true;
+    this.showElement('[data-action="upgrade-premium"], [data-section="premium"], #premium-section');
 
     // Free trial duration
     if (s.freeTrialDurationDays) {
       window.freeTrialDays = s.freeTrialDurationDays;
+      console.log('  ✓ Free trial duration set to:', s.freeTrialDurationDays, 'days');
     }
 
-    // Premium for all
-    if (s.enablePremiumForAll) {
-      console.log('🎉 PREMIUM FOR EVERYONE - Promotion active');
+    // Premium for all (promotion)
+    if (s.enablePremiumForAll === true) {
+      console.log('  ✓ PREMIUM FOR ALL PROMOTION ACTIVE');
       window.premiumForAll = true;
+      window.userPremium = true;
       
-      // Hide premium upgrade buttons
+      // Hide upgrade buttons
       const upgradeBtns = document.querySelectorAll('[data-action="upgrade-premium"]');
-      upgradeBtns.forEach(btn => btn.style.display = 'none');
+      upgradeBtns.forEach(btn => {
+        btn.style.display = 'none';
+        btn.setAttribute('data-disabled-by-settings', 'true');
+      });
       
-      // Show promotion banner
-      const banner = document.createElement('div');
-      banner.style.cssText = 'padding: 15px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center; margin-bottom: 20px; border-radius: 8px; font-weight: 600;';
-      banner.innerHTML = `🎉 Special Offer: Premium access is now FREE for everyone! Enjoy all features while this promotion lasts.`;
-      banner.setAttribute('data-component', 'premium-promotion-banner');
-      
-      const mainContent = document.querySelector('main') || document.body;
-      if (mainContent.firstChild) {
-        mainContent.insertBefore(banner, mainContent.firstChild);
+      // Show promotion banner if not already present
+      const existingBanner = document.querySelector('[data-component="premium-promotion-banner"]');
+      if (!existingBanner) {
+        const banner = document.createElement('div');
+        banner.setAttribute('data-component', 'premium-promotion-banner');
+        banner.style.cssText = 'padding: 15px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center; margin-bottom: 20px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
+        banner.innerHTML = '🎉 <strong>Special Offer:</strong> Premium access is now FREE for everyone! Enjoy all features while this promotion lasts.';
+        
+        const mainContent = document.querySelector('main') || document.body;
+        if (mainContent.firstChild) {
+          mainContent.insertBefore(banner, mainContent.firstChild);
+        }
       }
       
-      // Grant all users premium features
+      // Grant all users premium
       localStorage.setItem('isPremium', 'true');
-      window.userPremium = true;
     } else {
-      // Remove promotion banner if it exists
+      console.log('  ✓ Premium for all DISABLED');
+      // Remove promotion banner
       const banner = document.querySelector('[data-component="premium-promotion-banner"]');
-      if (banner) banner.remove();
+      if (banner) {
+        banner.remove();
+        console.log('  ✓ Removed promotion banner');
+      }
+      
+      // Show upgrade buttons
+      const upgradeBtns = document.querySelectorAll('[data-action="upgrade-premium"][data-disabled-by-settings="true"]');
+      upgradeBtns.forEach(btn => {
+        btn.style.display = '';
+        btn.removeAttribute('data-disabled-by-settings');
+      });
+      
       window.premiumForAll = false;
     }
+  }
+
+  /**
+   * Helper to hide elements
+   */
+  hideElement(selector) {
+    const elements = document.querySelectorAll(selector);
+    elements.forEach(el => {
+      el.style.display = 'none';
+      el.setAttribute('data-disabled-by-settings', 'true');
+    });
+  }
+
+  /**
+   * Helper to show elements
+   */
+  showElement(selector) {
+    const elements = document.querySelectorAll(selector + '[data-disabled-by-settings="true"]');
+    elements.forEach(el => {
+      el.style.display = '';
+      el.removeAttribute('data-disabled-by-settings');
+    });
   }
 
   /**
