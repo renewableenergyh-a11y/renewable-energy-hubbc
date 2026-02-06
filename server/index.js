@@ -2180,6 +2180,12 @@ app.get('/api/news/:slug', async (req, res) => {
 // AUTHENTICATED: React to a news article (like, love, insightful, celebrate)
 app.post('/api/news/:newsId/react', async (req, res) => {
   try {
+    // Check if likes/reactions are enabled
+    const settings = loadSettings() || {};
+    if (settings.enableLikesReactions === false) {
+      return res.status(403).json({ error: 'Likes and reactions are currently disabled' });
+    }
+
     const token = req.headers.authorization?.split(' ')[1];
     console.log(`🔵 POST /api/news/:newsId/react - newsId: ${req.params.newsId}, token: ${token ? token.substring(0, 10) + '...' : 'MISSING'}`);
     
@@ -2278,6 +2284,12 @@ app.post('/api/news/:newsId/react', async (req, res) => {
 // AUTHENTICATED: Remove reaction from a news article
 app.delete('/api/news/:newsId/react', async (req, res) => {
   try {
+    // Check if likes/reactions are enabled
+    const settings = loadSettings() || {};
+    if (settings.enableLikesReactions === false) {
+      return res.status(403).json({ error: 'Likes and reactions are currently disabled' });
+    }
+
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -2361,6 +2373,12 @@ app.delete('/api/news/:newsId/react', async (req, res) => {
 // OLD ENDPOINTS (kept for backward compatibility, will be removed later)
 app.post('/api/news/:id/like', async (req, res) => {
   try {
+    // Check if likes/reactions are enabled
+    const settings = loadSettings() || {};
+    if (settings.enableLikesReactions === false) {
+      return res.status(403).json({ error: 'Likes and reactions are currently disabled' });
+    }
+
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });
@@ -2429,6 +2447,12 @@ app.post('/api/news/:id/like', async (req, res) => {
 // AUTHENTICATED: React to a news article (OLD ENDPOINT)
 app.post('/api/news/:id/react', async (req, res) => {
   try {
+    // Check if likes/reactions are enabled
+    const settings = loadSettings() || {};
+    if (settings.enableLikesReactions === false) {
+      return res.status(403).json({ error: 'Likes and reactions are currently disabled' });
+    }
+
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
       return res.status(401).json({ error: 'Authentication required' });

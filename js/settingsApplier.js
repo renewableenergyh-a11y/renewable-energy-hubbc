@@ -261,27 +261,55 @@ class SettingsApplier {
     // News System Toggle
     if (s.enableNewsSystem === false) {
       console.log('  ✓ News system DISABLED');
-      this.hideElement('[data-section="news"], #news-section');
+      
+      // Hide news page and links
+      this.hideElement('a[href="news.html"], a[href*="news.html"]');
+      
+      // Hide news list and pagination if on news page
+      this.hideElement('#newsList, #pagination');
+      
+      // Show notice if on news page
+      const newsSection = document.querySelector('main');
+      if (newsSection && window.location.pathname.includes('news')) {
+        const existingNotice = document.querySelector('[data-component="news-disabled-notice"]');
+        if (!existingNotice) {
+          const notice = document.createElement('div');
+          notice.setAttribute('data-component', 'news-disabled-notice');
+          notice.style.cssText = 'padding: 40px 20px; text-align: center; background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; margin: 40px;';
+          notice.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 16px;">📰</div>
+            <h2 style="color: #333; margin: 0 0 10px 0; font-size: 24px;">News Disabled</h2>
+            <p style="color: #666; margin: 0 0 15px 0; font-size: 16px;">The news system is currently disabled by the administrator.</p>
+            <p style="color: #666; margin: 0; font-size: 14px;">Please check back later.</p>
+          `;
+          newsSection.appendChild(notice);
+        }
+      }
     } else {
       console.log('  ✓ News system ENABLED');
-      this.showElement('[data-section="news"], #news-section');
+      
+      // Show news page and links
+      this.showElement('a[href="news.html"][data-disabled-by-settings="true"], a[href*="news.html"][data-disabled-by-settings="true"]');
+      
+      // Show news list and pagination
+      this.showElement('#newsList[data-disabled-by-settings="true"], #pagination[data-disabled-by-settings="true"]');
+      
+      // Remove notice if it exists
+      const notice = document.querySelector('[data-component="news-disabled-notice"]');
+      if (notice) notice.remove();
     }
 
     // Likes & Reactions Toggle
     if (s.enableLikesReactions === false) {
       console.log('  ✓ Likes/Reactions DISABLED');
-      const likeButtons = document.querySelectorAll('[data-action="like"], .like-btn, [data-action="react"], .react-btn');
-      likeButtons.forEach(btn => {
-        btn.style.display = 'none';
-        btn.setAttribute('data-disabled-by-settings', 'true');
-      });
+      
+      // Hide like buttons and reactions
+      this.hideElement('#likeSection, .like-btn, #likeBtn, #reactionsContainer, .reaction-btn, .engagement-buttons');
     } else {
       console.log('  ✓ Likes/Reactions ENABLED');
-      const likeButtons = document.querySelectorAll('[data-action="like"][data-disabled-by-settings="true"], .like-btn[data-disabled-by-settings="true"], [data-action="react"][data-disabled-by-settings="true"], .react-btn[data-disabled-by-settings="true"]');
-      likeButtons.forEach(btn => {
-        btn.style.display = '';
-        btn.removeAttribute('data-disabled-by-settings');
-      });
+      
+      // Show like buttons and reactions
+      this.showElement('#likeSection[data-disabled-by-settings="true"], .like-btn[data-disabled-by-settings="true"], #likeBtn[data-disabled-by-settings="true"], #reactionsContainer[data-disabled-by-settings="true"], .reaction-btn[data-disabled-by-settings="true"], .engagement-buttons[data-disabled-by-settings="true"]');
     }
 
     // Careers Page Toggle
@@ -300,7 +328,7 @@ class SettingsApplier {
         link.style.display = '';
         link.removeAttribute('data-disabled-by-settings');
       });
-      this.showElement('[data-section="careers"], #careers-section');
+      this.showElement('[data-section="careers"][data-disabled-by-settings="true"], #careers-section[data-disabled-by-settings="true"]');
     }
 
     // PDF Downloads from Careers Toggle
