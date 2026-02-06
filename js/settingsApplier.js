@@ -262,11 +262,28 @@ class SettingsApplier {
     if (s.enableNewsSystem === false) {
       console.log('  ✓ News system DISABLED');
       
-      // Hide news page and links
-      this.hideElement('a[href="news.html"], a[href*="news.html"]');
+      // Add CSS rule to hide all news-related elements
+      this.addCSSRule('a[href="news.html"], a[href*="/news.html"]', 'display: none !important;');
+      this.addCSSRule('#newsList', 'display: none !important;');
+      this.addCSSRule('#pagination', 'display: none !important;');
       
-      // Hide news list and pagination if on news page
-      this.hideElement('#newsList, #pagination');
+      // Hide news page and links
+      document.querySelectorAll('a[href="news.html"], a[href*="/news.html"]').forEach(link => {
+        link.style.display = 'none';
+        link.setAttribute('data-disabled-by-settings', 'true');
+      });
+      
+      // Hide news list and pagination if they exist
+      const newsList = document.getElementById('newsList');
+      if (newsList) {
+        newsList.style.display = 'none';
+        newsList.setAttribute('data-disabled-by-settings', 'true');
+      }
+      const pagination = document.getElementById('pagination');
+      if (pagination) {
+        pagination.style.display = 'none';
+        pagination.setAttribute('data-disabled-by-settings', 'true');
+      }
       
       // Show notice if on news page
       const newsSection = document.querySelector('main');
@@ -288,11 +305,28 @@ class SettingsApplier {
     } else {
       console.log('  ✓ News system ENABLED');
       
+      // Remove CSS rules
+      this.removeCSSRule('a[href="news.html"], a[href*="/news.html"]');
+      this.removeCSSRule('#newsList');
+      this.removeCSSRule('#pagination');
+      
       // Show news page and links
-      this.showElement('a[href="news.html"][data-disabled-by-settings="true"], a[href*="news.html"][data-disabled-by-settings="true"]');
+      document.querySelectorAll('a[href="news.html"][data-disabled-by-settings="true"], a[href*="/news.html"][data-disabled-by-settings="true"]').forEach(link => {
+        link.style.display = '';
+        link.removeAttribute('data-disabled-by-settings');
+      });
       
       // Show news list and pagination
-      this.showElement('#newsList[data-disabled-by-settings="true"], #pagination[data-disabled-by-settings="true"]');
+      const newsList = document.getElementById('newsList');
+      if (newsList && newsList.getAttribute('data-disabled-by-settings') === 'true') {
+        newsList.style.display = '';
+        newsList.removeAttribute('data-disabled-by-settings');
+      }
+      const pagination = document.getElementById('pagination');
+      if (pagination && pagination.getAttribute('data-disabled-by-settings') === 'true') {
+        pagination.style.display = '';
+        pagination.removeAttribute('data-disabled-by-settings');
+      }
       
       // Remove notice if it exists
       const notice = document.querySelector('[data-component="news-disabled-notice"]');
@@ -303,13 +337,35 @@ class SettingsApplier {
     if (s.enableLikesReactions === false) {
       console.log('  ✓ Likes/Reactions DISABLED');
       
-      // Hide like buttons and reactions
-      this.hideElement('#likeSection, .like-btn, #likeBtn, #reactionsContainer, .reaction-btn, .engagement-buttons');
+      // Add CSS rules to hide all like/reaction elements permanently
+      this.addCSSRule('#likeSection', 'display: none !important;');
+      this.addCSSRule('.like-btn', 'display: none !important;');
+      this.addCSSRule('#likeBtn', 'display: none !important;');
+      this.addCSSRule('#reactionsContainer', 'display: none !important;');
+      this.addCSSRule('.reaction-btn', 'display: none !important;');
+      this.addCSSRule('.engagement-buttons', 'display: none !important;');
+      
+      // Also hide them immediately if they exist
+      document.querySelectorAll('#likeSection, .like-btn, #likeBtn, #reactionsContainer, .reaction-btn, .engagement-buttons').forEach(el => {
+        el.style.display = 'none';
+        el.setAttribute('data-disabled-by-settings', 'true');
+      });
     } else {
       console.log('  ✓ Likes/Reactions ENABLED');
       
+      // Remove CSS rules
+      this.removeCSSRule('#likeSection');
+      this.removeCSSRule('.like-btn');
+      this.removeCSSRule('#likeBtn');
+      this.removeCSSRule('#reactionsContainer');
+      this.removeCSSRule('.reaction-btn');
+      this.removeCSSRule('.engagement-buttons');
+      
       // Show like buttons and reactions
-      this.showElement('#likeSection[data-disabled-by-settings="true"], .like-btn[data-disabled-by-settings="true"], #likeBtn[data-disabled-by-settings="true"], #reactionsContainer[data-disabled-by-settings="true"], .reaction-btn[data-disabled-by-settings="true"], .engagement-buttons[data-disabled-by-settings="true"]');
+      document.querySelectorAll('#likeSection[data-disabled-by-settings="true"], .like-btn[data-disabled-by-settings="true"], #likeBtn[data-disabled-by-settings="true"], #reactionsContainer[data-disabled-by-settings="true"], .reaction-btn[data-disabled-by-settings="true"], .engagement-buttons[data-disabled-by-settings="true"]').forEach(el => {
+        el.style.display = '';
+        el.removeAttribute('data-disabled-by-settings');
+      });
     }
 
     // Careers Page Toggle
@@ -521,6 +577,45 @@ class SettingsApplier {
       el.style.display = '';
       el.removeAttribute('data-disabled-by-settings');
     });
+  }
+
+  /**
+   * Add a CSS rule to the global stylesheet for persistent hiding
+   */
+  addCSSRule(selector, declaration) {
+    if (!this.settingsStyleSheet) {
+      // Create a style element if it doesn't exist
+      const style = document.createElement('style');
+      style.id = 'settings-applier-styles';
+      document.head.appendChild(style);
+      this.settingsStyleSheet = style.sheet;
+    }
+    
+    try {
+      this.settingsStyleSheet.insertRule(`${selector} { ${declaration} }`, this.settingsStyleSheet.cssRules.length);
+      console.log(`  📋 CSS rule added: ${selector}`);
+    } catch (e) {
+      console.warn(`  ⚠️ Failed to add CSS rule for ${selector}:`, e.message);
+    }
+  }
+
+  /**
+   * Remove a CSS rule from the global stylesheet
+   */
+  removeCSSRule(selector) {
+    if (!this.settingsStyleSheet) return;
+    
+    try {
+      const rules = Array.from(this.settingsStyleSheet.cssRules);
+      const ruleIndex = rules.findIndex(rule => rule.selectorText === selector);
+      
+      if (ruleIndex >= 0) {
+        this.settingsStyleSheet.deleteRule(ruleIndex);
+        console.log(`  📋 CSS rule removed: ${selector}`);
+      }
+    } catch (e) {
+      console.warn(`  ⚠️ Failed to remove CSS rule for ${selector}:`, e.message);
+    }
   }
 
   /**
