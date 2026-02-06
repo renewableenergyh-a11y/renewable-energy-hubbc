@@ -447,13 +447,22 @@ document.addEventListener('DOMContentLoaded', () => {
       const hasPremiumNow = localStorage.getItem('hasPremium') === 'true';
       const isAdminNow = localStorage.getItem('isAdmin') === 'true';
       const authToken = localStorage.getItem('authToken');
+      
+      // Check for global premium promotion override
+      const promotionActive = window.premiumForAll === true;
+      const promotionNotExpired = window.promotionEndTime && Date.now() < window.promotionEndTime;
+      const hasPromotionAccess = promotionActive && promotionNotExpired;
+      
+      // AI and premium features accessible if: user has premium OR promotion is active
+      const hasAiAccess = hasPremiumNow || hasPromotionAccess;
 
-      console.log('🔍 updateNavUI check: isAdminNow=%s, loggedInNow=%s, hasToken=%s', isAdminNow, loggedInNow, !!authToken);
-      console.log('   Detailed state: isAdmin=%s, isLoggedIn=%s, authToken=%s, hasPremium=%s', 
+      console.log('🔍 updateNavUI check: isAdminNow=%s, loggedInNow=%s, hasToken=%s, hasPromotionAccess=%s', isAdminNow, loggedInNow, !!authToken, hasPromotionAccess);
+      console.log('   Detailed state: isAdmin=%s, isLoggedIn=%s, authToken=%s, hasPremium=%s, promotionActive=%s', 
         localStorage.getItem('isAdmin'), 
         localStorage.getItem('isLoggedIn'), 
         localStorage.getItem('authToken') ? '(exists)' : '(missing)', 
-        localStorage.getItem('hasPremium'));
+        localStorage.getItem('hasPremium'),
+        promotionActive);
 
       const nav = document.querySelector('header nav') || document.getElementById('nav-menu');
       console.log('🔍 Found nav element:', nav ? (nav.id || 'header nav') : 'NOT FOUND');
@@ -683,8 +692,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // AubieRET AI button for premium users
         const existingAubie = document.getElementById('aubie-assistant-btn');
-        if (hasPremiumNow) {
+        if (hasAiAccess) {
           if (!existingAubie) {
+            console.log('✅ Creating Aubie button (hasAiAccess=true, hasPremium=%s, hasPromotionAccess=%s)', hasPremiumNow, hasPromotionAccess);
             const aubieBtn = document.createElement('button');
             aubieBtn.id = 'aubie-assistant-btn';
             aubieBtn.innerHTML = `
@@ -757,6 +767,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(aubieBtn);
           }
         } else {
+          console.log('❌ NOT creating Aubie button (hasAiAccess=false, hasPremium=%s, promotionActive=%s)', hasPremiumNow, promotionActive);
           if (existingAubie) existingAubie.remove();
         }
       } else {
