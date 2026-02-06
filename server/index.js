@@ -3811,7 +3811,7 @@ app.post('/api/auth/register', (req, res) => {
   try {
     const settings = loadSettings() || {};
     if (settings.maintenanceMode) return res.status(503).json({ error: 'The site is in maintenance mode' });
-    if (settings.allowRegistrations === false) return res.status(403).json({ error: 'Registrations are currently disabled' });
+    if (settings.allowNewUserRegistration === false) return res.status(403).json({ error: 'Registrations are currently disabled' });
     const { name, email, password } = req.body;
 
     // Validate input
@@ -3899,7 +3899,7 @@ app.post('/api/auth/register-request', async (req, res) => {
   try {
     const settings = loadSettings() || {};
     if (settings.maintenanceMode) return res.status(503).json({ error: 'The site is in maintenance mode' });
-    if (settings.allowRegistrations === false) return res.status(403).json({ error: 'Registrations are currently disabled' });
+    if (settings.allowNewUserRegistration === false) return res.status(403).json({ error: 'Registrations are currently disabled' });
     const { name, email, password } = req.body;
     if (!name || !email || !password) return res.status(400).json({ error: 'Missing fields' });
 
@@ -3945,7 +3945,7 @@ app.post('/api/auth/register-verify', (req, res) => {
   try {
     const settings = loadSettings() || {};
     if (settings.maintenanceMode) return res.status(403).json({ error: 'The site is in maintenance mode' });
-    if (settings.allowRegistrations === false) return res.status(403).json({ error: 'Registrations are currently disabled' });
+    if (settings.allowNewUserRegistration === false) return res.status(403).json({ error: 'Registrations are currently disabled' });
     const { email, code } = req.body;
     if (!email || !code) return res.status(400).json({ error: 'Missing fields' });
 

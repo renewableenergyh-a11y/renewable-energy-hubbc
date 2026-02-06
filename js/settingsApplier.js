@@ -126,69 +126,79 @@ class SettingsApplier {
    * Disable user registration
    */
   disableRegistration() {
-    // Hide signup button
-    const signupBtn = document.querySelector('[data-action="signup"]');
-    if (signupBtn) {
-      signupBtn.style.display = 'none';
-      console.log('✓ Signup button hidden');
+    // Block access to register.html entirely
+    if (window.location.pathname.includes('register.html')) {
+      // Redirect to home with message
+      window.location.href = 'index.html?registration_disabled=true';
+      return;
     }
 
-    // Hide signup form on dedicated page
-    const signupForm = document.getElementById('signupForm');
-    if (signupForm) {
-      signupForm.style.display = 'none';
-      console.log('✓ Signup form hidden');
+    // Hide all register navigation links
+    const navRegisterLinks = document.querySelectorAll('#nav-register-link, a[href*="register.html"]');
+    navRegisterLinks.forEach(link => {
+      link.style.display = 'none';
+      link.setAttribute('data-disabled-by-settings', 'true');
+      console.log('✓ Register link hidden:', link.href);
+    });
+
+    // Show notice on register page if somehow loaded
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+      registerForm.style.display = 'none';
+      console.log('✓ Register form hidden');
       
-      // Show notice
-      const existingNotice = signupForm.nextElementSibling;
-      if (!existingNotice || !existingNotice.getAttribute('data-component')) {
-        const message = document.createElement('div');
-        message.setAttribute('data-component', 'registration-closed');
-        message.style.cssText = 'padding: 20px; background: #fff3cd; border: 1px solid #ffc107; border-radius: 6px; margin: 20px 0; text-align: center;';
-        message.innerHTML = '<strong>Registration Closed:</strong> New user registration is currently disabled by the administrator. Please contact support for assistance.';
-        signupForm.parentNode.insertBefore(message, signupForm);
+      // Show closure notice
+      const formSection = registerForm.closest('.form-section');
+      if (formSection) {
+        const existingNotice = formSection.querySelector('[data-component="registration-disabled-notice"]');
+        if (!existingNotice) {
+          const notice = document.createElement('div');
+          notice.setAttribute('data-component', 'registration-disabled-notice');
+          notice.style.cssText = 'padding: 40px 20px; text-align: center; background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; margin: 40px 0;';
+          notice.innerHTML = `
+            <div style="font-size: 48px; margin-bottom: 16px;">🔐</div>
+            <h2 style="color: #333; margin: 0 0 10px 0; font-size: 24px;">Registration Closed</h2>
+            <p style="color: #666; margin: 0 0 15px 0; font-size: 16px;">New user registration is currently disabled by the administrator.</p>
+            <p style="color: #666; margin: 0; font-size: 14px;">Please contact support for assistance or try again later.</p>
+          `;
+          formSection.insertBefore(notice, registerForm);
+        }
       }
     }
 
-    // Hide from login page
-    const loginSignupLink = document.querySelector('a[href*="signup"], a[href*="register"]');
-    if (loginSignupLink) {
-      loginSignupLink.style.display = 'none';
-      console.log('✓ Login signup link hidden');
-    }
+    console.log('✓ Registration DISABLED');
   }
 
   /**
    * Enable user registration
    */
   enableRegistration() {
-    // Show signup button
-    const signupBtn = document.querySelector('[data-action="signup"]');
-    if (signupBtn) {
-      signupBtn.style.display = '';
-      console.log('✓ Signup button shown');
-    }
+    // Show all register navigation links
+    const navRegisterLinks = document.querySelectorAll('#nav-register-link[data-disabled-by-settings="true"], a[href*="register.html"][data-disabled-by-settings="true"]');
+    navRegisterLinks.forEach(link => {
+      link.style.display = '';
+      link.removeAttribute('data-disabled-by-settings');
+      console.log('✓ Register link shown:', link.href);
+    });
 
-    // Show signup form
-    const signupForm = document.getElementById('signupForm');
-    if (signupForm) {
-      signupForm.style.display = '';
-      console.log('✓ Signup form shown');
+    // Show register form
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+      registerForm.style.display = '';
+      console.log('✓ Register form shown');
       
-      // Remove notice if it exists
-      const notice = signupForm.nextElementSibling;
-      if (notice && notice.getAttribute('data-component') === 'registration-closed') {
-        notice.remove();
-        console.log('✓ Registration closed notice removed');
+      // Remove closure notice if exists
+      const formSection = registerForm.closest('.form-section');
+      if (formSection) {
+        const notice = formSection.querySelector('[data-component="registration-disabled-notice"]');
+        if (notice) {
+          notice.remove();
+          console.log('✓ Registration disabled notice removed');
+        }
       }
     }
 
-    // Show login signup link
-    const loginSignupLink = document.querySelector('a[href*="signup"], a[href*="register"]');
-    if (loginSignupLink) {
-      loginSignupLink.style.display = '';
-      console.log('✓ Login signup link shown');
-    }
+    console.log('✓ Registration ENABLED');
   }
 
   /**
