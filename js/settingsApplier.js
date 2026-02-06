@@ -703,18 +703,16 @@ class SettingsApplier {
         const banner = document.createElement('div');
         banner.setAttribute('data-component', 'premium-promotion-banner');
         banner.style.cssText = `
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
           padding: 16px 20px;
           background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
           color: white;
           text-align: center;
+          margin-bottom: 20px;
+          border-radius: 8px;
           font-weight: 600;
           font-size: 15px;
           box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-          z-index: 9998;
+          position: relative;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -727,15 +725,14 @@ class SettingsApplier {
         dismissBtn.innerHTML = '✕';
         dismissBtn.style.cssText = `
           position: absolute;
-          right: 16px;
-          top: 50%;
-          transform: translateY(-50%);
+          right: 12px;
+          top: 12px;
           background: rgba(255,255,255,0.2);
           border: none;
           color: white;
-          font-size: 20px;
-          width: 32px;
-          height: 32px;
+          font-size: 18px;
+          width: 28px;
+          height: 28px;
           border-radius: 50%;
           cursor: pointer;
           display: flex;
@@ -744,23 +741,23 @@ class SettingsApplier {
           transition: all 0.2s ease;
           padding: 0;
         `;
-        dismissBtn.onmouseover = () => { dismissBtn.style.background = 'rgba(255,255,255,0.3)'; dismissBtn.style.transform = 'translateY(-50%) scale(1.1)'; };
-        dismissBtn.onmouseout = () => { dismissBtn.style.background = 'rgba(255,255,255,0.2)'; dismissBtn.style.transform = 'translateY(-50%) scale(1)'; };
+        dismissBtn.onmouseover = () => { dismissBtn.style.background = 'rgba(255,255,255,0.3)'; dismissBtn.style.transform = 'scale(1.1)'; };
+        dismissBtn.onmouseout = () => { dismissBtn.style.background = 'rgba(255,255,255,0.2)'; dismissBtn.style.transform = 'scale(1)'; };
         dismissBtn.onclick = () => {
           banner.style.display = 'none';
           // Remember dismissal for this session
           sessionStorage.setItem('promotion-banner-dismissed', 'true');
-          // Adjust body padding-top back to normal
-          document.body.style.paddingTop = '0';
         };
         
         banner.innerHTML = `🎉 <strong>Special Offer:</strong> Premium access is FREE for everyone! Enjoy all features until ${endDate}`;
         banner.appendChild(dismissBtn);
         
-        document.body.insertBefore(banner, document.body.firstChild);
-        
-        // Add padding to body to prevent content hiding under fixed banner
-        document.body.style.paddingTop = '56px';
+        const mainContent = document.querySelector('main') || document.body;
+        if (mainContent.firstChild) {
+          mainContent.insertBefore(banner, mainContent.firstChild);
+        } else {
+          mainContent.appendChild(banner);
+        }
       }
       
       console.log('  ✓ Premium for all promotion enabled');
@@ -774,8 +771,6 @@ class SettingsApplier {
       if (banner) {
         banner.remove();
         console.log('  ✓ Removed promotion banner');
-        // Reset body padding
-        document.body.style.paddingTop = '0';
       }
       
       // Remove billing.html hiding CSS rule
