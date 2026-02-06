@@ -1,8 +1,49 @@
 import { getCurrentUser } from "./auth.js";
 
+/**
+ * Global Premium Access Checker
+ * Determines if a user has premium access, considering:
+ * 1. Global promotion override (highest priority)
+ * 2. User premium subscription
+ * 3. User free trial
+ */
+export function hasPremiumAccess(user = null) {
+  user = user || getCurrentUser();
+  
+  if (!user) return false;
+  
+  // Check for global promotion override (loaded from settings applier)
+  if (window.premiumForAll === true && Date.now() < (window.promotionEndTime || 0)) {
+    console.log('✅ Premium access granted via global promotion');
+    return true;
+  }
+  
+  // Check user premium subscription
+  if (user.hasPremium === true && user.subscriptionActive !== false) {
+    console.log('✅ Premium access granted via subscription');
+    return true;
+  }
+  
+  // Check free trial
+  if (user.trialActive === true && user.trialEndAt && Date.now() < user.trialEndAt) {
+    console.log('✅ Premium access granted via trial');
+    return true;
+  }
+  
+  return false;
+}
+
+/**
+ * Check if user can access a specific module
+ */
 export function canAccessModule(module) {
   const user = getCurrentUser();
-  if (!module.isPremium) return true;
-  if (!user.isLoggedIn) return false;
-  return user.hasPremium;
+  
+  // Free modules are always accessible to logged-in users
+  if (!module.isPremium) {
+    return user?.isLoggedIn === true || user?.email;
+  }
+  
+  // Premium modules require premium access
+  return hasPremiumAccess(user);
 }

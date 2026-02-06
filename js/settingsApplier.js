@@ -60,6 +60,7 @@ class SettingsApplier {
     console.log('🔄 Applying all settings...');
     console.log('   maintenanceMode:', this.settings.maintenanceMode);
     console.log('   enablePremiumForAll:', this.settings.enablePremiumForAll);
+    console.log('   premiumPromotionEndAt:', this.settings.premiumPromotionEndAt);
     console.log('   enableNewsSystem:', this.settings.enableNewsSystem);
     console.log('   enableLikesReactions:', this.settings.enableLikesReactions);
     console.log('   enableAiAssistant:', this.settings.enableAiAssistant);
@@ -67,7 +68,6 @@ class SettingsApplier {
 
     // Apply platform settings
     this.applyPlatformSettings();
-    
     // Apply certificate settings
     this.applyCertificateSettings();
     
@@ -625,14 +625,36 @@ class SettingsApplier {
     if (s.enablePremiumForAll === true) {
       console.log('  ✓ PREMIUM FOR ALL PROMOTION ACTIVE');
       window.premiumForAll = true;
-      window.userPremium = true;
       
-      // Hide upgrade buttons and links
+      // Calculate promotion end time
+      // Use premiumPromotionEndAt if available (from backend), otherwise calculate from duration
+      let promotionEndTime = s.premiumPromotionEndAt;
+      if (!promotionEndTime && s.premiumPromotionDurationValue) {
+        const duration = parseInt(s.premiumPromotionDurationValue, 10) || 7;
+        const unit = s.premiumPromotionDurationUnit || 'days';
+        const now = Date.now();
+        let durationMs = 0;
+        
+        if (unit === 'minutes') durationMs = duration * 60 * 1000;
+        else if (unit === 'hours') durationMs = duration * 60 * 60 * 1000;
+        else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
+        
+        promotionEndTime = now + durationMs;
+      }
+      
+      window.promotionEndTime = promotionEndTime;
+      const endDate = new Date(promotionEndTime).toLocaleString();
+      console.log('  ✓ Promotion end time:', endDate);
+      
+      // Hide upgrade buttons and links - users don't need to upgrade during promotion
       const upgradeBtns = document.querySelectorAll('#nav-premium-btn, .nav-premium-link, [data-action="upgrade-premium"]');
       upgradeBtns.forEach(btn => {
         btn.style.display = 'none';
         btn.setAttribute('data-disabled-by-settings', 'true');
       });
+      
+      // Hide billing.html links during promotion
+      this.addCSSRule('a[href*="billing.html"]', 'display: none !important;');
       
       // Show promotion banner if not already present
       const existingBanner = document.querySelector('[data-component="premium-promotion-banner"]');
@@ -640,7 +662,7 @@ class SettingsApplier {
         const banner = document.createElement('div');
         banner.setAttribute('data-component', 'premium-promotion-banner');
         banner.style.cssText = 'padding: 15px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; text-align: center; margin-bottom: 20px; border-radius: 8px; font-weight: 600; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-        banner.innerHTML = '🎉 <strong>Special Offer:</strong> Premium access is now FREE for everyone! Enjoy all features while this promotion lasts.';
+        banner.innerHTML = `🎉 <strong>Special Offer:</strong> Premium access is now FREE for everyone! Enjoy all features until ${endDate}`;
         
         const mainContent = document.querySelector('main') || document.body;
         if (mainContent.firstChild) {
@@ -648,17 +670,21 @@ class SettingsApplier {
         }
       }
       
-      // Grant all users premium
-      localStorage.setItem('isPremium', 'true');
-      console.log('  ✓ Premium granted to all users');
+      console.log('  ✓ Premium for all promotion enabled');
     } else {
       console.log('  ✓ Premium for all DISABLED');
+      window.premiumForAll = false;
+      window.promotionEndTime = null;
+      
       // Remove promotion banner
       const banner = document.querySelector('[data-component="premium-promotion-banner"]');
       if (banner) {
         banner.remove();
         console.log('  ✓ Removed promotion banner');
       }
+      
+      // Remove billing.html hiding CSS rule
+      this.removeCSSRule('a[href*="billing.html"]');
       
       // Show upgrade buttons
       const upgradeBtns = document.querySelectorAll('#nav-premium-btn[data-disabled-by-settings="true"], .nav-premium-link[data-disabled-by-settings="true"], [data-action="upgrade-premium"][data-disabled-by-settings="true"]');
@@ -667,7 +693,6 @@ class SettingsApplier {
         btn.removeAttribute('data-disabled-by-settings');
       });
       
-      window.premiumForAll = false;
       console.log('  ✓ Premium for all promotion disabled');
     }
   }
