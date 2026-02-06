@@ -552,9 +552,36 @@ class SettingsApplier {
     this.showElement('[data-section="ai"], #ai-section, [data-action="open-ai"]');
 
     // AI Access Mode
-    if (s.aiAccessMode === 'Premium Only') {
+    window.aiAccessMode = s.aiAccessMode || 'Premium Only';
+    console.log('  ✓ AI Access Mode:', window.aiAccessMode);
+    
+    if (s.aiAccessMode === 'Everyone (Promotion)') {
+      console.log('  ✓ AI available to EVERYONE (Promotion)');
+      window.aiRestrictedToPremium = false;
+      
+      // Show AI promotion banner
+      this.showAiPromotionBanner();
+      
+      // Remove upsell if it exists
+      const upsell = document.querySelector('[data-component="ai-upsell"]');
+      if (upsell) {
+        upsell.remove();
+      }
+      
+      // Show AI interface
+      const aiInterface = document.querySelector('[data-component="ai-chat"]');
+      if (aiInterface) {
+        aiInterface.style.display = '';
+      }
+    } else if (s.aiAccessMode === 'Premium Only') {
       console.log('  ✓ AI restricted to PREMIUM ONLY');
       window.aiRestrictedToPremium = true;
+      
+      // Remove AI promotion banner if it exists
+      const aiBanner = document.getElementById('ai-promotion-banner');
+      if (aiBanner) {
+        aiBanner.remove();
+      }
       
       const userRole = localStorage.getItem('userRole');
       const isPremium = localStorage.getItem('isPremium') === 'true';
@@ -572,21 +599,6 @@ class SettingsApplier {
             aiInterface.parentNode.insertBefore(upsell, aiInterface);
           }
         }
-      }
-    } else if (s.aiAccessMode === 'Everyone') {
-      console.log('  ✓ AI available to EVERYONE');
-      window.aiRestrictedToPremium = false;
-      
-      // Remove upsell if it exists
-      const upsell = document.querySelector('[data-component="ai-upsell"]');
-      if (upsell) {
-        upsell.remove();
-      }
-      
-      // Show AI interface
-      const aiInterface = document.querySelector('[data-component="ai-chat"]');
-      if (aiInterface) {
-        aiInterface.style.display = '';
       }
     }
 
@@ -857,6 +869,93 @@ class SettingsApplier {
     `;
     
     document.body.appendChild(container);
+  }
+
+  /**
+   * Show AI promotion banner when Everyone (Promotion) mode is active
+   */
+  showAiPromotionBanner() {
+    try {
+      // Check if banner already exists
+      const existingBanner = document.getElementById('ai-promotion-banner');
+      if (existingBanner) return;
+
+      // Create banner container
+      const banner = document.createElement('div');
+      banner.id = 'ai-promotion-banner';
+      banner.style.cssText = `
+        position: fixed;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        z-index: 1000;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      `;
+
+      banner.innerHTML = `
+        <div style="flex: 1; display: flex; align-items: center; gap: 12px;">
+          <span style="font-size: 20px;">🎉</span>
+          <span style="font-size: 14px; font-weight: 500;">Aubie RET AI assistant is now available to everyone!</span>
+        </div>
+        <button id="ai-banner-dismiss" style="
+          background: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.4);
+          color: white;
+          padding: 6px 12px;
+          border-radius: 4px;
+          cursor: pointer;
+          font-size: 14px;
+          font-weight: 500;
+          transition: all 0.2s ease;
+        " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
+          Dismiss
+        </button>
+      `;
+
+      document.body.appendChild(banner);
+
+      // Add dismiss handler
+      const dismissBtn = document.getElementById('ai-banner-dismiss');
+      dismissBtn.addEventListener('click', () => {
+        banner.style.transition = 'opacity 0.3s ease';
+        banner.style.opacity = '0';
+        setTimeout(() => banner.remove(), 300);
+        
+        // Save dismissal to localStorage
+        localStorage.setItem('aiPromotionBannerDismissed', 'true');
+        
+        // Update page top padding
+        try {
+          const header = document.querySelector('header');
+          if (header) {
+            header.style.marginTop = '0';
+          }
+        } catch (e) {
+          // ignore
+        }
+      });
+
+      // Adjust page layout to accommodate banner
+      try {
+        const header = document.querySelector('header');
+        if (header) {
+          header.style.marginTop = '50px';
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      console.log('✅ AI promotion banner shown');
+    } catch (err) {
+      console.warn('⚠️ Failed to show AI promotion banner:', err);
+    }
   }
 
   /**

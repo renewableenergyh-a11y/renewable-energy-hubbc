@@ -456,17 +456,27 @@ document.addEventListener('DOMContentLoaded', () => {
       const promotionNotExpired = window.promotionEndTime && Date.now() < window.promotionEndTime;
       const hasPromotionAccess = promotionActive && promotionNotExpired;
       
-      // AI and premium features accessible if: AI is enabled globally AND (user has premium OR promotion is active)
-      const hasAiAccess = aiGloballyEnabled && (hasPremiumNow || hasPromotionAccess);
+      // Check AI access mode: "Premium Only" or "Everyone (Promotion)"
+      const aiAccessMode = window.aiAccessMode || 'Premium Only';
+      const aiPromotionActive = aiAccessMode === 'Everyone (Promotion)';
+      
+      // AI accessible if: 
+      // 1. AI is enabled globally AND
+      // 2. Either:
+      //    a. User has premium, OR
+      //    b. Premium for All promotion is active, OR  
+      //    c. AI Everyone (Promotion) mode is active and user is logged in
+      const hasAiAccess = aiGloballyEnabled && (hasPremiumNow || hasPromotionAccess || (aiPromotionActive && loggedInNow));
 
-      console.log('🔍 updateNavUI check: isAdminNow=%s, loggedInNow=%s, hasToken=%s, hasPromotionAccess=%s, aiEnabled=%s', isAdminNow, loggedInNow, !!authToken, hasPromotionAccess, aiGloballyEnabled);
-      console.log('   Detailed state: isAdmin=%s, isLoggedIn=%s, authToken=%s, hasPremium=%s, promotionActive=%s, aiGloballyEnabled=%s', 
+      console.log('🔍 updateNavUI check: isAdminNow=%s, loggedInNow=%s, hasToken=%s, hasPromotionAccess=%s, aiEnabled=%s, aiAccessMode=%s', isAdminNow, loggedInNow, !!authToken, hasPromotionAccess, aiGloballyEnabled, aiAccessMode);
+      console.log('   Detailed state: isAdmin=%s, isLoggedIn=%s, authToken=%s, hasPremium=%s, promotionActive=%s, aiGloballyEnabled=%s, aiAccessMode=%s', 
         localStorage.getItem('isAdmin'), 
         localStorage.getItem('isLoggedIn'), 
         localStorage.getItem('authToken') ? '(exists)' : '(missing)', 
         localStorage.getItem('hasPremium'),
         promotionActive,
-        aiGloballyEnabled);
+        aiGloballyEnabled,
+        aiAccessMode);
 
       const nav = document.querySelector('header nav') || document.getElementById('nav-menu');
       console.log('🔍 Found nav element:', nav ? (nav.id || 'header nav') : 'NOT FOUND');
@@ -698,7 +708,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const existingAubie = document.getElementById('aubie-assistant-btn');
         if (hasAiAccess) {
           if (!existingAubie) {
-            console.log('✅ Creating Aubie button (hasAiAccess=true, aiEnabled=%s, hasPremium=%s, hasPromotionAccess=%s)', aiGloballyEnabled, hasPremiumNow, hasPromotionAccess);
+            console.log('✅ Creating Aubie button (hasAiAccess=true, aiEnabled=%s, aiAccessMode=%s, hasPremium=%s, hasPromotionAccess=%s)', aiGloballyEnabled, aiAccessMode, hasPremiumNow, hasPromotionAccess);
             const aubieBtn = document.createElement('button');
             aubieBtn.id = 'aubie-assistant-btn';
             aubieBtn.innerHTML = `
@@ -771,7 +781,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(aubieBtn);
           }
         } else {
-          console.log('❌ NOT creating Aubie button (hasAiAccess=false, aiEnabled=%s, hasPremium=%s, promotionActive=%s)', aiGloballyEnabled, hasPremiumNow, promotionActive);
+          console.log('❌ NOT creating Aubie button (hasAiAccess=false, aiEnabled=%s, aiAccessMode=%s, hasPremium=%s, promotionActive=%s)', aiGloballyEnabled, aiAccessMode, hasPremiumNow, promotionActive);
           if (existingAubie) existingAubie.remove();
         }
       } else {

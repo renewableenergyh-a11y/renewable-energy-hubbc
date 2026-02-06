@@ -6397,6 +6397,12 @@
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-allowRegistrations"/> Allow Registrations</label>
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-maintenanceMode"/> Maintenance Mode</label>
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-enableAiAssistant"/> Enable AI Assistant</label>
+            <label style="display:flex;align-items:center;gap:8px">AI Access Mode
+              <select id="setting-aiAccessMode" style="margin-left:8px">
+                <option value="Premium Only">Premium Only</option>
+                <option value="Everyone (Promotion)">Everyone (Promotion)</option>
+              </select>
+            </label>
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-enableCertificateGeneration"/> Enable Certificate Generation</label>
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-allowCertificateRedownload"/> Allow Certificate Re-download</label>
             <label style="display:flex;align-items:center;gap:8px">Default Role
@@ -6427,6 +6433,7 @@
         document.getElementById('setting-contactEmail').value = s.contactEmail || '';
         document.getElementById('setting-analyticsInterval').value = s.analyticsInterval || 60;
         document.getElementById('setting-defaultRole').value = s.defaultRole || 'student';
+        document.getElementById('setting-aiAccessMode').value = s.aiAccessMode || 'Premium Only';
         document.getElementById('setting-allowRegistrations').checked = !!s.allowRegistrations;
         document.getElementById('setting-maintenanceMode').checked = !!s.maintenanceMode;
         document.getElementById('setting-enableAiAssistant').checked = s.enableAiAssistant !== false;
@@ -6441,13 +6448,14 @@
         const contactEmail = document.getElementById('setting-contactEmail').value.trim();
         const analyticsInterval = parseInt(document.getElementById('setting-analyticsInterval').value, 10) || 60;
         const defaultRole = document.getElementById('setting-defaultRole').value;
+        const aiAccessMode = document.getElementById('setting-aiAccessMode').value;
         const allowRegistrations = !!document.getElementById('setting-allowRegistrations').checked;
         const maintenanceMode = !!document.getElementById('setting-maintenanceMode').checked;
         const enableAiAssistant = !!document.getElementById('setting-enableAiAssistant').checked;
         const enableCertificateGeneration = !!document.getElementById('setting-enableCertificateGeneration').checked;
         const allowCertificateRedownload = !!document.getElementById('setting-allowCertificateRedownload').checked;
 
-        const payload = { siteName, welcome, contactEmail, analyticsInterval, defaultRole, allowRegistrations, maintenanceMode, enableAiAssistant, enableCertificateGeneration, allowCertificateRedownload };
+        const payload = { siteName, welcome, contactEmail, analyticsInterval, defaultRole, aiAccessMode, allowRegistrations, maintenanceMode, enableAiAssistant, enableCertificateGeneration, allowCertificateRedownload };
         try {
           const token = localStorage.getItem('adminToken');
           await fetch('/api/admin/settings', { method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${token}`}, body: JSON.stringify(payload) });
@@ -6457,7 +6465,7 @@
 
       document.getElementById('settings-reset').addEventListener('click', async () => {
         if (!confirm('Reset settings to defaults?')) return;
-        const defaults = { siteName: 'Aubie RET Hub', welcome: '', contactEmail: '', analyticsInterval: 60, defaultRole: 'student', allowRegistrations: true, maintenanceMode: false, enableAiAssistant: true, enableCertificateGeneration: true, allowCertificateRedownload: true };
+        const defaults = { siteName: 'Aubie RET Hub', welcome: '', contactEmail: '', analyticsInterval: 60, defaultRole: 'student', aiAccessMode: 'Premium Only', allowRegistrations: true, maintenanceMode: false, enableAiAssistant: true, enableCertificateGeneration: true, allowCertificateRedownload: true };
         try { await fetch('/api/admin/settings', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(defaults) });
           await showAlert('Reset', 'Settings reset to defaults.', 'info');
           loadSettingsUI();
