@@ -789,9 +789,20 @@ class SettingsApplier {
   }
 }
 
-// Auto-initialize on page load
+// Initialize immediately (don't wait for DOMContentLoaded)
+console.log('🚀 Creating Settings Applier instance...');
+if (!window.settingsApplier) {
+  window.settingsApplier = new SettingsApplier();
+  console.log('🔄 Starting init...');
+  window.settingsApplier.init().catch(err => console.error('❌ Failed to init settings applier:', err));
+}
+
+// Also initialize on DOMContentLoaded as backup
 window.addEventListener('DOMContentLoaded', () => {
-  if (!window.settingsApplier) {
+  if (window.settingsApplier && window.settingsApplier.settings) {
+    console.log('✅ Settings already loaded from immediate init');
+  } else if (!window.settingsApplier) {
+    console.log('⚠️ Settings applier not created yet, initializing on DOMContentLoaded');
     window.settingsApplier = new SettingsApplier();
     window.settingsApplier.init();
   }
