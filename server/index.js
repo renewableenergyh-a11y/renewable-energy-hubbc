@@ -5357,6 +5357,10 @@ app.post('/api/certificates/generate', (req, res) => {
 
     // Check if certificate generation is enabled in settings
     const settings = loadSettings();
+    console.log('🔧 Certificate generation check - Settings:', { 
+      enableCertificateGeneration: settings.enableCertificateGeneration 
+    });
+    
     if (settings.enableCertificateGeneration === false) {
       console.log('🚫 Certificate generation is disabled in settings');
       return res.status(403).json({ error: 'Certificate generation is currently disabled' });
@@ -5604,6 +5608,13 @@ app.get('/api/certificates/:certId/download', (req, res) => {
 
     if (!token) {
       return res.status(401).json({ error: 'No token provided' });
+    }
+
+    // Check if certificate re-download is allowed
+    const settings = loadSettings();
+    if (settings.allowCertificateRedownload === false) {
+      console.log('🚫 Certificate re-download is disabled in settings');
+      return res.status(403).json({ error: 'Certificate download is currently disabled' });
     }
 
     const users = loadUsers();
