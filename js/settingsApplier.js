@@ -256,45 +256,21 @@ class SettingsApplier {
     const s = this.settings;
     
     console.log('🎓 Applying certificate settings...');
+    console.log('   enableCertificateGeneration:', s.enableCertificateGeneration);
+    console.log('   allowCertificateRedownload:', s.allowCertificateRedownload);
     
-    // Disable certificate generation entirely
-    if (s.enableCertificateGeneration === false) {
-      console.log('  ✓ Certificates DISABLED - hiding download buttons');
-      const certButtons = document.querySelectorAll('[data-action="download-certificate"]');
-      certButtons.forEach(btn => {
-        btn.style.display = 'none';
-        btn.setAttribute('data-disabled-by-settings', 'true');
-      });
-    } else {
-      console.log('  ✓ Certificates ENABLED - showing download buttons');
-      const certButtons = document.querySelectorAll('[data-action="download-certificate"][data-disabled-by-settings="true"]');
-      certButtons.forEach(btn => {
-        btn.style.display = '';
-        btn.removeAttribute('data-disabled-by-settings');
-      });
-    }
+    // Expose settings to window so pages can check them
+    window.enableCertificateGeneration = s.enableCertificateGeneration !== false;
+    window.allowCertificateRedownload = s.allowCertificateRedownload !== false;
+    
+    console.log('  ✓ Certificate settings exposed to window');
+    console.log('   window.enableCertificateGeneration:', window.enableCertificateGeneration);
+    console.log('   window.allowCertificateRedownload:', window.allowCertificateRedownload);
 
     // Minimum pass percentage - store for backend use
     if (s.minimumQuizPassPercentage) {
       window.minimumPassPercentage = s.minimumQuizPassPercentage;
       console.log('  ✓ Min pass percentage set to:', s.minimumQuizPassPercentage);
-    }
-
-    // Disable certificate re-download
-    if (s.allowCertificateRedownload === false) {
-      console.log('  ✓ Certificate re-download DISABLED');
-      const redownloadBtns = document.querySelectorAll('[data-action="redownload-certificate"]');
-      redownloadBtns.forEach(btn => {
-        btn.style.display = 'none';
-        btn.setAttribute('data-disabled-by-settings', 'true');
-      });
-    } else {
-      console.log('  ✓ Certificate re-download ENABLED');
-      const redownloadBtns = document.querySelectorAll('[data-action="redownload-certificate"][data-disabled-by-settings="true"]');
-      redownloadBtns.forEach(btn => {
-        btn.style.display = '';
-        btn.removeAttribute('data-disabled-by-settings');
-      });
     }
   }
 

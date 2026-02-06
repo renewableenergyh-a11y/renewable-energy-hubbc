@@ -100,6 +100,7 @@ async function loadCertificates() {
           <button class="btn-secondary" style="font-size: 12px; padding: 6px 12px; flex: 1;" onclick="viewCertificate('${cert.id}')">
             View
           </button>
+          ${window.allowCertificateRedownload !== false ? `
           <div style="position: relative; flex: 1;">
             <button class="btn-secondary" style="font-size: 12px; padding: 6px 12px; width: 100%;" onclick="toggleDownloadMenu('${cert.id}')">
               Download ▼
@@ -109,6 +110,13 @@ async function loadCertificates() {
               <button style="width: 100%; text-align: left; padding: 8px 12px; border: none; background: none; cursor: pointer; font-size: 12px; color: #374151; border-top: 1px solid #e5e7eb;" onclick="downloadCertificateAs('${cert.id}', '${escapeHtml(cert.courseId)}', 'image')">🖼️ Image</button>
             </div>
           </div>
+          ` : `
+          <div style="flex: 1;">
+            <button class="btn-secondary" style="font-size: 12px; padding: 6px 12px; width: 100%; opacity: 0.5; cursor: not-allowed;" disabled title="Certificate downloads are disabled">
+              Download (Disabled)
+            </button>
+          </div>
+          `}
         </div>
       </div>
     `).join('');
@@ -179,7 +187,12 @@ window.downloadCertificateAs = async function(certId, courseId, format) {
       }
     });
 
-    if (!response.ok) throw new Error(`Failed to download certificate as ${format}`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMsg = errorData.error || `Failed to download certificate as ${format}`;
+      console.error('Certificate download error:', errorMsg);
+      throw new Error(errorMsg);
+    }
 
     const html = await response.text();
     
@@ -235,7 +248,7 @@ window.downloadCertificateAs = async function(certId, courseId, format) {
     }
   } catch (error) {
     console.error('Error downloading certificate:', error);
-    showModal({ type: 'error', title: 'Error', message: `Failed to download certificate as ${format}` });
+    showModal({ type: 'error', title: 'Download Failed', message: error.message || `Failed to download certificate as ${format}` });
   }
 };
 
