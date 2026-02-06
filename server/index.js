@@ -5577,7 +5577,11 @@ app.post('/api/test/complete-course', (req, res) => {
     const existingCert = user.certificates.find(c => c.courseId === courseId);
     let certificate = existingCert;
 
-    if (!existingCert) {
+    // Check if certificate generation is enabled
+    const testSettings = loadSettings();
+    const testCertificatesEnabled = testSettings.enableCertificateGeneration !== false;
+
+    if (!existingCert && testCertificatesEnabled) {
       certificate = {
         id: Math.random().toString(36).slice(2, 11),
         courseId,
@@ -6650,11 +6654,15 @@ app.post('/api/attendance/log-quiz', async (req, res) => {
             const course = courses.find(c => c.id === courseId || c.slug === courseId);
             const courseName = course?.title || courseId;
             
-            // Generate certificate if doesn't exist
+            // Generate certificate if doesn't exist (but check if certificates are enabled)
             user.certificates = user.certificates || [];
             const existingCert = user.certificates.find(c => c.courseId === courseId);
             
-            if (!existingCert) {
+            // Check if certificate generation is enabled
+            const platformSettings = loadSettings();
+            const certificatesEnabled = platformSettings.enableCertificateGeneration !== false;
+            
+            if (!existingCert && certificatesEnabled) {
               const certificate = {
                 id: Math.random().toString(36).slice(2, 11),
                 courseId,
