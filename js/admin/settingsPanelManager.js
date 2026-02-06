@@ -278,11 +278,18 @@ class SettingsPanelManager {
 
           <div class="form-group" id="aiPromotionGroup" style="display: ${s.aiAccessMode === 'Everyone' ? 'block' : 'none'};">
             <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
-              Promotion Duration (days) <span style="color: #f44336;">*</span>
+              Promotion Duration <span style="color: #f44336;">*</span>
             </label>
-            <input type="number" id="aiPromotionDurationDays" min="1" value="${s.aiPromotionDurationDays || 7}" 
-              style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box;" />
-            <small style="color: var(--text-muted); display: block; margin-top: 6px;">How many days the promotion will last</small>
+            <div style="display: flex; gap: 8px; align-items: flex-start;">
+              <input type="number" id="aiPromotionDurationValue" min="1" value="${s.aiPromotionDurationValue || 7}" 
+                style="flex: 1; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box;" />
+              <select id="aiPromotionDurationUnit" style="padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main);">
+                <option value="minutes" ${s.aiPromotionDurationUnit === 'minutes' ? 'selected' : ''}>Minutes</option>
+                <option value="hours" ${s.aiPromotionDurationUnit === 'hours' ? 'selected' : ''}>Hours</option>
+                <option value="days" ${s.aiPromotionDurationUnit === 'days' ? 'selected' : ''}>Days</option>
+              </select>
+            </div>
+            <small style="color: var(--text-muted); display: block; margin-top: 6px;">How long the promotion will last</small>
           </div>
 
           <div class="form-group">
@@ -560,7 +567,8 @@ class SettingsPanelManager {
     } else if (section === 'ai-assistant') {
       updates.enableAiAssistant = document.getElementById('enableAiAssistant').checked;
       updates.aiAccessMode = document.getElementById('aiAccessMode').value;
-      updates.aiPromotionDurationDays = parseInt(document.getElementById('aiPromotionDurationDays').value) || 7;
+      updates.aiPromotionDurationValue = parseInt(document.getElementById('aiPromotionDurationValue').value) || 7;
+      updates.aiPromotionDurationUnit = document.getElementById('aiPromotionDurationUnit').value || 'days';
       updates.aiDailyQuestionLimit = parseInt(document.getElementById('aiDailyQuestionLimit').value) || 50;
       updates.showAiBetaNotice = document.getElementById('showAiBetaNotice').checked;
     } else if (section === 'premium-trial') {
