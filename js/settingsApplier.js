@@ -122,6 +122,12 @@ class SettingsApplier {
     this.applyPremiumSettings();
     
     console.log('✅ All settings applied');
+    
+    // Trigger UI update to show/hide AI button and other controls
+    if (typeof window.updateNavUI === 'function') {
+      console.log('🔄 Triggering updateNavUI to refresh UI controls');
+      window.updateNavUI();
+    }
   }
 
   /**
