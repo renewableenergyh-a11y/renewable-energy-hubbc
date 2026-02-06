@@ -61,6 +61,7 @@ class SettingsApplier {
     console.log('   maintenanceMode:', this.settings.maintenanceMode);
     console.log('   enablePremiumForAll:', this.settings.enablePremiumForAll);
     console.log('   enableNewsSystem:', this.settings.enableNewsSystem);
+    console.log('   enableLikesReactions:', this.settings.enableLikesReactions);
     console.log('   enableAiAssistant:', this.settings.enableAiAssistant);
     console.log('   allowNewUserRegistration:', this.settings.allowNewUserRegistration);
 
@@ -367,7 +368,7 @@ class SettingsApplier {
 
     // Likes & Reactions Toggle
     if (s.enableLikesReactions === false) {
-      console.log('  ✓ Likes/Reactions DISABLED');
+      console.log('  ✓ Likes/Reactions DISABLED - hiding engagement section');
       
       // Add CSS rules to hide all like/reaction elements permanently
       this.addCSSRule('#engagementSection', 'display: none !important;');
@@ -378,13 +379,21 @@ class SettingsApplier {
       this.addCSSRule('.reaction-btn', 'display: none !important;');
       this.addCSSRule('.engagement-buttons', 'display: none !important;');
       
-      // Also hide them immediately if they exist
-      document.querySelectorAll('#engagementSection, #likeSection, .like-btn, #likeBtn, #reactionsContainer, .reaction-btn, .engagement-buttons').forEach(el => {
-        el.style.display = 'none';
+      // Also hide them immediately if they exist with inline styles (stronger)
+      const engagementSection = document.getElementById('engagementSection');
+      if (engagementSection) {
+        engagementSection.style.cssText = 'display: none !important;';
+        engagementSection.setAttribute('data-disabled-by-settings', 'true');
+        console.log('  ✓ Engagement section hidden via inline style');
+      }
+      
+      // Hide individual elements as fallback
+      document.querySelectorAll('#likeSection, #likeBtn, .like-btn, #reactionsContainer, .reaction-btn, .engagement-buttons').forEach(el => {
+        el.style.cssText = 'display: none !important;';
         el.setAttribute('data-disabled-by-settings', 'true');
       });
       
-      console.log('  ✓ Hidden engagement section and all reaction elements');
+      console.log('  ✓ All reaction elements hidden');
     } else {
       console.log('  ✓ Likes/Reactions ENABLED');
       
@@ -397,13 +406,21 @@ class SettingsApplier {
       this.removeCSSRule('.reaction-btn');
       this.removeCSSRule('.engagement-buttons');
       
-      // Show like buttons and reactions
-      document.querySelectorAll('#engagementSection[data-disabled-by-settings="true"], #likeSection[data-disabled-by-settings="true"], .like-btn[data-disabled-by-settings="true"], #likeBtn[data-disabled-by-settings="true"], #reactionsContainer[data-disabled-by-settings="true"], .reaction-btn[data-disabled-by-settings="true"], .engagement-buttons[data-disabled-by-settings="true"]').forEach(el => {
-        el.style.display = '';
+      // Show engagement section
+      const engagementSection = document.getElementById('engagementSection');
+      if (engagementSection && engagementSection.getAttribute('data-disabled-by-settings') === 'true') {
+        engagementSection.style.cssText = '';
+        engagementSection.removeAttribute('data-disabled-by-settings');
+        console.log('  ✓ Engagement section shown');
+      }
+      
+      // Show individual elements
+      document.querySelectorAll('#likeSection[data-disabled-by-settings="true"], #likeBtn[data-disabled-by-settings="true"], .like-btn[data-disabled-by-settings="true"], #reactionsContainer[data-disabled-by-settings="true"], .reaction-btn[data-disabled-by-settings="true"], .engagement-buttons[data-disabled-by-settings="true"]').forEach(el => {
+        el.style.cssText = '';
         el.removeAttribute('data-disabled-by-settings');
       });
       
-      console.log('  ✓ Shown engagement section and all reaction elements');
+      console.log('  ✓ Reaction elements shown');
     }
 
     // Careers Page Toggle
