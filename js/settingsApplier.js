@@ -567,8 +567,27 @@ class SettingsApplier {
       console.log('  🎉 AI PROMOTION MODE ACTIVE - Everyone gets access when logged in');
       window.aiRestrictedToPremium = false;
       
-      // Show AI promotion banner
-      this.showAiPromotionBanner();
+      // Calculate AI promotion end time - EXACTLY LIKE PREMIUM PROMOTION
+      let aiPromotionEndTime = null;
+      if (s.aiPromotionDurationValue) {
+        const duration = parseInt(s.aiPromotionDurationValue, 10) || 7;
+        const unit = s.aiPromotionDurationUnit || 'days';
+        const now = Date.now();
+        let durationMs = 0;
+        
+        if (unit === 'minutes') durationMs = duration * 60 * 1000;
+        else if (unit === 'hours') durationMs = duration * 60 * 60 * 1000;
+        else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
+        
+        aiPromotionEndTime = now + durationMs;
+      }
+      
+      window.aiPromotionEndTime = aiPromotionEndTime;
+      const endDate = aiPromotionEndTime ? new Date(aiPromotionEndTime).toLocaleString() : '';
+      console.log('  ✓ AI Promotion end time:', endDate);
+      
+      // Show AI promotion banner with end date
+      this.showAiPromotionBanner(endDate);
       
       // Remove upsell if it exists
       const upsell = document.querySelector('[data-component="ai-upsell"]');
@@ -585,12 +604,17 @@ class SettingsApplier {
     } else if (accessMode === 'Premium Only') {
       console.log('  🔐 AI PREMIUM ONLY MODE - restricted to premium users');
       window.aiRestrictedToPremium = true;
+      window.aiPromotionEndTime = null;
       
       // Remove AI promotion banner if it exists
       const aiBanner = document.querySelector('[data-component="ai-promotion-banner"]');
       if (aiBanner) {
         aiBanner.remove();
       }
+      
+      // Clear banner dismissal state since promotion ended
+      sessionStorage.removeItem('ai-promotion-banner-dismissed');
+      console.log('  ✓ Cleared AI banner dismissal state');
       
       const userRole = localStorage.getItem('userRole');
       const isPremium = localStorage.getItem('isPremium') === 'true';
@@ -883,24 +907,12 @@ class SettingsApplier {
   /**
    * Show AI promotion banner when Everyone (Promotion) mode is active
    */
-  showAiPromotionBanner() {
+  showAiPromotionBanner(endDate = '') {
     try {
-      // Check if already dismissed in this session
+      // Check if already dismissed in this session - EXACT SAME PATTERN as premium
       const isDismissed = sessionStorage.getItem('ai-promotion-banner-dismissed') === 'true';
-      if (isDismissed) {
-        console.log('ℹ️ AI banner dismissed - skipping display');
-        return;
-      }
-      
-      // Check if banner already exists
       const existingBanner = document.querySelector('[data-component="ai-promotion-banner"]');
-      if (existingBanner) {
-        console.log('ℹ️ AI promotion banner already exists');
-        return;
-      }
-
-      const createBanner = () => {
-        // Create banner container with same styling as premium promotion banner
+      if (!existingBanner && !isDismissed) {
         const banner = document.createElement('div');
         banner.setAttribute('data-component', 'ai-promotion-banner');
         banner.style.cssText = `
@@ -921,7 +933,7 @@ class SettingsApplier {
           flex-wrap: wrap;
         `;
         
-        // Create dismiss button with same styling as premium banner
+        // Create dismiss button - EXACT COPY of premium banner button
         const dismissBtn = document.createElement('button');
         dismissBtn.innerHTML = '✕';
         dismissBtn.style.cssText = `
@@ -946,30 +958,27 @@ class SettingsApplier {
         dismissBtn.onmouseout = () => { dismissBtn.style.background = 'rgba(255,255,255,0.2)'; dismissBtn.style.transform = 'scale(1)'; };
         dismissBtn.onclick = () => {
           banner.style.display = 'none';
+          // Remember dismissal for this session
           sessionStorage.setItem('ai-promotion-banner-dismissed', 'true');
-          console.log('🎉 AI promotion banner dismissed - will stay hidden until browser closes');
+          console.log('🎉 AI banner dismissed - will stay hidden until browser closes');
         };
         
-        banner.innerHTML = `🎉 <strong>Special Offer:</strong> Aubie RET AI Assistant is FREE for everyone now!`;
+        // Display message with end date like premium banner
+        const bannerText = endDate 
+          ? `🎉 <strong>Special Offer:</strong> Aubie RET AI Assistant is FREE for everyone! Enjoy all features until ${endDate}`
+          : `🎉 <strong>Special Offer:</strong> Aubie RET AI Assistant is FREE for everyone now!`;
+        banner.innerHTML = bannerText;
         banner.appendChild(dismissBtn);
         
-        // Insert into main element as first child, like premium banner
+        // Insert into main element EXACTLY like premium banner
         const mainContent = document.querySelector('main') || document.body;
         if (mainContent.firstChild) {
           mainContent.insertBefore(banner, mainContent.firstChild);
         } else {
           mainContent.appendChild(banner);
         }
-        console.log('✅ AI promotion banner added to DOM');
-      };
-
-      // Try to create banner immediately
-      if (document.body) {
-        createBanner();
-      } else {
-        // Wait for DOM if not ready
-        document.addEventListener('DOMContentLoaded', createBanner);
-        setTimeout(createBanner, 500);
+      } else if (isDismissed) {
+        console.log('ℹ️ AI banner dismissed - skipping display');
       }
     } catch (err) {
       console.warn('⚠️ Failed to show AI promotion banner:', err);

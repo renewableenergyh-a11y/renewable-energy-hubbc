@@ -6403,6 +6403,14 @@
                 <option value="Everyone">Everyone (Promotion)</option>
               </select>
             </label>
+            <label style="display:flex;align-items:center;gap:8px">AI Promotion Duration
+              <input id="setting-aiPromotionDurationValue" type="number" min="1" value="7" style="width:60px;margin-left:8px" />
+              <select id="setting-aiPromotionDurationUnit" style="margin-left:4px">
+                <option value="minutes">Minutes</option>
+                <option value="hours">Hours</option>
+                <option value="days">Days</option>
+              </select>
+            </label>
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-enableCertificateGeneration"/> Enable Certificate Generation</label>
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-allowCertificateRedownload"/> Allow Certificate Re-download</label>
             <label style="display:flex;align-items:center;gap:8px">Default Role
@@ -6434,6 +6442,8 @@
         document.getElementById('setting-analyticsInterval').value = s.analyticsInterval || 60;
         document.getElementById('setting-defaultRole').value = s.defaultRole || 'student';
         document.getElementById('setting-aiAccessMode').value = s.aiAccessMode || 'Premium Only';
+        document.getElementById('setting-aiPromotionDurationValue').value = s.aiPromotionDurationValue || 7;
+        document.getElementById('setting-aiPromotionDurationUnit').value = s.aiPromotionDurationUnit || 'days';
         document.getElementById('setting-allowRegistrations').checked = !!s.allowRegistrations;
         document.getElementById('setting-maintenanceMode').checked = !!s.maintenanceMode;
         document.getElementById('setting-enableAiAssistant').checked = s.enableAiAssistant !== false;
@@ -6449,13 +6459,15 @@
         const analyticsInterval = parseInt(document.getElementById('setting-analyticsInterval').value, 10) || 60;
         const defaultRole = document.getElementById('setting-defaultRole').value;
         const aiAccessMode = document.getElementById('setting-aiAccessMode').value;
+        const aiPromotionDurationValue = parseInt(document.getElementById('setting-aiPromotionDurationValue').value, 10) || 7;
+        const aiPromotionDurationUnit = document.getElementById('setting-aiPromotionDurationUnit').value || 'days';
         const allowRegistrations = !!document.getElementById('setting-allowRegistrations').checked;
         const maintenanceMode = !!document.getElementById('setting-maintenanceMode').checked;
         const enableAiAssistant = !!document.getElementById('setting-enableAiAssistant').checked;
         const enableCertificateGeneration = !!document.getElementById('setting-enableCertificateGeneration').checked;
         const allowCertificateRedownload = !!document.getElementById('setting-allowCertificateRedownload').checked;
 
-        const payload = { siteName, welcome, contactEmail, analyticsInterval, defaultRole, aiAccessMode, allowRegistrations, maintenanceMode, enableAiAssistant, enableCertificateGeneration, allowCertificateRedownload };
+        const payload = { siteName, welcome, contactEmail, analyticsInterval, defaultRole, aiAccessMode, aiPromotionDurationValue, aiPromotionDurationUnit, allowRegistrations, maintenanceMode, enableAiAssistant, enableCertificateGeneration, allowCertificateRedownload };
         try {
           const token = localStorage.getItem('adminToken');
           await fetch('/api/admin/settings', { method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${token}`}, body: JSON.stringify(payload) });
@@ -6465,7 +6477,7 @@
 
       document.getElementById('settings-reset').addEventListener('click', async () => {
         if (!confirm('Reset settings to defaults?')) return;
-        const defaults = { siteName: 'Aubie RET Hub', welcome: '', contactEmail: '', analyticsInterval: 60, defaultRole: 'student', aiAccessMode: 'Premium Only', allowRegistrations: true, maintenanceMode: false, enableAiAssistant: true, enableCertificateGeneration: true, allowCertificateRedownload: true };
+        const defaults = { siteName: 'Aubie RET Hub', welcome: '', contactEmail: '', analyticsInterval: 60, defaultRole: 'student', aiAccessMode: 'Premium Only', aiPromotionDurationValue: 7, aiPromotionDurationUnit: 'days', allowRegistrations: true, maintenanceMode: false, enableAiAssistant: true, enableCertificateGeneration: true, allowCertificateRedownload: true };
         try { await fetch('/api/admin/settings', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(defaults) });
           await showAlert('Reset', 'Settings reset to defaults.', 'info');
           loadSettingsUI();

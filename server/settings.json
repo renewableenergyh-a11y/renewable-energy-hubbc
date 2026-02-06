@@ -1,6 +1,8 @@
 {
   "siteName": "Aubie RET Hub",
   "welcome": "Welcome to the Renewable Energy Hub!",
-  "aiAccessMode": "Everyone (Promotion)",
-  "enableAiAssistant": true
+  "enableAiAssistant": true,
+  "aiAccessMode": "Everyone",
+  "aiPromotionDurationValue": 7,
+  "aiPromotionDurationUnit": "days"
 }
