@@ -6396,6 +6396,9 @@
           <div class="settings-checkboxes">
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-allowRegistrations"/> Allow Registrations</label>
             <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-maintenanceMode"/> Maintenance Mode</label>
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-enableAiAssistant"/> Enable AI Assistant</label>
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-enableCertificateGeneration"/> Enable Certificate Generation</label>
+            <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="setting-allowCertificateRedownload"/> Allow Certificate Re-download</label>
             <label style="display:flex;align-items:center;gap:8px">Default Role
               <select id="setting-defaultRole" style="margin-left:8px">
                 <option value="student">Student</option>
@@ -6426,6 +6429,9 @@
         document.getElementById('setting-defaultRole').value = s.defaultRole || 'student';
         document.getElementById('setting-allowRegistrations').checked = !!s.allowRegistrations;
         document.getElementById('setting-maintenanceMode').checked = !!s.maintenanceMode;
+        document.getElementById('setting-enableAiAssistant').checked = s.enableAiAssistant !== false;
+        document.getElementById('setting-enableCertificateGeneration').checked = s.enableCertificateGeneration !== false;
+        document.getElementById('setting-allowCertificateRedownload').checked = s.allowCertificateRedownload !== false;
       } catch (err) { console.error(err); }
 
       document.getElementById('settings-form').addEventListener('submit', async (e) => {
@@ -6437,8 +6443,11 @@
         const defaultRole = document.getElementById('setting-defaultRole').value;
         const allowRegistrations = !!document.getElementById('setting-allowRegistrations').checked;
         const maintenanceMode = !!document.getElementById('setting-maintenanceMode').checked;
+        const enableAiAssistant = !!document.getElementById('setting-enableAiAssistant').checked;
+        const enableCertificateGeneration = !!document.getElementById('setting-enableCertificateGeneration').checked;
+        const allowCertificateRedownload = !!document.getElementById('setting-allowCertificateRedownload').checked;
 
-        const payload = { siteName, welcome, contactEmail, analyticsInterval, defaultRole, allowRegistrations, maintenanceMode };
+        const payload = { siteName, welcome, contactEmail, analyticsInterval, defaultRole, allowRegistrations, maintenanceMode, enableAiAssistant, enableCertificateGeneration, allowCertificateRedownload };
         try {
           const token = localStorage.getItem('adminToken');
           await fetch('/api/admin/settings', { method: 'POST', headers: {'Content-Type':'application/json', 'Authorization': `Bearer ${token}`}, body: JSON.stringify(payload) });
@@ -6448,7 +6457,7 @@
 
       document.getElementById('settings-reset').addEventListener('click', async () => {
         if (!confirm('Reset settings to defaults?')) return;
-        const defaults = { siteName: 'Aubie RET Hub', welcome: '', contactEmail: '', analyticsInterval: 60, defaultRole: 'student', allowRegistrations: true, maintenanceMode: false };
+        const defaults = { siteName: 'Aubie RET Hub', welcome: '', contactEmail: '', analyticsInterval: 60, defaultRole: 'student', allowRegistrations: true, maintenanceMode: false, enableAiAssistant: true, enableCertificateGeneration: true, allowCertificateRedownload: true };
         try { await fetch('/api/admin/settings', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(defaults) });
           await showAlert('Reset', 'Settings reset to defaults.', 'info');
           loadSettingsUI();

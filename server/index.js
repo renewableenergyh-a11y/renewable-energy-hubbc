@@ -5580,8 +5580,10 @@ app.post('/api/test/complete-course', (req, res) => {
     // Check if certificate generation is enabled
     const testSettings = loadSettings();
     const testCertificatesEnabled = testSettings.enableCertificateGeneration !== false;
+    console.log(`📋 POST /api/test/complete-course - Settings: enableCertificateGeneration = ${testSettings.enableCertificateGeneration}, certificatesEnabled: ${testCertificatesEnabled}`);
 
     if (!existingCert && testCertificatesEnabled) {
+      console.log(`✅ Creating certificate for test endpoint`);
       certificate = {
         id: Math.random().toString(36).slice(2, 11),
         courseId,
@@ -5592,6 +5594,10 @@ app.post('/api/test/complete-course', (req, res) => {
         certificateNumber: `CERT-${Date.now()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`
       };
       user.certificates.push(certificate);
+    } else if (existingCert) {
+      console.log(`ℹ️ Certificate already exists for test endpoint`);
+    } else {
+      console.log(`🚫 Certificate generation disabled - skipping for test endpoint`);
     }
 
     saveUsers(users);
@@ -6661,6 +6667,7 @@ app.post('/api/attendance/log-quiz', async (req, res) => {
             // Check if certificate generation is enabled
             const platformSettings = loadSettings();
             const certificatesEnabled = platformSettings.enableCertificateGeneration !== false;
+            console.log(`🔧 Certificate generation check - enableCertificateGeneration: ${platformSettings.enableCertificateGeneration}, certificatesEnabled: ${certificatesEnabled}`);
             
             if (!existingCert && certificatesEnabled) {
               const certificate = {
@@ -6689,6 +6696,10 @@ app.post('/api/attendance/log-quiz', async (req, res) => {
                   console.warn('Failed to create certificate notification:', notifErr);
                 }
               })();
+            } else if (existingCert) {
+              console.log(`ℹ️ Certificate already exists for ${userEmail}: ${courseId}`);
+            } else {
+              console.log(`🚫 Certificate generation disabled - skipping for ${userEmail}: ${courseId}`);
             }
             
             saveUsers(users);
