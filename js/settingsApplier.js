@@ -950,7 +950,7 @@ class SettingsApplier {
           console.log('🎉 AI promotion banner dismissed - will stay hidden until browser closes');
         };
         
-        banner.innerHTML = `🎉 <strong>Aubie RET AI Assistant</strong> is now available to everyone!`;
+        banner.innerHTML = `🎉 <strong>Special Offer:</strong> Aubie RET AI Assistant is FREE for everyone now!`;
         banner.appendChild(dismissBtn);
         
         // Insert into main element as first child, like premium banner
