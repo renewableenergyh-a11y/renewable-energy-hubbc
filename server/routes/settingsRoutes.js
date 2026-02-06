@@ -96,6 +96,7 @@ router.get('/public/settings', async (req, res) => {
         aiAccessMode: 'Premium Only',
         aiPromotionDurationValue: 7,
         aiPromotionDurationUnit: 'days',
+        aiPromotionStartedAt: null,
         aiDailyQuestionLimit: 50,
         showAiBetaNotice: true,
         
@@ -154,6 +155,7 @@ router.get('/', authenticateSuperAdmin, async (req, res) => {
         aiAccessMode: 'Premium Only', // 'Premium Only' or 'Everyone'
         aiPromotionDurationValue: 7,
         aiPromotionDurationUnit: 'days', // 'minutes', 'hours', 'days'
+        aiPromotionStartedAt: null,
         aiDailyQuestionLimit: 50,
         showAiBetaNotice: true,
         
@@ -222,6 +224,9 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
         endTime.setDate(endTime.getDate() + updates.aiPromotionDurationValue);
       }
       
+      // Record start time for expiration checking
+      updates.aiPromotionStartedAt = now;
+      
       const notificationMsg = `🎉 AI Assistant is now available to all users for ${updates.aiPromotionDurationValue} ${updates.aiPromotionDurationUnit}! Try it out before the promotion ends.`;
       
       await createSystemNotification(notificationMsg, {
@@ -230,6 +235,9 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
         duration: updates.aiPromotionDurationValue,
         durationUnit: updates.aiPromotionDurationUnit
       });
+    } else if (section === 'ai-assistant' && updates.aiAccessMode === 'Premium Only') {
+      // Clear promotion start time when turning off
+      updates.aiPromotionStartedAt = null;
     }
     
     // Handle Premium for Everyone promotion logic
@@ -265,9 +273,11 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
       });
     }
     
-    // When disabling Premium for All, mark promotion as inactive
+    // When disabling Premium for All, mark promotion as inactive and clear times
     if (section === 'premium-trial' && updates.enablePremiumForAll === false) {
       updates.premiumPromotionActive = false;
+      updates.premiumPromotionStartAt = null;
+      updates.premiumPromotionEndAt = null;
     }
     
     // Apply updates to settings using findByIdAndUpdate for proper persistence

@@ -546,6 +546,31 @@ class SettingsApplier {
     console.log('🤖 Applying AI Assistant settings...');
     console.log('   Input: enableAiAssistant=%s, aiAccessMode=%s', s.enableAiAssistant, s.aiAccessMode);
 
+    // CHECK: Auto-disable AI promotion if time has expired
+    if (s.aiAccessMode === 'Everyone' && s.aiPromotionDurationValue && s.aiPromotionDurationValue > 0) {
+      // Calculate what the end time should be
+      let expectedEndTime = null;
+      if (s.aiPromotionStartedAt) {
+        const startTime = new Date(s.aiPromotionStartedAt).getTime();
+        const duration = parseInt(s.aiPromotionDurationValue, 10) || 7;
+        const unit = s.aiPromotionDurationUnit || 'days';
+        let durationMs = 0;
+        
+        if (unit === 'minutes') durationMs = duration * 60 * 1000;
+        else if (unit === 'hours') durationMs = duration * 60 * 60 * 1000;
+        else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
+        
+        expectedEndTime = startTime + durationMs;
+      }
+      
+      // If time has passed, auto-disable the promotion
+      if (expectedEndTime && Date.now() >= expectedEndTime) {
+        console.log('⏰ AI promotion expired at', new Date(expectedEndTime).toLocaleString(), '- auto-disabling...');
+        this.autoDisableAiPromotion();
+        return; // Don't continue applying the expired promotion
+      }
+    }
+
     // Disable AI entirely
     if (s.enableAiAssistant === false) {
       console.log('  ❌ AI Assistant DISABLED - not showing button');
@@ -660,6 +685,31 @@ class SettingsApplier {
     const s = this.settings;
     
     console.log('💎 Applying Premium settings...');
+
+    // CHECK: Auto-disable premium promotion if time has expired
+    if (s.enablePremiumForAll === true && s.premiumPromotionDurationValue && s.premiumPromotionDurationValue > 0) {
+      // Calculate what the end time should be
+      let expectedEndTime = null;
+      if (s.premiumPromotionStartAt) {
+        const startTime = new Date(s.premiumPromotionStartAt).getTime();
+        const duration = parseInt(s.premiumPromotionDurationValue, 10) || 7;
+        const unit = s.premiumPromotionDurationUnit || 'days';
+        let durationMs = 0;
+        
+        if (unit === 'minutes') durationMs = duration * 60 * 1000;
+        else if (unit === 'hours') durationMs = duration * 60 * 60 * 1000;
+        else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
+        
+        expectedEndTime = startTime + durationMs;
+      }
+      
+      // If time has passed, auto-disable the promotion
+      if (expectedEndTime && Date.now() >= expectedEndTime) {
+        console.log('⏰ Premium promotion expired at', new Date(expectedEndTime).toLocaleString(), '- auto-disabling...');
+        this.autoDisablePremiumPromotion();
+        return; // Don't continue applying the expired promotion
+      }
+    }
 
     // Disable premium system entirely
     if (s.enablePremiumSystem === false) {
@@ -902,6 +952,58 @@ class SettingsApplier {
     `;
     
     document.body.appendChild(container);
+  }
+
+  /**
+   * Auto-disable premium promotion when it expires
+   */
+  async autoDisablePremiumPromotion() {
+    try {
+      console.log('🔄 Auto-disabling premium promotion...');
+      const response = await fetch('/api/settings/premium-trial', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          enablePremiumForAll: false
+        })
+      });
+      
+      if (response.ok) {
+        console.log('✅ Premium promotion auto-disabled successfully');
+        // Reload settings after disabling
+        await this.init();
+      } else {
+        console.warn('⚠️ Failed to auto-disable premium promotion:', await response.text());
+      }
+    } catch (err) {
+      console.error('❌ Error auto-disabling premium promotion:', err);
+    }
+  }
+
+  /**
+   * Auto-disable AI promotion when it expires
+   */
+  async autoDisableAiPromotion() {
+    try {
+      console.log('🔄 Auto-disabling AI promotion...');
+      const response = await fetch('/api/settings/ai-assistant', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          aiAccessMode: 'Premium Only'
+        })
+      });
+      
+      if (response.ok) {
+        console.log('✅ AI promotion auto-disabled successfully');
+        // Reload settings after disabling
+        await this.init();
+      } else {
+        console.warn('⚠️ Failed to auto-disable AI promotion:', await response.text());
+      }
+    } catch (err) {
+      console.error('❌ Error auto-disabling AI promotion:', err);
+    }
   }
 
   /**
