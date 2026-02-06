@@ -597,13 +597,23 @@ class SettingsApplier {
     if (s.enablePremiumSystem === false) {
       console.log('  ✓ Premium system DISABLED');
       window.premiumEnabled = false;
-      this.hideElement('[data-action="upgrade-premium"], [data-section="premium"], #premium-section');
+      
+      // Hide premium button and billing access
+      this.hideElement('#nav-premium-btn, .nav-premium-link, [data-action="upgrade-premium"], [data-section="premium"], #premium-section, a[href*="billing.html"]');
+      
+      // Block access to billing.html
+      if (window.location.pathname.includes('billing.html')) {
+        window.location.href = 'index.html?premium_disabled=true';
+        return;
+      }
+      
+      console.log('  ✓ Premium system hidden');
       return;
     }
 
     console.log('  ✓ Premium system ENABLED');
     window.premiumEnabled = true;
-    this.showElement('[data-action="upgrade-premium"], [data-section="premium"], #premium-section');
+    this.showElement('#nav-premium-btn, .nav-premium-link, [data-action="upgrade-premium"], [data-section="premium"], #premium-section, a[href*="billing.html"]');
 
     // Free trial duration
     if (s.freeTrialDurationDays) {
@@ -617,8 +627,8 @@ class SettingsApplier {
       window.premiumForAll = true;
       window.userPremium = true;
       
-      // Hide upgrade buttons
-      const upgradeBtns = document.querySelectorAll('[data-action="upgrade-premium"]');
+      // Hide upgrade buttons and links
+      const upgradeBtns = document.querySelectorAll('#nav-premium-btn, .nav-premium-link, [data-action="upgrade-premium"]');
       upgradeBtns.forEach(btn => {
         btn.style.display = 'none';
         btn.setAttribute('data-disabled-by-settings', 'true');
@@ -640,6 +650,7 @@ class SettingsApplier {
       
       // Grant all users premium
       localStorage.setItem('isPremium', 'true');
+      console.log('  ✓ Premium granted to all users');
     } else {
       console.log('  ✓ Premium for all DISABLED');
       // Remove promotion banner
@@ -650,13 +661,14 @@ class SettingsApplier {
       }
       
       // Show upgrade buttons
-      const upgradeBtns = document.querySelectorAll('[data-action="upgrade-premium"][data-disabled-by-settings="true"]');
+      const upgradeBtns = document.querySelectorAll('#nav-premium-btn[data-disabled-by-settings="true"], .nav-premium-link[data-disabled-by-settings="true"], [data-action="upgrade-premium"][data-disabled-by-settings="true"]');
       upgradeBtns.forEach(btn => {
         btn.style.display = '';
         btn.removeAttribute('data-disabled-by-settings');
       });
       
       window.premiumForAll = false;
+      console.log('  ✓ Premium for all promotion disabled');
     }
   }
 
