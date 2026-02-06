@@ -666,6 +666,14 @@
 
   function renderReactionButtons() {
     const container = document.getElementById('reactionsContainer');
+    
+    // Check if likes/reactions are enabled via settings
+    if (window.enableLikesReactions === false) {
+      console.log('🚫 Reactions disabled by settings - skipping render');
+      container.innerHTML = '';
+      return;
+    }
+    
     if (!isAuthenticated) {
       container.innerHTML = '<p style="color: #999; font-size: 0.9rem;">Sign in to react to this article</p>';
       return;
@@ -703,6 +711,11 @@
   }
 
   function updateLikeCount() {
+    // Check if likes are enabled
+    if (window.enableLikesReactions === false) {
+      return; // Don't update likes if disabled
+    }
+    
     const count = currentArticle.counts ? (currentArticle.counts.like || 0) : 0;
     const likeCountEl = document.getElementById('likeCount');
     if (likeCountEl) {
@@ -723,7 +736,10 @@
   }
 
   function setupEventListeners() {
-    document.getElementById('likeBtn').addEventListener('click', handleLike);
+    const likeBtn = document.getElementById('likeBtn');
+    if (likeBtn && window.enableLikesReactions !== false) {
+      likeBtn.addEventListener('click', handleLike);
+    }
     
     // Share buttons
     document.getElementById('copyLinkBtn').addEventListener('click', copyLink);
@@ -733,6 +749,11 @@
   }
 
   async function handleLike() {
+    if (window.enableLikesReactions === false) {
+      console.warn('⚠️ Likes are disabled by settings');
+      return;
+    }
+    
     if (!isAuthenticated) {
       window.location.href = 'login.html';
       return;
@@ -794,6 +815,11 @@
   }
 
   async function handleReaction(type) {
+    if (window.enableLikesReactions === false) {
+      console.warn('⚠️ Reactions are disabled by settings');
+      return;
+    }
+    
     if (!isAuthenticated) {
       window.location.href = 'login.html';
       return;

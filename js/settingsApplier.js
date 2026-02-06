@@ -258,6 +258,16 @@ class SettingsApplier {
     const s = this.settings;
     
     console.log('📰 Applying News & Careers settings...');
+    console.log('   enableNewsSystem:', s.enableNewsSystem, 'type:', typeof s.enableNewsSystem);
+    console.log('   enableLikesReactions:', s.enableLikesReactions, 'type:', typeof s.enableLikesReactions);
+    
+    // DEBUG: Always try to find and log engagement section
+    const engagementSection = document.getElementById('engagementSection');
+    console.log('   #engagementSection exists?', !!engagementSection, 'element:', engagementSection);
+    if (engagementSection) {
+      console.log('   #engagementSection display:', engagementSection.style.display);
+      console.log('   #engagementSection computed display:', window.getComputedStyle(engagementSection).display);
+    }
 
     // News System Toggle
     if (s.enableNewsSystem === false) {
@@ -370,6 +380,10 @@ class SettingsApplier {
     if (s.enableLikesReactions === false) {
       console.log('  ✓ Likes/Reactions DISABLED - hiding engagement section');
       
+      // Set window variable so page JS can check this setting
+      window.enableLikesReactions = false;
+      console.log('  ✓ window.enableLikesReactions =', window.enableLikesReactions);
+      
       // Add CSS rules to hide all like/reaction elements permanently
       this.addCSSRule('#engagementSection', 'display: none !important;');
       this.addCSSRule('#likeSection', 'display: none !important;');
@@ -393,9 +407,43 @@ class SettingsApplier {
         el.setAttribute('data-disabled-by-settings', 'true');
       });
       
+      // Setup MutationObserver to keep engagement section hidden as it's modified
+      if (!this.engagementObserver) {
+        console.log('  📍 Setting up MutationObserver for engagement section');
+        const observerCallback = () => {
+          const engagementSection = document.getElementById('engagementSection');
+          if (engagementSection && engagementSection.style.display !== 'none') {
+            console.log('  🔄 Re-hiding engagement section (was modified)');
+            engagementSection.style.cssText = 'display: none !important;';
+          }
+        };
+        
+        this.engagementObserver = new MutationObserver(observerCallback);
+        if (engagementSection) {
+          this.engagementObserver.observe(engagementSection, {
+            attributes: true,
+            childList: true,
+            subtree: true,
+            attributeFilter: ['style', 'class']
+          });
+          console.log('  ✓ MutationObserver started');
+        }
+      }
+      
       console.log('  ✓ All reaction elements hidden');
     } else {
       console.log('  ✓ Likes/Reactions ENABLED');
+      
+      // Set window variable so page JS knows it's enabled
+      window.enableLikesReactions = true;
+      console.log('  ✓ window.enableLikesReactions =', window.enableLikesReactions);
+      
+      // Stop observer
+      if (this.engagementObserver) {
+        this.engagementObserver.disconnect();
+        this.engagementObserver = null;
+        console.log('  ✓ MutationObserver stopped');
+      }
       
       // Remove CSS rules
       this.removeCSSRule('#engagementSection');
