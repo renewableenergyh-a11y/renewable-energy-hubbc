@@ -1,4 +1,4 @@
-import { getCurrentUser } from "./auth.js";
+import { getCurrentUser, hasPremium } from "./auth.js";
 
 /**
  * Global Premium Access Checker
@@ -12,9 +12,24 @@ export function hasPremiumAccess(user = null) {
   
   if (!user) return false;
   
-  // Check for global promotion override (loaded from settings applier)
-  if (window.premiumForAll === true && Date.now() < (window.promotionEndTime || 0)) {
-    console.log('✅ Premium access granted via global promotion');
+  // DEBUG: Log promotion status
+  const promotionActive = window.premiumForAll === true;
+  const promotionNotExpired = window.promotionEndTime && Date.now() < window.promotionEndTime;
+  
+  console.log('🔍 Premium access check:', {
+    premiumForAll: window.premiumForAll,
+    promotionEndTime: window.promotionEndTime,
+    nowTime: Date.now(),
+    promotionActive,
+    promotionNotExpired,
+    userHasPremium: user.hasPremium,
+    userTrialActive: user.trialActive,
+    userTrialEndAt: user.trialEndAt
+  });
+  
+  // Check for global promotion override (loaded from settings applier) - HIGHEST PRIORITY
+  if (promotionActive && promotionNotExpired) {
+    console.log('✅ Premium access granted via GLOBAL PROMOTION');
     return true;
   }
   
@@ -30,6 +45,7 @@ export function hasPremiumAccess(user = null) {
     return true;
   }
   
+  console.log('❌ No premium access');
   return false;
 }
 

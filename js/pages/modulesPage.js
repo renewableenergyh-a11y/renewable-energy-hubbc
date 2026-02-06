@@ -72,11 +72,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       const hasPremium = localStorage.getItem("hasPremium") === "true";
       const adminUnlocked = sessionStorage.getItem('adminUnlocked') === 'true';
       const token = getToken();
+      
+      // Check for global premium promotion override
+      const promotionActive = window.premiumForAll === true;
+      const promotionNotExpired = window.promotionEndTime && Date.now() < window.promotionEndTime;
+      const hasPromotionAccess = promotionActive && promotionNotExpired;
 
       data.forEach(module => {
         // Admin unlock bypasses premium checks (admin can view even if not logged in)
         const isLocked = module.isPremium && !adminUnlocked && !loggedIn;
-        const isPaidRequired = module.isPremium && !adminUnlocked && loggedIn && !hasPremium;
+        // Logged in but no premium (unless promotion is active)
+        const isPaidRequired = module.isPremium && !adminUnlocked && loggedIn && !hasPremium && !hasPromotionAccess;
 
         const desc = module.description || '';
         const shortDesc = desc.length > 120 ? desc.slice(0, 117).trim() + '…' : desc;
@@ -106,7 +112,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           `;
           modulesGrid.innerHTML += card;
         } else {
-          // Free or has premium - allow access
+          // Free or has premium or has promotion access - allow access
           const bookmarkBtn = token ? `<button class="bookmark-btn" data-module-id="${module.id}" data-course-id="${module.courseId}" data-module-title="${module.title.replace(/"/g, '&quot;')}" title="Add to bookmarks" style="position: absolute; bottom: 10px; right: 10px; background: rgba(255,255,255,0.9); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; color: #999; box-shadow: 0 2px 8px rgba(0,0,0,0.1);" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.2)'; this.style.transform='scale(1.1)';" onmouseout="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.1)'; this.style.transform='scale(1)';"><i class="far fa-bookmark"></i></button>` : '';
           
           const card = `
@@ -114,7 +120,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               ${bookmarkBtn}
               ${module.image ? `<img src="${module.image}" alt="${module.title}" class="lesson-image">` : ''}
               <h3>${module.title}</h3>
-              <span class="tag ${module.isPremium ? 'premium' : 'free'}">${module.isPremium ? (adminUnlocked ? 'Premium (Admin Unlocked)' : 'Premium') : 'Free'}</span>
+              <span class="tag ${module.isPremium ? 'premium' : 'free'}">${module.isPremium ? (adminUnlocked ? 'Premium (Admin Unlocked)' : (hasPromotionAccess ? 'Premium (Promotion)' : 'Premium')) : 'Free'}</span>
               <p>${shortDesc}</p>
               <a href="module.html?course=${module.courseId}&module=${module.id}" class="btn-primary">
                 Open Module

@@ -103,8 +103,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         const adminUnlocked = sessionStorage.getItem('adminUnlocked') === 'true';
         const loggedIn = localStorage.getItem('isLoggedIn') === 'true';
         
+        // Check for global premium promotion override
+        const promotionActive = window.premiumForAll === true;
+        const promotionNotExpired = window.promotionEndTime && Date.now() < window.promotionEndTime;
+        const hasPromotionAccess = promotionActive && promotionNotExpired;
+        
         // Check if user can view premium content
-        const canViewVideo = !module.isPremium || adminUnlocked || (loggedIn && hasPremium);
+        const canViewVideo = !module.isPremium || adminUnlocked || (loggedIn && (hasPremium || hasPromotionAccess));
         
         if (canViewVideo) {
           // Create video card (collapsed state)
