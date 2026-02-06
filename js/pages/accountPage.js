@@ -292,12 +292,18 @@ window.viewCertificate = async function(certId) {
           <!-- Certificate will be loaded here -->
         </div>
         <div style="display: flex; gap: 6px; padding: 10px 12px; border-top: 1px solid #e5e7eb; justify-content: flex-end; background: #f9fafb; flex-wrap: wrap;">
-          <button onclick="downloadCertificateFromModal('${certId}', 'html')" style="padding: 6px 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
-            📄 Download HTML
-          </button>
-          <button onclick="downloadCertificateFromModal('${certId}', 'image')" style="padding: 6px 10px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
-            🖼️ Download Image
-          </button>
+          ${window.allowCertificateRedownload !== false ? `
+            <button onclick="downloadCertificateFromModal('${certId}', 'html')" style="padding: 6px 10px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#2563eb'" onmouseout="this.style.background='#3b82f6'">
+              📄 Download HTML
+            </button>
+            <button onclick="downloadCertificateFromModal('${certId}', 'image')" style="padding: 6px 10px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s; white-space: nowrap;" onmouseover="this.style.background='#059669'" onmouseout="this.style.background='#10b981'">
+              🖼️ Download Image
+            </button>
+          ` : `
+            <button style="padding: 6px 10px; background: #9ca3af; color: white; border: none; border-radius: 4px; cursor: not-allowed; font-size: 11px; font-weight: 500; opacity: 0.6;" disabled title="Downloads are disabled">
+              Downloads Disabled
+            </button>
+          `}
           <button onclick="closeCertificateModal()" style="padding: 6px 10px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 500; transition: all 0.2s;" onmouseover="this.style.background='#4b5563'" onmouseout="this.style.background='#6b7280'">
             Close
           </button>
@@ -371,7 +377,12 @@ window.downloadCertificateFromModal = async function(certId, format) {
       }
     });
 
-    if (!response.ok) throw new Error(`Failed to download certificate`);
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      const errorMsg = errorData.error || `Failed to download certificate`;
+      console.error('Certificate download error:', errorMsg);
+      throw new Error(errorMsg);
+    }
 
     const html = await response.text();
     
@@ -427,7 +438,7 @@ window.downloadCertificateFromModal = async function(certId, format) {
     }
   } catch (error) {
     console.error('Error downloading certificate:', error);
-    showModal({ type: 'error', title: 'Error', message: `Failed to download certificate` });
+    showModal({ type: 'error', title: 'Download Failed', message: error.message || `Failed to download certificate` });
   }
 };
 
