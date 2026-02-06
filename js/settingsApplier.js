@@ -563,7 +563,7 @@ class SettingsApplier {
     window.aiAccessMode = accessMode;
     console.log('  📋 Setting window.aiAccessMode to:', accessMode);
     
-    if (accessMode === 'Everyone (Promotion)') {
+    if (accessMode === 'Everyone' || accessMode === 'Everyone (Promotion)') {
       console.log('  🎉 AI PROMOTION MODE ACTIVE - Everyone gets access when logged in');
       window.aiRestrictedToPremium = false;
       

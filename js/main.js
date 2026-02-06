@@ -456,9 +456,9 @@ document.addEventListener('DOMContentLoaded', () => {
       const promotionNotExpired = window.promotionEndTime && Date.now() < window.promotionEndTime;
       const hasPromotionAccess = promotionActive && promotionNotExpired;
       
-      // Check AI access mode: "Premium Only" or "Everyone (Promotion)"
+      // Check AI access mode: "Premium Only" or "Everyone"
       const aiAccessMode = window.aiAccessMode || 'Premium Only';
-      const aiPromotionActive = aiAccessMode === 'Everyone (Promotion)';
+      const aiPromotionActive = aiAccessMode === 'Everyone' || aiAccessMode === 'Everyone (Promotion)';
       
       console.log('🔍 AI Settings Summary:');
       console.log('   window.aiEnabled:', window.aiEnabled);
