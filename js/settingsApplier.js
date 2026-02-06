@@ -8,6 +8,11 @@ class SettingsApplier {
     this.settings = null;
     this.checkInterval = null;
     this.lastAppliedSettings = null;
+    
+    // Initialize default window variables immediately
+    window.aiEnabled = true; // Default: AI is enabled
+    window.aiAccessMode = 'Premium Only'; // Default: Premium only
+    window.aiRestrictedToPremium = true;
   }
 
   /**

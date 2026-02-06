@@ -460,6 +460,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const aiAccessMode = window.aiAccessMode || 'Premium Only';
       const aiPromotionActive = aiAccessMode === 'Everyone (Promotion)';
       
+      console.log('🔍 AI Settings Summary:');
+      console.log('   window.aiEnabled:', window.aiEnabled);
+      console.log('   window.aiAccessMode:', window.aiAccessMode);
+      console.log('   aiPromotionActive:', aiPromotionActive);
+      console.log('   loggedInNow:', loggedInNow);
+      
       // AI accessible if: 
       // 1. AI is enabled globally AND
       // 2. Either:
@@ -936,8 +942,12 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('visibilitychange', () => { try { if (!document.hidden) updateNavUI(); } catch (e) {} });
 
   // Run once to initialize nav UI (skip on admin dashboard which has its own nav)
+  // Delay slightly to allow settingsApplier to load settings from API
   if (!window._skipGlobalNavUI) {
-    updateNavUI();
+    setTimeout(() => {
+      console.log('🔄 Initial updateNavUI call (delayed to allow settings to load)');
+      updateNavUI();
+    }, 500);
   }
 
   // Expose updateNavUI globally so other modules can call it when needed
