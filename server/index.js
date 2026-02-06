@@ -5355,6 +5355,13 @@ app.post('/api/certificates/generate', (req, res) => {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
+    // Check if certificate generation is enabled in settings
+    const settings = loadSettings();
+    if (settings.enableCertificateGeneration === false) {
+      console.log('🚫 Certificate generation is disabled in settings');
+      return res.status(403).json({ error: 'Certificate generation is currently disabled' });
+    }
+
     const users = loadUsers();
     let targetEmail = null;
 
