@@ -94,7 +94,8 @@ router.get('/public/settings', async (req, res) => {
         // AI Assistant
         enableAiAssistant: true,
         aiAccessMode: 'Premium Only',
-        aiPromotionDurationDays: 0,
+        aiPromotionDurationValue: 7,
+        aiPromotionDurationUnit: 'days',
         aiDailyQuestionLimit: 50,
         showAiBetaNotice: true,
         
@@ -151,7 +152,8 @@ router.get('/', authenticateSuperAdmin, async (req, res) => {
         // AI Assistant
         enableAiAssistant: true,
         aiAccessMode: 'Premium Only', // 'Premium Only' or 'Everyone'
-        aiPromotionDurationDays: 0,
+        aiPromotionDurationValue: 7,
+        aiPromotionDurationUnit: 'days', // 'minutes', 'hours', 'days'
         aiDailyQuestionLimit: 50,
         showAiBetaNotice: true,
         
@@ -202,22 +204,31 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
       return res.status(404).json({ error: 'Settings not found' });
     }
     
-    // Handle AI Assistant promotion logic
+    // Handle AI Assistant promotion logic - EXACTLY LIKE PREMIUM
     if (section === 'ai-assistant' && updates.aiAccessMode === 'Everyone') {
-      if (!updates.aiPromotionDurationDays || updates.aiPromotionDurationDays <= 0) {
+      if (!updates.aiPromotionDurationValue || updates.aiPromotionDurationValue <= 0) {
         return res.status(400).json({ error: 'Promotion duration required when setting AI to Everyone' });
       }
       
-      // Create promotion notification
+      // Calculate end time based on unit - EXACTLY LIKE PREMIUM
       const now = new Date();
-      const endTime = new Date(now.getTime() + updates.aiPromotionDurationDays * 24 * 60 * 60 * 1000);
+      let endTime = new Date(now);
       
-      const notificationMsg = `🎉 AI Assistant is now available to all users for ${updates.aiPromotionDurationDays} day${updates.aiPromotionDurationDays > 1 ? 's' : ''}! Try it out before the promotion ends.`;
+      if (updates.aiPromotionDurationUnit === 'minutes') {
+        endTime.setMinutes(endTime.getMinutes() + updates.aiPromotionDurationValue);
+      } else if (updates.aiPromotionDurationUnit === 'hours') {
+        endTime.setHours(endTime.getHours() + updates.aiPromotionDurationValue);
+      } else if (updates.aiPromotionDurationUnit === 'days') {
+        endTime.setDate(endTime.getDate() + updates.aiPromotionDurationValue);
+      }
+      
+      const notificationMsg = `🎉 AI Assistant is now available to all users for ${updates.aiPromotionDurationValue} ${updates.aiPromotionDurationUnit}! Try it out before the promotion ends.`;
       
       await createSystemNotification(notificationMsg, {
         type: 'ai-promotion',
         promotionEndsAt: endTime,
-        durationDays: updates.aiPromotionDurationDays
+        duration: updates.aiPromotionDurationValue,
+        durationUnit: updates.aiPromotionDurationUnit
       });
     }
     
@@ -358,7 +369,7 @@ async function checkAndRevertExpiredPromotions() {
     const now = new Date();
     
     // Check AI promotion expiry
-    if (settings.aiAccessMode === 'Everyone' && settings.aiPromotionDurationDays > 0) {
+    if (settings.aiAccessMode === 'Everyone' && settings.aiPromotionDurationValue > 0) {
       // This is tracked by expiry in notifications, but we can also check here
     }
     
