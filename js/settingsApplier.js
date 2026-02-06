@@ -587,7 +587,7 @@ class SettingsApplier {
       window.aiRestrictedToPremium = true;
       
       // Remove AI promotion banner if it exists
-      const aiBanner = document.getElementById('ai-promotion-banner');
+      const aiBanner = document.querySelector('[data-component="ai-promotion-banner"]');
       if (aiBanner) {
         aiBanner.remove();
       }
@@ -885,70 +885,82 @@ class SettingsApplier {
    */
   showAiPromotionBanner() {
     try {
-      // Check if already dismissed
-      if (localStorage.getItem('aiPromotionBannerDismissed') === 'true') {
-        console.log('ℹ️ AI banner previously dismissed by user');
+      // Check if already dismissed in this session
+      const isDismissed = sessionStorage.getItem('ai-promotion-banner-dismissed') === 'true';
+      if (isDismissed) {
+        console.log('ℹ️ AI banner dismissed - skipping display');
         return;
       }
       
       // Check if banner already exists
-      const existingBanner = document.getElementById('ai-promotion-banner');
+      const existingBanner = document.querySelector('[data-component="ai-promotion-banner"]');
       if (existingBanner) {
         console.log('ℹ️ AI promotion banner already exists');
         return;
       }
 
       const createBanner = () => {
-        // Create banner container
+        // Create banner container with same styling as premium promotion banner
         const banner = document.createElement('div');
-        banner.id = 'ai-promotion-banner';
-        banner.style.position = 'fixed';
-        banner.style.top = '60px';
-        banner.style.left = '0';
-        banner.style.right = '0';
-        banner.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
-        banner.style.color = 'white';
-        banner.style.padding = '12px 20px';
-        banner.style.display = 'flex';
-        banner.style.alignItems = 'center';
-        banner.style.justifyContent = 'space-between';
-        banner.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
-        banner.style.zIndex = '999';
-
-        banner.innerHTML = `
-          <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
-            <span style="font-size: 18px;">🎉</span>
-            <span style="font-weight: 500; font-size: 14px;">Aubie RET AI assistant is now available to everyone!</span>
-          </div>
-          <button id="ai-banner-dismiss" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; white-space: nowrap;">
-            Dismiss
-          </button>
+        banner.setAttribute('data-component', 'ai-promotion-banner');
+        banner.style.cssText = `
+          padding: 16px 20px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          text-align: center;
+          margin-bottom: 20px;
+          border-radius: 8px;
+          font-weight: 600;
+          font-size: 15px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+          flex-wrap: wrap;
         `;
-
-        document.body.appendChild(banner);
-        console.log('✅ AI promotion banner added to DOM');
-
-        // Add dismiss handler
-        const dismissBtn = document.getElementById('ai-banner-dismiss');
-        if (dismissBtn) {
-          dismissBtn.addEventListener('click', () => {
-            banner.style.transition = 'opacity 0.3s ease';
-            banner.style.opacity = '0';
-            setTimeout(() => {
-              if (banner.parentNode) banner.remove();
-            }, 300);
-            localStorage.setItem('aiPromotionBannerDismissed', 'true');
-            console.log('✅ AI banner dismissed');
-          });
-          
-          // Hover effect
-          dismissBtn.addEventListener('mouseenter', () => {
-            dismissBtn.style.background = 'rgba(255,255,255,0.3)';
-          });
-          dismissBtn.addEventListener('mouseleave', () => {
-            dismissBtn.style.background = 'rgba(255,255,255,0.2)';
-          });
+        
+        // Create dismiss button with same styling as premium banner
+        const dismissBtn = document.createElement('button');
+        dismissBtn.innerHTML = '✕';
+        dismissBtn.style.cssText = `
+          position: absolute;
+          right: 12px;
+          top: 12px;
+          background: rgba(255,255,255,0.2);
+          border: none;
+          color: white;
+          font-size: 18px;
+          width: 28px;
+          height: 28px;
+          border-radius: 50%;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease;
+          padding: 0;
+        `;
+        dismissBtn.onmouseover = () => { dismissBtn.style.background = 'rgba(255,255,255,0.3)'; dismissBtn.style.transform = 'scale(1.1)'; };
+        dismissBtn.onmouseout = () => { dismissBtn.style.background = 'rgba(255,255,255,0.2)'; dismissBtn.style.transform = 'scale(1)'; };
+        dismissBtn.onclick = () => {
+          banner.style.display = 'none';
+          sessionStorage.setItem('ai-promotion-banner-dismissed', 'true');
+          console.log('🎉 AI promotion banner dismissed - will stay hidden until browser closes');
+        };
+        
+        banner.innerHTML = `🎉 <strong>Aubie RET AI Assistant</strong> is now available to everyone!`;
+        banner.appendChild(dismissBtn);
+        
+        // Insert into main element as first child, like premium banner
+        const mainContent = document.querySelector('main') || document.body;
+        if (mainContent.firstChild) {
+          mainContent.insertBefore(banner, mainContent.firstChild);
+        } else {
+          mainContent.appendChild(banner);
         }
+        console.log('✅ AI promotion banner added to DOM');
       };
 
       // Try to create banner immediately
