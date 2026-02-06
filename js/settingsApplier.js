@@ -105,6 +105,7 @@ class SettingsApplier {
     console.log('   enableNewsSystem:', this.settings.enableNewsSystem);
     console.log('   enableLikesReactions:', this.settings.enableLikesReactions);
     console.log('   enableAiAssistant:', this.settings.enableAiAssistant);
+    console.log('   aiAccessMode:', this.settings.aiAccessMode);
     console.log('   allowNewUserRegistration:', this.settings.allowNewUserRegistration);
 
     // Apply platform settings
@@ -876,83 +877,80 @@ class SettingsApplier {
    */
   showAiPromotionBanner() {
     try {
+      // Check if already dismissed
+      if (localStorage.getItem('aiPromotionBannerDismissed') === 'true') {
+        console.log('ℹ️ AI banner previously dismissed by user');
+        return;
+      }
+      
       // Check if banner already exists
       const existingBanner = document.getElementById('ai-promotion-banner');
-      if (existingBanner) return;
-
-      // Create banner container
-      const banner = document.createElement('div');
-      banner.id = 'ai-promotion-banner';
-      banner.style.cssText = `
-        position: fixed;
-        top: 70px;
-        left: 0;
-        right: 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 14px 20px;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-        z-index: 1000;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      `;
-
-      banner.innerHTML = `
-        <div style="flex: 1; display: flex; align-items: center; gap: 12px;">
-          <span style="font-size: 20px;">🎉</span>
-          <span style="font-size: 14px; font-weight: 500;">Aubie RET AI assistant is now available to everyone!</span>
-        </div>
-        <button id="ai-banner-dismiss" style="
-          background: rgba(255,255,255,0.2);
-          border: 1px solid rgba(255,255,255,0.4);
-          color: white;
-          padding: 6px 12px;
-          border-radius: 4px;
-          cursor: pointer;
-          font-size: 14px;
-          font-weight: 500;
-          transition: all 0.2s ease;
-        " onmouseover="this.style.background='rgba(255,255,255,0.3)'" onmouseout="this.style.background='rgba(255,255,255,0.2)'">
-          Dismiss
-        </button>
-      `;
-
-      document.body.appendChild(banner);
-
-      // Add dismiss handler
-      const dismissBtn = document.getElementById('ai-banner-dismiss');
-      dismissBtn.addEventListener('click', () => {
-        banner.style.transition = 'opacity 0.3s ease';
-        banner.style.opacity = '0';
-        setTimeout(() => banner.remove(), 300);
-        
-        // Save dismissal to localStorage
-        localStorage.setItem('aiPromotionBannerDismissed', 'true');
-        
-        // Update page top padding
-        try {
-          const header = document.querySelector('header');
-          if (header) {
-            header.style.marginTop = '0';
-          }
-        } catch (e) {
-          // ignore
-        }
-      });
-
-      // Adjust page layout to accommodate banner
-      try {
-        const header = document.querySelector('header');
-        if (header) {
-          header.style.marginTop = '50px';
-        }
-      } catch (e) {
-        // ignore
+      if (existingBanner) {
+        console.log('ℹ️ AI promotion banner already exists');
+        return;
       }
 
-      console.log('✅ AI promotion banner shown');
+      const createBanner = () => {
+        // Create banner container
+        const banner = document.createElement('div');
+        banner.id = 'ai-promotion-banner';
+        banner.style.position = 'fixed';
+        banner.style.top = '60px';
+        banner.style.left = '0';
+        banner.style.right = '0';
+        banner.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+        banner.style.color = 'white';
+        banner.style.padding = '12px 20px';
+        banner.style.display = 'flex';
+        banner.style.alignItems = 'center';
+        banner.style.justifyContent = 'space-between';
+        banner.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+        banner.style.zIndex = '999';
+
+        banner.innerHTML = `
+          <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
+            <span style="font-size: 18px;">🎉</span>
+            <span style="font-weight: 500; font-size: 14px;">Aubie RET AI assistant is now available to everyone!</span>
+          </div>
+          <button id="ai-banner-dismiss" style="background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.4); color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; white-space: nowrap;">
+            Dismiss
+          </button>
+        `;
+
+        document.body.appendChild(banner);
+        console.log('✅ AI promotion banner added to DOM');
+
+        // Add dismiss handler
+        const dismissBtn = document.getElementById('ai-banner-dismiss');
+        if (dismissBtn) {
+          dismissBtn.addEventListener('click', () => {
+            banner.style.transition = 'opacity 0.3s ease';
+            banner.style.opacity = '0';
+            setTimeout(() => {
+              if (banner.parentNode) banner.remove();
+            }, 300);
+            localStorage.setItem('aiPromotionBannerDismissed', 'true');
+            console.log('✅ AI banner dismissed');
+          });
+          
+          // Hover effect
+          dismissBtn.addEventListener('mouseenter', () => {
+            dismissBtn.style.background = 'rgba(255,255,255,0.3)';
+          });
+          dismissBtn.addEventListener('mouseleave', () => {
+            dismissBtn.style.background = 'rgba(255,255,255,0.2)';
+          });
+        }
+      };
+
+      // Try to create banner immediately
+      if (document.body) {
+        createBanner();
+      } else {
+        // Wait for DOM if not ready
+        document.addEventListener('DOMContentLoaded', createBanner);
+        setTimeout(createBanner, 500);
+      }
     } catch (err) {
       console.warn('⚠️ Failed to show AI promotion banner:', err);
     }
