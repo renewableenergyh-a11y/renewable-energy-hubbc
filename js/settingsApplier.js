@@ -1086,6 +1086,18 @@ class SettingsApplier {
         const result = await response.json();
         if (result.success) {
           console.log('✅ [AUTO-DISABLE] Premium promotion auto-disabled successfully');
+          
+          // ⚡ CRITICAL: Immediately update local settings cache to prevent repeated expiration checks
+          // This prevents the next health check from detecting the same expired promotion
+          if (this.settings) {
+            console.log('[AUTO-DISABLE] Updating local settings cache immediately...');
+            this.settings.enablePremiumForAll = false;
+            this.settings.premiumPromotionStartAt = null;
+            this.settings.premiumPromotionDurationValue = null;
+            this.settings.premiumPromotionDurationUnit = null;
+            console.log('[AUTO-DISABLE] Local settings updated - promotion disabled');
+          }
+          
           // Clear cached settings to force refresh on next check
           this.lastAppliedSettings = null;
           console.log('[AUTO-DISABLE] Cleared cache, lastAppliedSettings is now:', this.lastAppliedSettings);
@@ -1143,6 +1155,18 @@ class SettingsApplier {
         const result = await response.json();
         if (result.success) {
           console.log('✅ [AUTO-DISABLE] AI promotion auto-disabled successfully');
+          
+          // ⚡ CRITICAL: Immediately update local settings cache to prevent repeated expiration checks
+          // This prevents the next health check from detecting the same expired promotion
+          if (this.settings) {
+            console.log('[AUTO-DISABLE] Updating local settings cache immediately...');
+            this.settings.aiAccessMode = 'Premium Only';
+            this.settings.aiPromotionStartedAt = null;
+            this.settings.aiPromotionDurationValue = null;
+            this.settings.aiPromotionDurationUnit = null;
+            console.log('[AUTO-DISABLE] Local settings updated - promotion disabled');
+          }
+          
           // Clear cached settings to force refresh on next check
           this.lastAppliedSettings = null;
           console.log('[AUTO-DISABLE] Cleared cache, lastAppliedSettings is now:', this.lastAppliedSettings);
