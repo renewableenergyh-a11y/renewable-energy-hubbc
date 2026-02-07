@@ -9,6 +9,11 @@ class SettingsApplier {
     this.checkInterval = null;
     this.lastAppliedSettings = null;
     
+    // ⚡ Cooldown to prevent repeated auto-disable calls
+    // Maps promotion type to last time we called auto-disable
+    this.lastAutoDisableTriggerTime = {};
+    this.AUTO_DISABLE_COOLDOWN_MS = 30000; // 30 second cooldown between auto-disable attempts
+    
     // Initialize default window variables immediately
     window.aiEnabled = true; // Default: AI is enabled
     window.aiAccessMode = 'Premium Only'; // Default: Premium only
@@ -83,6 +88,7 @@ class SettingsApplier {
    */
   async checkAndHandlePromotionExpiration(newSettings) {
     const s = newSettings;
+    const now = Date.now();
     
     // Check AI promotion expiration
     if (s.aiAccessMode === 'Everyone' && s.aiPromotionDurationValue && s.aiPromotionDurationValue > 0 && s.aiPromotionStartedAt) {
@@ -97,14 +103,24 @@ class SettingsApplier {
       else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
       
       const expectedEndTime = startTime + durationMs;
-      const now = Date.now();
       const timeUntilEnd = expectedEndTime - now;
       
       console.log('[EXPIRATION CHECK] AI - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd);
       
       // If time has passed, auto-disable the promotion
       if (now >= expectedEndTime) {
+        // ⚡ COOLDOWN CHECK: Only allow auto-disable once per promotion
+        // This prevents infinite reload loops if the health check runs multiple times before the page reloads
+        const lastTriggerTime = this.lastAutoDisableTriggerTime['ai-assistant'] || 0;
+        const timeSinceLastTrigger = now - lastTriggerTime;
+        
+        if (timeSinceLastTrigger < this.AUTO_DISABLE_COOLDOWN_MS) {
+          console.log(`⏳ [EXPIRATION CHECK] AI auto-disable on cooldown (${Math.round(timeSinceLastTrigger)}ms of ${this.AUTO_DISABLE_COOLDOWN_MS}ms). Skipping.`);
+          return; // Skip this call, it's still on cooldown
+        }
+        
         console.log('🔴 [EXPIRATION CHECK] ⏰ AI PROMOTION HAS EXPIRED! Disabling immediately...');
+        this.lastAutoDisableTriggerTime['ai-assistant'] = now; // Record the trigger time
         await this.autoDisableAiPromotion();
         return; // Exit early to avoid further processing
       }
@@ -123,16 +139,28 @@ class SettingsApplier {
       else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
       
       const expectedEndTime = startTime + durationMs;
-      const now = Date.now();
       const timeUntilEnd = expectedEndTime - now;
       
       console.log('[EXPIRATION CHECK] Premium - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd);
       
       // If time has passed, auto-disable the promotion
       if (now >= expectedEndTime) {
+        // ⚡ COOLDOWN CHECK: Only allow auto-disable once per promotion
+        // This prevents infinite reload loops if the health check runs multiple times before the page reloads
+        const lastTriggerTime = this.lastAutoDisableTriggerTime['premium-trial'] || 0;
+        const timeSinceLastTrigger = now - lastTriggerTime;
+        
+        if (timeSinceLastTrigger < this.AUTO_DISABLE_COOLDOWN_MS) {
+          console.log(`⏳ [EXPIRATION CHECK] Premium auto-disable on cooldown (${Math.round(timeSinceLastTrigger)}ms of ${this.AUTO_DISABLE_COOLDOWN_MS}ms). Skipping.`);
+          return; // Skip this call, it's still on cooldown
+        }
+        
         console.log('🔴 [EXPIRATION CHECK] ⏰ PREMIUM PROMOTION HAS EXPIRED! Disabling immediately...');
+        this.lastAutoDisableTriggerTime['premium-trial'] = now; // Record the trigger time
         await this.autoDisablePremiumPromotion();
         return; // Exit early to avoid further processing
+      }
+    }
       }
     }
   }
