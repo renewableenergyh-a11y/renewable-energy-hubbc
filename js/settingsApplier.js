@@ -570,7 +570,7 @@ class SettingsApplier {
       
       // If time has passed, auto-disable the promotion
       if (expectedEndTime && Date.now() >= expectedEndTime) {
-        console.log('⏰ AI promotion EXPIRED! Disabling now...');
+        console.log('🔴 [AI CHECK] ⏰ AI PROMOTION HAS EXPIRED! Calling autoDisableAiPromotion()...');
         await this.autoDisableAiPromotion();
         return; // Don't continue applying the expired promotion
       }
@@ -720,7 +720,7 @@ class SettingsApplier {
       
       // If time has passed, auto-disable the promotion
       if (expectedEndTime && Date.now() >= expectedEndTime) {
-        console.log('⏰ Premium promotion EXPIRED! Disabling now...');
+        console.log('🔴 [PREMIUM CHECK] ⏰ PREMIUM PROMOTION HAS EXPIRED! Calling autoDisablePremiumPromotion()...');
         await this.autoDisablePremiumPromotion();
         return; // Don't continue applying the expired promotion
       }
@@ -976,41 +976,56 @@ class SettingsApplier {
    */
   async autoDisablePremiumPromotion() {
     try {
-      console.log('🔄 Auto-disabling premium promotion...');
+      console.log('� [AUTO-DISABLE] Starting Premium promotion auto-disable...');
+      console.log('   Current URL:', window.location.pathname);
+      console.log('   Is admin page?', window.location.pathname.includes('/admin'));
+      
+      const body = {
+        enablePremiumForAll: false
+      };
+      console.log('[AUTO-DISABLE] Sending request to /api/settings/premium-trial with:', body);
+      
       const response = await fetch('/api/settings/premium-trial', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          enablePremiumForAll: false
-        })
+        body: JSON.stringify(body)
       });
       
+      console.log('[AUTO-DISABLE] Response status:', response.status, 'OK?:', response.ok);
+      
       if (response.ok) {
-        console.log('✅ Premium promotion auto-disabled successfully');
+        console.log('✅ [AUTO-DISABLE] Premium promotion auto-disabled successfully');
         // Update admin dashboard if it's open
         const premiumForAllCheckbox = document.getElementById('enablePremiumForAll');
         if (premiumForAllCheckbox) {
           premiumForAllCheckbox.checked = false;
           const promotionGroup = document.getElementById('premiumPromotionGroup');
           if (promotionGroup) promotionGroup.style.display = 'none';
-          console.log('✅ Admin dashboard updated');
+          console.log('✅ [AUTO-DISABLE] Admin dashboard updated');
         }
         // Clear cached settings to force refresh on next check
         this.lastAppliedSettings = null;
+        console.log('[AUTO-DISABLE] Cleared cache, lastAppliedSettings is now:', this.lastAppliedSettings);
+        
         // Reload page on user-facing pages to immediately apply changes
         if (!window.location.pathname.includes('/admin')) {
-          console.log('🌀 Reloading page to apply promotion expiration (non-admin page)...');
+          console.log('🌀 [AUTO-DISABLE] Non-admin page detected - SCHEDULING RELOAD in 500ms...');
+          console.log('[AUTO-DISABLE] Before reload - enablePremiumForAll will change from true to false');
           setTimeout(() => {
+            console.log('[AUTO-DISABLE] 🔄 EXECUTING PAGE RELOAD NOW');
             window.location.reload();
           }, 500);
         } else {
           // On admin page, just reload settings UI through loadAndApply
+          console.log('[AUTO-DISABLE] Admin page detected - refreshing UI in 100ms');
           setTimeout(() => {
+            console.log('[AUTO-DISABLE] Calling loadAndApply() to refresh UI');
             this.loadAndApply();
           }, 100);
         }
       } else {
-        console.warn('⚠️ Failed to auto-disable premium promotion:', await response.text());
+        const errorText = await response.text();
+        console.warn('⚠️ [AUTO-DISABLE] Failed to auto-disable premium promotion:', response.status, errorText);
       }
     } catch (err) {
       console.error('❌ Error auto-disabling premium promotion:', err);
@@ -1022,41 +1037,56 @@ class SettingsApplier {
    */
   async autoDisableAiPromotion() {
     try {
-      console.log('🔄 Auto-disabling AI promotion...');
+      console.log('� [AUTO-DISABLE] Starting AI promotion auto-disable...');
+      console.log('   Current URL:', window.location.pathname);
+      console.log('   Is admin page?', window.location.pathname.includes('/admin'));
+      
+      const body = {
+        aiAccessMode: 'Premium Only'
+      };
+      console.log('[AUTO-DISABLE] Sending request to /api/settings/ai-assistant with:', body);
+      
       const response = await fetch('/api/settings/ai-assistant', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          aiAccessMode: 'Premium Only'
-        })
+        body: JSON.stringify(body)
       });
       
+      console.log('[AUTO-DISABLE] Response status:', response.status, 'OK?:', response.ok);
+      
       if (response.ok) {
-        console.log('✅ AI promotion auto-disabled successfully');
+        console.log('✅ [AUTO-DISABLE] AI promotion auto-disabled successfully');
         // Update admin dashboard if it's open
         const aiAccessModeSelect = document.getElementById('aiAccessMode');
         if (aiAccessModeSelect) {
           aiAccessModeSelect.value = 'Premium Only';
           const aiPromotionGroup = document.getElementById('aiPromotionGroup');
           if (aiPromotionGroup) aiPromotionGroup.style.display = 'none';
-          console.log('✅ Admin dashboard updated');
+          console.log('✅ [AUTO-DISABLE] Admin dashboard updated');
         }
         // Clear cached settings to force refresh on next check
         this.lastAppliedSettings = null;
+        console.log('[AUTO-DISABLE] Cleared cache, lastAppliedSettings is now:', this.lastAppliedSettings);
+        
         // Reload page on user-facing pages to immediately apply changes
         if (!window.location.pathname.includes('/admin')) {
-          console.log('🌀 Reloading page to apply promotion expiration (non-admin page)...');
+          console.log('🌀 [AUTO-DISABLE] Non-admin page detected - SCHEDULING RELOAD in 500ms...');
+          console.log('[AUTO-DISABLE] Before reload - aiAccessMode will change from Everyone to Premium Only');
           setTimeout(() => {
+            console.log('[AUTO-DISABLE] 🔄 EXECUTING PAGE RELOAD NOW');
             window.location.reload();
           }, 500);
         } else {
           // On admin page, just reload settings UI through loadAndApply
+          console.log('[AUTO-DISABLE] Admin page detected - refreshing UI in 100ms');
           setTimeout(() => {
+            console.log('[AUTO-DISABLE] Calling loadAndApply() to refresh UI');
             this.loadAndApply();
           }, 100);
         }
       } else {
-        console.warn('⚠️ Failed to auto-disable AI promotion:', await response.text());
+        const errorText = await response.text();
+        console.warn('⚠️ [AUTO-DISABLE] Failed to auto-disable AI promotion:', response.status, errorText);
       }
     } catch (err) {
       console.error('❌ Error auto-disabling AI promotion:', err);
