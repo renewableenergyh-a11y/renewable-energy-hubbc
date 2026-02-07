@@ -46,6 +46,10 @@ class SettingsApplier {
       const newSettings = await response.json();
       console.log('📥 ✅ Public Settings LOADED - aiAccessMode:', newSettings.aiAccessMode, 'aiPromotionStartedAt:', newSettings.aiPromotionStartedAt, 'aiPromotionDurationValue:', newSettings.aiPromotionDurationValue);
       
+      // ⚡ CRITICAL: Always check expiration regardless of whether settings changed
+      // This ensures promotions expire every 5 seconds, not just on first load
+      await this.checkAndHandlePromotionExpiration(newSettings);
+      
       // Check if settings have changed (including removals and disables)
       if (this.lastAppliedSettings && this.hasSettingsChanged(this.lastAppliedSettings, newSettings)) {
         const differences = this.getSettingsDifferences(this.lastAppliedSettings, newSettings);
@@ -70,6 +74,66 @@ class SettingsApplier {
       }
     } catch (err) {
       console.warn('⚠️ Error loading settings:', err.message);
+    }
+  }
+
+  /**
+   * Check for promotion expiration independently of change detection
+   * This runs EVERY 5 seconds on the health check, not just when settings change
+   */
+  async checkAndHandlePromotionExpiration(newSettings) {
+    const s = newSettings;
+    
+    // Check AI promotion expiration
+    if (s.aiAccessMode === 'Everyone' && s.aiPromotionDurationValue && s.aiPromotionDurationValue > 0 && s.aiPromotionStartedAt) {
+      console.log('[EXPIRATION CHECK] Checking AI promotion expiration...');
+      const startTime = new Date(s.aiPromotionStartedAt).getTime();
+      const duration = parseInt(s.aiPromotionDurationValue, 10) || 7;
+      const unit = s.aiPromotionDurationUnit || 'days';
+      let durationMs = 0;
+      
+      if (unit === 'minutes') durationMs = duration * 60 * 1000;
+      else if (unit === 'hours') durationMs = duration * 60 * 60 * 1000;
+      else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
+      
+      const expectedEndTime = startTime + durationMs;
+      const now = Date.now();
+      const timeUntilEnd = expectedEndTime - now;
+      
+      console.log('[EXPIRATION CHECK] AI - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd);
+      
+      // If time has passed, auto-disable the promotion
+      if (now >= expectedEndTime) {
+        console.log('🔴 [EXPIRATION CHECK] ⏰ AI PROMOTION HAS EXPIRED! Disabling immediately...');
+        await this.autoDisableAiPromotion();
+        return; // Exit early to avoid further processing
+      }
+    }
+    
+    // Check Premium promotion expiration
+    if (s.enablePremiumForAll === true && s.premiumPromotionDurationValue && s.premiumPromotionDurationValue > 0 && s.premiumPromotionStartAt) {
+      console.log('[EXPIRATION CHECK] Checking Premium promotion expiration...');
+      const startTime = new Date(s.premiumPromotionStartAt).getTime();
+      const duration = parseInt(s.premiumPromotionDurationValue, 10) || 7;
+      const unit = s.premiumPromotionDurationUnit || 'days';
+      let durationMs = 0;
+      
+      if (unit === 'minutes') durationMs = duration * 60 * 1000;
+      else if (unit === 'hours') durationMs = duration * 60 * 60 * 1000;
+      else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
+      
+      const expectedEndTime = startTime + durationMs;
+      const now = Date.now();
+      const timeUntilEnd = expectedEndTime - now;
+      
+      console.log('[EXPIRATION CHECK] Premium - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd);
+      
+      // If time has passed, auto-disable the promotion
+      if (now >= expectedEndTime) {
+        console.log('🔴 [EXPIRATION CHECK] ⏰ PREMIUM PROMOTION HAS EXPIRED! Disabling immediately...');
+        await this.autoDisablePremiumPromotion();
+        return; // Exit early to avoid further processing
+      }
     }
   }
 
