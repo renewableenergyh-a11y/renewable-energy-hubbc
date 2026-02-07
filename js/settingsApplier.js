@@ -978,11 +978,12 @@ class SettingsApplier {
           if (promotionGroup) promotionGroup.style.display = 'none';
           console.log('✅ Admin dashboard updated');
         }
-        // Reload page after a short delay to reflect changes
+        // Load fresh settings and trigger change detection
+        // This will cause the site to reload through the normal change detection logic
         setTimeout(() => {
-          console.log('🔄 Reloading page due to promotion expiration...');
-          window.location.reload();
-        }, 1000);
+          console.log('🔄 Fetching fresh settings to detect promotion expiration...');
+          this.loadAndApply();
+        }, 100);
       } else {
         console.warn('⚠️ Failed to auto-disable premium promotion:', await response.text());
       }
@@ -1015,11 +1016,12 @@ class SettingsApplier {
           if (aiPromotionGroup) aiPromotionGroup.style.display = 'none';
           console.log('✅ Admin dashboard updated');
         }
-        // Reload page after a short delay to reflect changes
+        // Load fresh settings and trigger change detection
+        // This will cause the site to reload through the normal change detection logic
         setTimeout(() => {
-          console.log('🔄 Reloading page due to promotion expiration...');
-          window.location.reload();
-        }, 1000);
+          console.log('🔄 Fetching fresh settings to detect promotion expiration...');
+          this.loadAndApply();
+        }, 100);
       } else {
         console.warn('⚠️ Failed to auto-disable AI promotion:', await response.text());
       }
