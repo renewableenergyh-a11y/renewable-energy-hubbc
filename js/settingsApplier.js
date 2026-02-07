@@ -1049,9 +1049,19 @@ class SettingsApplier {
       };
       console.log('[AUTO-DISABLE] Sending request to /api/settings/premium-trial with:', body);
       
+      // Get auth token from localStorage if user is logged in
+      const token = localStorage.getItem('authToken');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log('[AUTO-DISABLE] Including auth token in request');
+      } else {
+        console.log('[AUTO-DISABLE] ⚠️ No auth token found - request may fail');
+      }
+      
       const response = await fetch('/api/settings/premium-trial', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify(body)
       });
       
@@ -1110,9 +1120,19 @@ class SettingsApplier {
       };
       console.log('[AUTO-DISABLE] Sending request to /api/settings/ai-assistant with:', body);
       
+      // Get auth token from localStorage if user is logged in
+      const token = localStorage.getItem('authToken');
+      const headers = { 'Content-Type': 'application/json' };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+        console.log('[AUTO-DISABLE] Including auth token in request');
+      } else {
+        console.log('[AUTO-DISABLE] ⚠️ No auth token found - request may fail');
+      }
+      
       const response = await fetch('/api/settings/ai-assistant', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: headers,
         body: JSON.stringify(body)
       });
       
