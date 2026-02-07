@@ -561,11 +561,14 @@ class SettingsApplier {
         else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
         
         expectedEndTime = startTime + durationMs;
+        const now = Date.now();
+        const timeUntilEnd = expectedEndTime - now;
+        console.log('⏰ AI Promotion Check - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd, 'Expired?:', now >= expectedEndTime);
       }
       
       // If time has passed, auto-disable the promotion
       if (expectedEndTime && Date.now() >= expectedEndTime) {
-        console.log('⏰ AI promotion expired at', new Date(expectedEndTime).toLocaleString(), '- auto-disabling...');
+        console.log('⏰ AI promotion EXPIRED! Disabling now...');
         await this.autoDisableAiPromotion();
         return; // Don't continue applying the expired promotion
       }
@@ -701,11 +704,14 @@ class SettingsApplier {
         else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
         
         expectedEndTime = startTime + durationMs;
+        const now = Date.now();
+        const timeUntilEnd = expectedEndTime - now;
+        console.log('⏰ Premium Promotion Check - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd, 'Expired?:', now >= expectedEndTime);
       }
       
       // If time has passed, auto-disable the promotion
       if (expectedEndTime && Date.now() >= expectedEndTime) {
-        console.log('⏰ Premium promotion expired at', new Date(expectedEndTime).toLocaleString(), '- auto-disabling...');
+        console.log('⏰ Premium promotion EXPIRED! Disabling now...');
         await this.autoDisablePremiumPromotion();
         return; // Don't continue applying the expired promotion
       }
@@ -978,12 +984,20 @@ class SettingsApplier {
           if (promotionGroup) promotionGroup.style.display = 'none';
           console.log('✅ Admin dashboard updated');
         }
-        // Load fresh settings and trigger change detection
-        // This will cause the site to reload through the normal change detection logic
-        setTimeout(() => {
-          console.log('🔄 Fetching fresh settings to detect promotion expiration...');
-          this.loadAndApply();
-        }, 100);
+        // Clear cached settings to force refresh on next check
+        this.lastAppliedSettings = null;
+        // Reload page on user-facing pages to immediately apply changes
+        if (!window.location.pathname.includes('/admin')) {
+          console.log('🌀 Reloading page to apply promotion expiration (non-admin page)...');
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        } else {
+          // On admin page, just reload settings UI through loadAndApply
+          setTimeout(() => {
+            this.loadAndApply();
+          }, 100);
+        }
       } else {
         console.warn('⚠️ Failed to auto-disable premium promotion:', await response.text());
       }
@@ -1016,12 +1030,20 @@ class SettingsApplier {
           if (aiPromotionGroup) aiPromotionGroup.style.display = 'none';
           console.log('✅ Admin dashboard updated');
         }
-        // Load fresh settings and trigger change detection
-        // This will cause the site to reload through the normal change detection logic
-        setTimeout(() => {
-          console.log('🔄 Fetching fresh settings to detect promotion expiration...');
-          this.loadAndApply();
-        }, 100);
+        // Clear cached settings to force refresh on next check
+        this.lastAppliedSettings = null;
+        // Reload page on user-facing pages to immediately apply changes
+        if (!window.location.pathname.includes('/admin')) {
+          console.log('🌀 Reloading page to apply promotion expiration (non-admin page)...');
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
+        } else {
+          // On admin page, just reload settings UI through loadAndApply
+          setTimeout(() => {
+            this.loadAndApply();
+          }, 100);
+        }
       } else {
         console.warn('⚠️ Failed to auto-disable AI promotion:', await response.text());
       }
