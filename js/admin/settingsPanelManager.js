@@ -12,6 +12,23 @@ class SettingsPanelManager {
     await this.loadSettings();
     this.renderUI();
     this.setupEventListeners();
+    // Start auto-refresh to detect promotion expiration
+    this.startAutoRefresh();
+  }
+
+  startAutoRefresh() {
+    // Refresh settings every 5 seconds to detect promotions that have expired
+    setInterval(async () => {
+      const previousSettings = JSON.stringify(this.currentSettings);
+      await this.loadSettings();
+      const newSettings = JSON.stringify(this.currentSettings);
+      
+      // If settings changed (especially promotion status), update UI
+      if (previousSettings !== newSettings) {
+        console.log('🔄 Settings changed in admin panel, updating UI...');
+        this.renderUI();
+      }
+    }, 5000);
   }
 
   async loadSettings() {

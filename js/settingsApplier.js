@@ -970,8 +970,19 @@ class SettingsApplier {
       
       if (response.ok) {
         console.log('✅ Premium promotion auto-disabled successfully');
-        // Reload settings after disabling
-        await this.init();
+        // Update admin dashboard if it's open
+        const premiumForAllCheckbox = document.getElementById('enablePremiumForAll');
+        if (premiumForAllCheckbox) {
+          premiumForAllCheckbox.checked = false;
+          const promotionGroup = document.getElementById('premiumPromotionGroup');
+          if (promotionGroup) promotionGroup.style.display = 'none';
+          console.log('✅ Admin dashboard updated');
+        }
+        // Reload page after a short delay to reflect changes
+        setTimeout(() => {
+          console.log('🔄 Reloading page due to promotion expiration...');
+          window.location.reload();
+        }, 1000);
       } else {
         console.warn('⚠️ Failed to auto-disable premium promotion:', await response.text());
       }
@@ -996,8 +1007,19 @@ class SettingsApplier {
       
       if (response.ok) {
         console.log('✅ AI promotion auto-disabled successfully');
-        // Reload settings after disabling
-        await this.init();
+        // Update admin dashboard if it's open
+        const aiAccessModeSelect = document.getElementById('aiAccessMode');
+        if (aiAccessModeSelect) {
+          aiAccessModeSelect.value = 'Premium Only';
+          const aiPromotionGroup = document.getElementById('aiPromotionGroup');
+          if (aiPromotionGroup) aiPromotionGroup.style.display = 'none';
+          console.log('✅ Admin dashboard updated');
+        }
+        // Reload page after a short delay to reflect changes
+        setTimeout(() => {
+          console.log('🔄 Reloading page due to promotion expiration...');
+          window.location.reload();
+        }, 1000);
       } else {
         console.warn('⚠️ Failed to auto-disable AI promotion:', await response.text());
       }
