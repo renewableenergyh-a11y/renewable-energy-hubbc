@@ -109,6 +109,14 @@ class SettingsApplier {
       
       // If time has passed, auto-disable the promotion
       if (now >= expectedEndTime) {
+        // 🛑 CRITICAL: Check if expiry has already been handled to prevent infinite reload
+        const expiryHandled = localStorage.getItem('ai_promo_expiry_handled') === 'true';
+        
+        if (expiryHandled) {
+          console.log('ℹ️ [EXPIRATION CHECK] AI promotion expiry already handled. Skipping reload.');
+          return; // Don't reload again - expiry was already processed
+        }
+        
         // ⚡ COOLDOWN CHECK: Only allow auto-disable once per promotion
         // This prevents infinite reload loops if the health check runs multiple times before the page reloads
         const lastTriggerTime = this.lastAutoDisableTriggerTime['ai-assistant'] || 0;
@@ -145,6 +153,14 @@ class SettingsApplier {
       
       // If time has passed, auto-disable the promotion
       if (now >= expectedEndTime) {
+        // 🛑 CRITICAL: Check if expiry has already been handled to prevent infinite reload
+        const expiryHandled = localStorage.getItem('premium_promo_expiry_handled') === 'true';
+        
+        if (expiryHandled) {
+          console.log('ℹ️ [EXPIRATION CHECK] Premium promotion expiry already handled. Skipping reload.');
+          return; // Don't reload again - expiry was already processed
+        }
+        
         // ⚡ COOLDOWN CHECK: Only allow auto-disable once per promotion
         // This prevents infinite reload loops if the health check runs multiple times before the page reloads
         const lastTriggerTime = this.lastAutoDisableTriggerTime['premium-trial'] || 0;
@@ -687,6 +703,10 @@ class SettingsApplier {
     
     if (accessMode === 'Everyone' || accessMode === 'Everyone (Promotion)') {
       console.log('  🎉 AI PROMOTION MODE ACTIVE - Everyone gets access when logged in');
+      // 🔄 Reset the expiry handled flag when a NEW promotion starts
+      // This allows the promotion to expire correctly in the future
+      console.log('[RESET FLAG] Clearing ai_promo_expiry_handled - new promotion started');
+      localStorage.removeItem('ai_promo_expiry_handled');
       window.aiRestrictedToPremium = false;
       
       // Calculate AI promotion end time - EXACTLY LIKE PREMIUM PROMOTION
@@ -849,6 +869,10 @@ class SettingsApplier {
     // Premium for all (promotion)
     if (s.enablePremiumForAll === true) {
       console.log('  ✓ PREMIUM FOR ALL PROMOTION ACTIVE');
+      // 🔄 Reset the expiry handled flag when a NEW promotion starts
+      // This allows the promotion to expire correctly in the future
+      console.log('[RESET FLAG] Clearing premium_promo_expiry_handled - new promotion started');
+      localStorage.removeItem('premium_promo_expiry_handled');
       window.premiumForAll = true;
       
       // Calculate promotion end time
@@ -1106,6 +1130,12 @@ class SettingsApplier {
           if (!window.location.pathname.includes('/admin')) {
             console.log('🌀 [AUTO-DISABLE] Non-admin page detected - SCHEDULING RELOAD in 500ms...');
             console.log('[AUTO-DISABLE] Before reload - enablePremiumForAll will change from true to false');
+            
+            // 🔐 MARK EXPIRY AS HANDLED BEFORE RELOADING
+            // This prevents the next page load from triggering another reload
+            console.log('[AUTO-DISABLE] Setting premium_promo_expiry_handled flag');
+            localStorage.setItem('premium_promo_expiry_handled', 'true');
+            
             setTimeout(() => {
               console.log('[AUTO-DISABLE] 🔄 EXECUTING PAGE RELOAD NOW');
               window.location.reload();
@@ -1175,6 +1205,12 @@ class SettingsApplier {
           if (!window.location.pathname.includes('/admin')) {
             console.log('🌀 [AUTO-DISABLE] Non-admin page detected - SCHEDULING RELOAD in 500ms...');
             console.log('[AUTO-DISABLE] Before reload - aiAccessMode will change from Everyone to Premium Only');
+            
+            // 🔐 MARK EXPIRY AS HANDLED BEFORE RELOADING
+            // This prevents the next page load from triggering another reload
+            console.log('[AUTO-DISABLE] Setting ai_promo_expiry_handled flag');
+            localStorage.setItem('ai_promo_expiry_handled', 'true');
+            
             setTimeout(() => {
               console.log('[AUTO-DISABLE] 🔄 EXECUTING PAGE RELOAD NOW');
               window.location.reload();
