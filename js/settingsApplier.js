@@ -52,7 +52,7 @@ class SettingsApplier {
         console.log('🔄 Settings have changed! Detected changes:', differences);
         this.settings = newSettings;
         this.lastAppliedSettings = JSON.parse(JSON.stringify(newSettings)); // Deep copy for comparison
-        this.applySettings();
+        await this.applySettings();
         
         // Auto-refresh page to apply changes (but skip admin dashboard)
         // Refresh on ANY change: enabled, disabled, or removed
@@ -66,7 +66,7 @@ class SettingsApplier {
         // First load - just apply without refresh
         this.settings = newSettings;
         this.lastAppliedSettings = JSON.parse(JSON.stringify(newSettings));
-        this.applySettings();
+        await this.applySettings();
       }
     } catch (err) {
       console.warn('⚠️ Error loading settings:', err.message);
@@ -97,7 +97,7 @@ class SettingsApplier {
   /**
    * Main function to apply all settings
    */
-  applySettings() {
+  async applySettings() {
     if (!this.settings) {
       console.warn('⚠️ No settings available to apply');
       return;
@@ -121,11 +121,11 @@ class SettingsApplier {
     // Apply news & careers settings
     this.applyNewsCareerSettings();
     
-    // Apply AI assistant settings
-    this.applyAiSettings();
+    // Apply AI assistant settings - await to catch auto-disable
+    await this.applyAiSettings();
     
-    // Apply premium/trial settings
-    this.applyPremiumSettings();
+    // Apply premium/trial settings - await to catch auto-disable
+    await this.applyPremiumSettings();
     
     console.log('✅ All settings applied');
     
@@ -540,7 +540,7 @@ class SettingsApplier {
   /**
    * AI Assistant settings: Enable/disable, access mode, limits, notice
    */
-  applyAiSettings() {
+  async applyAiSettings() {
     const s = this.settings;
     
     console.log('🤖 Applying AI Assistant settings...');
@@ -566,7 +566,7 @@ class SettingsApplier {
       // If time has passed, auto-disable the promotion
       if (expectedEndTime && Date.now() >= expectedEndTime) {
         console.log('⏰ AI promotion expired at', new Date(expectedEndTime).toLocaleString(), '- auto-disabling...');
-        this.autoDisableAiPromotion();
+        await this.autoDisableAiPromotion();
         return; // Don't continue applying the expired promotion
       }
     }
@@ -681,7 +681,7 @@ class SettingsApplier {
   /**
    * Premium & Trial settings: System toggle, trial duration, promotions
    */
-  applyPremiumSettings() {
+  async applyPremiumSettings() {
     const s = this.settings;
     
     console.log('💎 Applying Premium settings...');
@@ -706,7 +706,7 @@ class SettingsApplier {
       // If time has passed, auto-disable the promotion
       if (expectedEndTime && Date.now() >= expectedEndTime) {
         console.log('⏰ Premium promotion expired at', new Date(expectedEndTime).toLocaleString(), '- auto-disabling...');
-        this.autoDisablePremiumPromotion();
+        await this.autoDisablePremiumPromotion();
         return; // Don't continue applying the expired promotion
       }
     }
