@@ -161,8 +161,6 @@ class SettingsApplier {
         return; // Exit early to avoid further processing
       }
     }
-      }
-    }
   }
 
   /**
