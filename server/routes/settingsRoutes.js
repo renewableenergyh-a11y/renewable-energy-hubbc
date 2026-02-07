@@ -181,6 +181,100 @@ router.get('/', authenticateSuperAdmin, async (req, res) => {
   }
 });
 
+// ⚡ PUBLIC: Auto-expire promotions when time runs out (called by frontend every 5 seconds)
+// No authentication needed - backend verifies expiration before disabling
+// MUST come BEFORE the /:section route to take priority
+router.put('/auto-expire-promotion', async (req, res) => {
+  try {
+    const { promotionType } = req.body;
+    console.log(`🔄 [AUTO-EXPIRE] Request to auto-expire ${promotionType} promotion`);
+    
+    let settings = await db.models.PlatformSettings.findOne({});
+    if (!settings) {
+      return res.status(404).json({ error: 'Settings not found' });
+    }
+    
+    const now = new Date();
+    
+    if (promotionType === 'ai-assistant') {
+      // Check if AI promotion should be auto-expired
+      if (settings.aiAccessMode === 'Everyone' && settings.aiPromotionStartedAt && settings.aiPromotionDurationValue > 0) {
+        const startTime = new Date(settings.aiPromotionStartedAt);
+        let endTime = new Date(startTime);
+        const unit = settings.aiPromotionDurationUnit || 'days';
+        const value = parseInt(settings.aiPromotionDurationValue, 10) || 7;
+        
+        if (unit === 'minutes') {
+          endTime.setMinutes(endTime.getMinutes() + value);
+        } else if (unit === 'hours') {
+          endTime.setHours(endTime.getHours() + value);
+        } else if (unit === 'days') {
+          endTime.setDate(endTime.getDate() + value);
+        }
+        
+        // Check if time has passed
+        if (now >= endTime) {
+          console.log(`✅ [AUTO-EXPIRE] AI promotion has expired! Disabling...`);
+          settings.aiAccessMode = 'Premium Only';
+          settings.aiPromotionStartedAt = null;
+          settings.aiPromotionDurationValue = null;
+          settings.aiPromotionDurationUnit = null;
+          
+          await settings.save();
+          return res.json({ success: true, message: 'AI promotion auto-expired successfully' });
+        } else {
+          const timeLeft = endTime.getTime() - now.getTime();
+          console.log(`⏰ [AUTO-EXPIRE] AI promotion still active. Time left: ${timeLeft}ms`);
+          return res.json({ success: false, message: 'Promotion not yet expired', timeLeft });
+        }
+      }
+      
+      return res.json({ success: false, message: 'AI promotion not active' });
+    } 
+    
+    else if (promotionType === 'premium-trial') {
+      // Check if Premium promotion should be auto-expired
+      if (settings.enablePremiumForAll === true && settings.premiumPromotionStartAt && settings.premiumPromotionDurationValue > 0) {
+        const startTime = new Date(settings.premiumPromotionStartAt);
+        let endTime = new Date(startTime);
+        const unit = settings.premiumPromotionDurationUnit || 'days';
+        const value = parseInt(settings.premiumPromotionDurationValue, 10) || 7;
+        
+        if (unit === 'minutes') {
+          endTime.setMinutes(endTime.getMinutes() + value);
+        } else if (unit === 'hours') {
+          endTime.setHours(endTime.getHours() + value);
+        } else if (unit === 'days') {
+          endTime.setDate(endTime.getDate() + value);
+        }
+        
+        // Check if time has passed
+        if (now >= endTime) {
+          console.log(`✅ [AUTO-EXPIRE] Premium promotion has expired! Disabling...`);
+          settings.enablePremiumForAll = false;
+          settings.premiumPromotionStartAt = null;
+          settings.premiumPromotionDurationValue = null;
+          settings.premiumPromotionDurationUnit = null;
+          
+          await settings.save();
+          return res.json({ success: true, message: 'Premium promotion auto-expired successfully' });
+        } else {
+          const timeLeft = endTime.getTime() - now.getTime();
+          console.log(`⏰ [AUTO-EXPIRE] Premium promotion still active. Time left: ${timeLeft}ms`);
+          return res.json({ success: false, message: 'Promotion not yet expired', timeLeft });
+        }
+      }
+      
+      return res.json({ success: false, message: 'Premium promotion not active' });
+    }
+    
+    return res.status(400).json({ error: 'Invalid promotionType' });
+  } catch (err) {
+    console.error('❌ Error in auto-expire-promotion:', err);
+    res.status(500).json({ error: 'Failed to check promotion expiration' });
+  }
+});
+
 // UPDATE settings for a specific section
 router.put('/:section', authenticateSuperAdmin, async (req, res) => {
   try {
@@ -367,99 +461,6 @@ router.get('/utilities/error-logs', authenticateSuperAdmin, async (req, res) => 
   } catch (err) {
     console.error('Error reading logs:', err);
     res.status(500).json({ error: 'Failed to read error logs' });
-  }
-});
-
-// ⚡ PUBLIC: Auto-expire promotions when time runs out (called by frontend every 5 seconds)
-// No authentication needed - backend verifies expiration before disabling
-router.put('/auto-expire-promotion', async (req, res) => {
-  try {
-    const { promotionType } = req.body;
-    console.log(`🔄 [AUTO-EXPIRE] Request to auto-expire ${promotionType} promotion`);
-    
-    let settings = await db.models.PlatformSettings.findOne({});
-    if (!settings) {
-      return res.status(404).json({ error: 'Settings not found' });
-    }
-    
-    const now = new Date();
-    
-    if (promotionType === 'ai-assistant') {
-      // Check if AI promotion should be auto-expired
-      if (settings.aiAccessMode === 'Everyone' && settings.aiPromotionStartedAt && settings.aiPromotionDurationValue > 0) {
-        const startTime = new Date(settings.aiPromotionStartedAt);
-        let endTime = new Date(startTime);
-        const unit = settings.aiPromotionDurationUnit || 'days';
-        const value = parseInt(settings.aiPromotionDurationValue, 10) || 7;
-        
-        if (unit === 'minutes') {
-          endTime.setMinutes(endTime.getMinutes() + value);
-        } else if (unit === 'hours') {
-          endTime.setHours(endTime.getHours() + value);
-        } else if (unit === 'days') {
-          endTime.setDate(endTime.getDate() + value);
-        }
-        
-        // Check if time has passed
-        if (now >= endTime) {
-          console.log(`✅ [AUTO-EXPIRE] AI promotion has expired! Disabling...`);
-          settings.aiAccessMode = 'Premium Only';
-          settings.aiPromotionStartedAt = null;
-          settings.aiPromotionDurationValue = null;
-          settings.aiPromotionDurationUnit = null;
-          
-          await settings.save();
-          return res.json({ success: true, message: 'AI promotion auto-expired successfully' });
-        } else {
-          const timeLeft = endTime.getTime() - now.getTime();
-          console.log(`⏰ [AUTO-EXPIRE] AI promotion still active. Time left: ${timeLeft}ms`);
-          return res.json({ success: false, message: 'Promotion not yet expired', timeLeft });
-        }
-      }
-      
-      return res.json({ success: false, message: 'AI promotion not active' });
-    } 
-    
-    else if (promotionType === 'premium-trial') {
-      // Check if Premium promotion should be auto-expired
-      if (settings.enablePremiumForAll === true && settings.premiumPromotionStartAt && settings.premiumPromotionDurationValue > 0) {
-        const startTime = new Date(settings.premiumPromotionStartAt);
-        let endTime = new Date(startTime);
-        const unit = settings.premiumPromotionDurationUnit || 'days';
-        const value = parseInt(settings.premiumPromotionDurationValue, 10) || 7;
-        
-        if (unit === 'minutes') {
-          endTime.setMinutes(endTime.getMinutes() + value);
-        } else if (unit === 'hours') {
-          endTime.setHours(endTime.getHours() + value);
-        } else if (unit === 'days') {
-          endTime.setDate(endTime.getDate() + value);
-        }
-        
-        // Check if time has passed
-        if (now >= endTime) {
-          console.log(`✅ [AUTO-EXPIRE] Premium promotion has expired! Disabling...`);
-          settings.enablePremiumForAll = false;
-          settings.premiumPromotionStartAt = null;
-          settings.premiumPromotionDurationValue = null;
-          settings.premiumPromotionDurationUnit = null;
-          
-          await settings.save();
-          return res.json({ success: true, message: 'Premium promotion auto-expired successfully' });
-        } else {
-          const timeLeft = endTime.getTime() - now.getTime();
-          console.log(`⏰ [AUTO-EXPIRE] Premium promotion still active. Time left: ${timeLeft}ms`);
-          return res.json({ success: false, message: 'Promotion not yet expired', timeLeft });
-        }
-      }
-      
-      return res.json({ success: false, message: 'Premium promotion not active' });
-    }
-    
-    return res.status(400).json({ error: 'Invalid promotionType' });
-  } catch (err) {
-    console.error('❌ Error in auto-expire-promotion:', err);
-    res.status(500).json({ error: 'Failed to check promotion expiration' });
   }
 });
 
