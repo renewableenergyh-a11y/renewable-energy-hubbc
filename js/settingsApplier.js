@@ -44,7 +44,7 @@ class SettingsApplier {
       }
 
       const newSettings = await response.json();
-      console.log('📥 Settings loaded from public API:', newSettings);
+      console.log('📥 ✅ Public Settings LOADED - aiAccessMode:', newSettings.aiAccessMode, 'aiPromotionStartedAt:', newSettings.aiPromotionStartedAt, 'aiPromotionDurationValue:', newSettings.aiPromotionDurationValue);
       
       // Check if settings have changed (including removals and disables)
       if (this.lastAppliedSettings && this.hasSettingsChanged(this.lastAppliedSettings, newSettings)) {
@@ -103,16 +103,9 @@ class SettingsApplier {
       return;
     }
 
-    console.log('🔄 Applying all settings...');
-    console.log('   maintenanceMode:', this.settings.maintenanceMode);
-    console.log('   enablePremiumForAll:', this.settings.enablePremiumForAll);
-    console.log('   premiumPromotionEndAt:', this.settings.premiumPromotionEndAt);
-    console.log('   enableNewsSystem:', this.settings.enableNewsSystem);
-    console.log('   enableLikesReactions:', this.settings.enableLikesReactions);
-    console.log('   enableAiAssistant:', this.settings.enableAiAssistant);
-    console.log('   aiAccessMode:', this.settings.aiAccessMode);
-    console.log('   allowNewUserRegistration:', this.settings.allowNewUserRegistration);
-
+    console.log('🔄 [APPLY] Running applySettings...');
+    console.log('   aiAccessMode:', this.settings.aiAccessMode, 'aiPromotionStartedAt:', this.settings.aiPromotionStartedAt, 'aiPromotionDurationValue:', this.settings.aiPromotionDurationValue);
+    
     // Apply platform settings
     this.applyPlatformSettings();
     // Apply certificate settings
@@ -122,10 +115,14 @@ class SettingsApplier {
     this.applyNewsCareerSettings();
     
     // Apply AI assistant settings - await to catch auto-disable
+    console.log('🤖 [APPLY] About to call applyAiSettings...');
     await this.applyAiSettings();
+    console.log('🤖 [APPLY] applyAiSettings completed');
     
     // Apply premium/trial settings - await to catch auto-disable
+    console.log('💎 [APPLY] About to call applyPremiumSettings...');
     await this.applyPremiumSettings();
+    console.log('💎 [APPLY] applyPremiumSettings completed');
     
     console.log('✅ All settings applied');
     
@@ -545,12 +542,15 @@ class SettingsApplier {
     
     console.log('🤖 Applying AI Assistant settings...');
     console.log('   Input: enableAiAssistant=%s, aiAccessMode=%s', s.enableAiAssistant, s.aiAccessMode);
+    console.log('[AI CHECK] Received fields - Duration Value:', s.aiPromotionDurationValue, 'Duration Unit:', s.aiPromotionDurationUnit, 'Started At:', s.aiPromotionStartedAt);
 
     // CHECK: Auto-disable AI promotion if time has expired
     if (s.aiAccessMode === 'Everyone' && s.aiPromotionDurationValue && s.aiPromotionDurationValue > 0) {
+      console.log('[AI CHECK] Promotion detected - AccessMode is Everyone, Duration is set');
       // Calculate what the end time should be
       let expectedEndTime = null;
       if (s.aiPromotionStartedAt) {
+        console.log('[AI CHECK] aiPromotionStartedAt EXISTS:', s.aiPromotionStartedAt);
         const startTime = new Date(s.aiPromotionStartedAt).getTime();
         const duration = parseInt(s.aiPromotionDurationValue, 10) || 7;
         const unit = s.aiPromotionDurationUnit || 'days';
@@ -564,6 +564,8 @@ class SettingsApplier {
         const now = Date.now();
         const timeUntilEnd = expectedEndTime - now;
         console.log('⏰ AI Promotion Check - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd, 'Expired?:', now >= expectedEndTime);
+      } else {
+        console.log('[AI CHECK] ⚠️ aiPromotionStartedAt is MISSING from public settings!');
       }
       
       // If time has passed, auto-disable the promotion
@@ -572,6 +574,8 @@ class SettingsApplier {
         await this.autoDisableAiPromotion();
         return; // Don't continue applying the expired promotion
       }
+    } else if (s.aiAccessMode === 'Everyone') {
+      console.log('[AI CHECK] AccessMode is Everyone but NO duration set');
     }
 
     // Disable AI entirely
@@ -688,12 +692,15 @@ class SettingsApplier {
     const s = this.settings;
     
     console.log('💎 Applying Premium settings...');
+    console.log('[PREMIUM CHECK] Received fields - Duration Value:', s.premiumPromotionDurationValue, 'Duration Unit:', s.premiumPromotionDurationUnit, 'Started At:', s.premiumPromotionStartAt);
 
     // CHECK: Auto-disable premium promotion if time has expired
     if (s.enablePremiumForAll === true && s.premiumPromotionDurationValue && s.premiumPromotionDurationValue > 0) {
+      console.log('[PREMIUM CHECK] Promotion detected - PremiumForAll enabled, Duration is set');
       // Calculate what the end time should be
       let expectedEndTime = null;
       if (s.premiumPromotionStartAt) {
+        console.log('[PREMIUM CHECK] premiumPromotionStartAt EXISTS:', s.premiumPromotionStartAt);
         const startTime = new Date(s.premiumPromotionStartAt).getTime();
         const duration = parseInt(s.premiumPromotionDurationValue, 10) || 7;
         const unit = s.premiumPromotionDurationUnit || 'days';
@@ -707,6 +714,8 @@ class SettingsApplier {
         const now = Date.now();
         const timeUntilEnd = expectedEndTime - now;
         console.log('⏰ Premium Promotion Check - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd, 'Expired?:', now >= expectedEndTime);
+      } else {
+        console.log('[PREMIUM CHECK] ⚠️ premiumPromotionStartAt is MISSING from public settings!');
       }
       
       // If time has passed, auto-disable the promotion
@@ -715,6 +724,8 @@ class SettingsApplier {
         await this.autoDisablePremiumPromotion();
         return; // Don't continue applying the expired promotion
       }
+    } else if (s.enablePremiumForAll === true) {
+      console.log('[PREMIUM CHECK] PremiumForAll enabled but NO duration set');
     }
 
     // Disable premium system entirely
