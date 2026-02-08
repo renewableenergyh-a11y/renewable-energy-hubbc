@@ -918,7 +918,38 @@ class SettingsApplier {
         }
       }
       
+      // ULTIMATE FALLBACK: Create a fixed badge in top-right corner if nothing else worked
       if (!inserted) {
+        console.log('  📍 No suitable location found, creating floating badge in corner...');
+        const floatingBadgeContainer = document.createElement('div');
+        floatingBadgeContainer.style.cssText = `
+          position: fixed;
+          top: 20px;
+          right: 20px;
+          z-index: 10000;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          color: white;
+          padding: 8px 16px;
+          border-radius: 20px;
+          font-size: 11px;
+          font-weight: 700;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+          display: inline-block;
+          white-space: nowrap;
+          font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        `;
+        floatingBadgeContainer.setAttribute('data-component', 'ai-beta-badge');
+        floatingBadgeContainer.textContent = '✨ AI BETA';
+        document.body.appendChild(floatingBadgeContainer);
+        console.log('  ✓ AI Beta badge inserted as floating element in top-right corner');
+        inserted = true;
+      }
+      
+      if (inserted) {
+        console.log('  ✓✓ AI Beta badge successfully created!');
+      } else {
         console.warn('  ⚠️ Could not find suitable location to insert AI beta badge');
       }
     } catch (err) {
