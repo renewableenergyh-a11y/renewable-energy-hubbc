@@ -750,6 +750,7 @@ class SettingsApplier {
     }
 
     // Show beta notice - Create and manage beta badge
+    console.log('[BETA NOTICE LOG]showAiBetaNotice value:', s.showAiBetaNotice);
     this.applyAiBetaNoticeSetting(s.showAiBetaNotice);
   }
 
