@@ -78,12 +78,12 @@ class SettingsPanelManager {
           <div style="padding: 0 12px;">
             <h4 style="margin: 0 0 16px 16px; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Settings</h4>
             
-            ${this.renderSidebarItem('general', '⚙️ General', 'cog')}
-            ${this.renderSidebarItem('features', '✨ Features', 'star')}
-            ${this.renderSidebarItem('certificates', '🎓 Certificates', 'certificate')}
-            ${this.renderSidebarItem('ai-assistant', '🤖 AI Assistant', 'robot')}
-            ${this.renderSidebarItem('premium', '💎 Premium & Promotions', 'gem')}
-            ${this.renderSidebarItem('system', '🛠 System', 'tools')}
+            ${this.renderSidebarItem('general', 'General', 'cog')}
+            ${this.renderSidebarItem('features', 'Features', 'star')}
+            ${this.renderSidebarItem('certificates', 'Certificates', 'certificate')}
+            ${this.renderSidebarItem('ai-assistant', 'AI Assistant', 'robot')}
+            ${this.renderSidebarItem('premium', 'Premium & Promotions', 'gem')}
+            ${this.renderSidebarItem('system', 'System', 'tools')}
           </div>
         </div>
 
@@ -138,7 +138,7 @@ class SettingsPanelManager {
   renderGeneralSettings(s) {
     return `
       <div>
-        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">⚙️ General Settings</h1>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">General Settings</h1>
         <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Configure basic platform settings and system behavior</p>
         
         <div style="display: flex; flex-direction: column; gap: 0;">
@@ -182,7 +182,7 @@ class SettingsPanelManager {
 
           <!-- Maintenance Mode Section -->
           <div style="margin-top: 24px; margin-bottom: 16px;">
-            <h3 style="margin: 0 0 16px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">🔧 Maintenance Mode</h3>
+            <h3 style="margin: 0 0 16px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">Maintenance Mode</h3>
           </div>
 
           <!-- Enable Maintenance -->
@@ -218,13 +218,13 @@ class SettingsPanelManager {
   renderFeaturesSettings(s) {
     return `
       <div>
-        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">✨ Feature Control</h1>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">Feature Control</h1>
         <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Enable or disable platform features</p>
         
         <div style="display: flex; flex-direction: column; gap: 0;">
           <!-- News Section Header -->
           <div style="margin-bottom: 16px;">
-            <h3 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">📰 News System</h3>
+            <h3 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">News System</h3>
           </div>
 
           <!-- Enable News System -->
@@ -253,7 +253,7 @@ class SettingsPanelManager {
 
           <!-- Careers Section Header -->
           <div style="margin-top: 24px; margin-bottom: 16px;">
-            <h3 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">💼 Careers Page</h3>
+            <h3 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">Careers Page</h3>
           </div>
 
           <!-- Enable Careers Page -->
@@ -292,7 +292,7 @@ class SettingsPanelManager {
   renderCertificatesSettings(s) {
     return `
       <div>
-        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">🎓 Certificate Settings</h1>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">Certificate Settings</h1>
         <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Control how certificates are issued and managed</p>
         
         <div style="display: flex; flex-direction: column; gap: 0;">
@@ -345,7 +345,7 @@ class SettingsPanelManager {
   renderAiSettings(s) {
     return `
       <div>
-        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">🤖 AI Assistant Settings</h1>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">AI Assistant Settings</h1>
         <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Configure the Aubie RET AI Assistant</p>
         
         <div style="display: flex; flex-direction: column; gap: 0;">
@@ -424,7 +424,7 @@ class SettingsPanelManager {
   renderPremiumSettings(s) {
     return `
       <div>
-        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">💎 Premium & Promotions</h1>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">Premium & Promotions</h1>
         <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Manage premium access and promotional campaigns</p>
         
         <div style="display: flex; flex-direction: column; gap: 0;">
@@ -442,7 +442,7 @@ class SettingsPanelManager {
 
           <!-- Promotions Section Header -->
           <div style="margin-top: 24px; margin-bottom: 16px;">
-            <h3 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">🎉 Premium for Everyone (Promotion)</h3>
+            <h3 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">Premium for Everyone (Promotion)</h3>
           </div>
 
           <!-- Enable Premium for All -->
@@ -487,7 +487,7 @@ class SettingsPanelManager {
   renderSystemSettings() {
     return `
       <div>
-        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">🛠 System Utilities</h1>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">System Utilities</h1>
         <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">System maintenance and diagnostic tools</p>
         
         <div style="display: flex; flex-direction: column; gap: 0;">
@@ -795,7 +795,7 @@ class SettingsPanelManager {
           <!-- Free Trial Duration Removed - No longer used -->
 
           <div style="border-top: 2px solid var(--border-color); padding-top: 12px; margin-bottom: 8px; margin-top: 8px;">
-            <h4 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 14px;">🎉 Premium for Everyone (Promotion)</h4>
+            <h4 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 14px;">Premium for Everyone (Promotion)</h4>
           </div>
 
           <div class="form-group">
