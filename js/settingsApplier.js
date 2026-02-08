@@ -749,15 +749,113 @@ class SettingsApplier {
       console.log('  ✓ AI daily question limit set to:', s.aiDailyQuestionLimit);
     }
 
-    // Show beta notice
-    if (s.showAiBetaNotice === true) {
-      console.log('  ✓ AI Beta notice SHOWN');
-      const betaBadge = document.querySelector('[data-component="ai-beta-badge"]');
-      if (betaBadge) betaBadge.style.display = 'inline-block';
+    // Show beta notice - Create and manage beta badge
+    this.applyAiBetaNoticeSetting(s.showAiBetaNotice);
+  }
+
+  /**
+   * Manage AI beta notice badge - Show/hide based on settings
+   * Creates badge dynamically if it doesn't exist
+   */
+  applyAiBetaNoticeSetting(shouldShow) {
+    console.log('🏷️ Applying AI Beta Notice setting - show:', shouldShow);
+    
+    // Control visibility via CSS rules
+    if (shouldShow === true) {
+      // Show badge - remove hiding rule if it exists, add showing rule
+      this.removeCSSRule('[data-component="ai-beta-badge"]');
+      this.addCSSRule('[data-component="ai-beta-badge"]', 'display: inline-block !important;');
+      console.log('  ✓ AI Beta notice CSS rules applied for SHOW');
     } else {
-      console.log('  ✓ AI Beta notice HIDDEN');
-      const betaBadge = document.querySelector('[data-component="ai-beta-badge"]');
-      if (betaBadge) betaBadge.style.display = 'none';
+      // Hide badge using CSS rule (more persistent than inline styles)
+      this.removeCSSRule('[data-component="ai-beta-badge"]');
+      this.addCSSRule('[data-component="ai-beta-badge"]', 'display: none !important;');
+      console.log('  ✓ AI Beta notice CSS rules applied for HIDE');
+    }
+    
+    // Also handle inline styles for any existing badges
+    const betaBadges = document.querySelectorAll('[data-component="ai-beta-badge"]');
+    if (betaBadges.length > 0) {
+      betaBadges.forEach(badge => {
+        if (shouldShow === true) {
+          badge.style.display = 'inline-block';
+          badge.removeAttribute('data-disabled-by-settings');
+          console.log('  ✓ Beta badge shown (inline)');
+        } else {
+          badge.style.display = 'none';
+          badge.setAttribute('data-disabled-by-settings', 'true');
+          console.log('  ✓ Beta badge hidden (inline)');
+        }
+      });
+    } else if (shouldShow === true) {
+      // If badge doesn't exist and should be shown, create it in AI section if one exists
+      console.log('  📍 AI Beta badge not found in DOM, creating dynamically...');
+      this.createAiBetaBadge();
+    }
+    
+    // Persist to window for external access
+    window.showAiBetaNotice = shouldShow;
+    console.log('  ✓ window.showAiBetaNotice =', shouldShow);
+  }
+
+  /**
+   * Create AI beta notice badge dynamically
+   * Places it near the AI button or in the AI section
+   */
+  createAiBetaBadge() {
+    try {
+      // Check if already exists
+      if (document.querySelector('[data-component="ai-beta-badge"]')) {
+        console.log('  ℹ️ AI Beta badge already exists, skipping creation');
+        return;
+      }
+      
+      // Try to find where to insert the badge
+      const aiButton = document.querySelector('[data-action="open-ai"], #ai-btn, [data-component="ai-chat"]');
+      const aiSection = document.querySelector('[data-section="ai"], #ai-section');
+      
+      if (!aiButton && !aiSection) {
+        console.warn('  ⚠️ Could not find AI button or section to attach beta badge');
+        return;
+      }
+      
+      // Create badge element
+      const badge = document.createElement('span');
+      badge.setAttribute('data-component', 'ai-beta-badge');
+      badge.style.cssText = `
+        display: inline-block;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3px 8px;
+        border-radius: 12px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-left: 8px;
+        white-space: nowrap;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        user-select: none;
+      `;
+      badge.textContent = '✨ BETA';
+      
+      // Insert near AI button if available, otherwise in AI section
+      if (aiButton) {
+        aiButton.style.position = aiButton.style.position || 'relative';
+        aiButton.appendChild(badge);
+        console.log('  ✓ AI Beta badge created and inserted in AI button');
+      } else if (aiSection) {
+        // Insert as first child or wrap it nicely
+        const label = aiSection.querySelector('label, h3, .title');
+        if (label) {
+          label.parentNode.insertBefore(badge, label.nextSibling);
+        } else {
+          aiSection.insertBefore(badge, aiSection.firstChild);
+        }
+        console.log('  ✓ AI Beta badge created and inserted in AI section');
+      }
+    } catch (err) {
+      console.warn('⚠️ Error creating AI beta badge:', err.message);
     }
   }
 
