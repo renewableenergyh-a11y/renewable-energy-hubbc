@@ -755,58 +755,94 @@ class SettingsApplier {
   }
 
   /**
-   * Manage AI beta notice badge - Show/hide based on settings
-   * Creates badge dynamically if it doesn't exist
+   * Manage AI beta notice - Show/hide "(Beta)" label next to Premium
+   * Subtle in-context indicator instead of separate badge
    */
   applyAiBetaNoticeSetting(shouldShow) {
     console.log('🏷️ Applying AI Beta Notice setting - show:', shouldShow);
     
-    // Control visibility via CSS rules
-    if (shouldShow === true) {
-      // Show badge - remove hiding rule if it exists, add showing rule
-      this.removeCSSRule('[data-component="ai-beta-badge"]');
-      this.addCSSRule('[data-component="ai-beta-badge"]', `
-        display: inline-block !important;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
-        color: white !important;
-        padding: 4px 10px !important;
-        border-radius: 12px !important;
-        font-size: 10px !important;
-        font-weight: 700 !important;
-        text-transform: uppercase !important;
-        letter-spacing: 0.5px !important;
-        margin-left: 6px !important;
-        white-space: nowrap !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
-        user-select: none !important;
-        z-index: 1000 !important;
-      `);
-      console.log('  ✓ AI Beta notice CSS rules applied for SHOW');
-    } else {
-      // Hide badge using CSS rule (more persistent than inline styles)
-      this.removeCSSRule('[data-component="ai-beta-badge"]');
-      this.addCSSRule('[data-component="ai-beta-badge"]', 'display: none !important;');
-      console.log('  ✓ AI Beta notice CSS rules applied for HIDE');
-    }
+    // Find all elements that contain "Premium" text in AI context
+    const allElements = document.querySelectorAll('*');
+    let betaNoteElements = [];
     
-    // Also handle inline styles for any existing badges
-    const betaBadges = document.querySelectorAll('[data-component="ai-beta-badge"]');
-    if (betaBadges.length > 0) {
-      betaBadges.forEach(badge => {
-        if (shouldShow === true) {
-          badge.style.display = 'inline-block';
-          badge.removeAttribute('data-disabled-by-settings');
-          console.log('  ✓ Beta badge shown (inline)');
-        } else {
-          badge.style.display = 'none';
-          badge.setAttribute('data-disabled-by-settings', 'true');
-          console.log('  ✓ Beta badge hidden (inline)');
+    allElements.forEach(el => {
+      // Skip if already marked as beta note
+      if (el.hasAttribute('data-is-beta-note')) {
+        betaNoteElements.push(el);
+        return;
+      }
+      
+      // Look for "Premium" text in direct content
+      if (el.childNodes.length > 0) {
+        for (let node of el.childNodes) {
+          if (node.nodeType === Node.TEXT_NODE && node.textContent.includes('Premium')) {
+            // Check if this is about AI (in AI button, AI section, AubieRET AI, etc.)
+            const parent = el.closest('[data-component="ai-chat"], [data-component="ai-upsell"], [id*="ai"], [class*="ai"], button:has(*:contains("AI")), div:has(*:contains("AI Assistant"))');
+            if (parent || 
+                el.textContent.includes('Premium') && 
+                (el.innerHTML.includes('AI') || 
+                 el.textContent.includes('AI') || 
+                 el.closest('button, [role="button"]')?.textContent?.includes('AI') ||
+                 el.closest('[class*="ai"], [id*="ai"]'))) {
+              betaNoteElements.push(el);
+            }
+          }
+        }
+      }
+    });
+    
+    // Also look for common patterns
+    const premiumLabels = document.querySelectorAll(
+      'button:contains("Premium"), span:contains("Premium"), label:contains("Premium"), [class*="premium"]'
+    );
+    
+    if (shouldShow === true) {
+      console.log('📍 Adding (Beta) labels to Premium text...');
+      
+      // Create or update beta notes
+      betaNoteElements.forEach(el => {
+        // Check if beta note already exists nearby
+        const existing = el.parentNode?.querySelector('[data-is-beta-note]');
+        if (!existing) {
+          const betaNote = document.createElement('span');
+          betaNote.setAttribute('data-is-beta-note', 'true');
+          betaNote.textContent = ' (Beta)';
+          betaNote.style.cssText = `
+            font-size: 0.85em;
+            color: #667eea;
+            font-weight: 600;
+            margin-left: 4px;
+          `;
+          // Insert after the Premium text
+          el.parentNode.insertBefore(betaNote, el.nextSibling);
+          console.log('  ✓ Added (Beta) label');
         }
       });
-    } else if (shouldShow === true) {
-      // If badge doesn't exist and should be shown, create it in AI section if one exists
-      console.log('  📍 AI Beta badge not found in DOM, creating dynamically...');
-      this.createAiBetaBadge();
+      
+      // Also try simpler approach: find Premium text and add after it
+      document.querySelectorAll('*').forEach(el => {
+        if (el.textContent === 'Premium' && !el.parentNode.querySelector('[data-is-beta-note]')) {
+          const betaNote = document.createElement('span');
+          betaNote.setAttribute('data-is-beta-note', 'true');
+          betaNote.textContent = ' (Beta)';
+          betaNote.style.cssText = `
+            font-size: 0.85em;
+            color: #667eea;
+            font-weight: 600;
+            margin-left: 4px;
+          `;
+          el.parentNode.insertBefore(betaNote, el.nextSibling);
+          console.log('  ✓ Added (Beta) label next to Premium');
+        }
+      });
+      
+    } else {
+      console.log('🗑️ Removing (Beta) labels...');
+      // Remove all beta note elements
+      document.querySelectorAll('[data-is-beta-note]').forEach(el => {
+        el.remove();
+        console.log('  ✓ Removed (Beta) label');
+      });
     }
     
     // Persist to window for external access
@@ -815,154 +851,11 @@ class SettingsApplier {
   }
 
   /**
-   * Create AI beta notice badge dynamically
-   * Places it near the AI button or in the AI section
+   * No longer needed - badge creation replaced with simple text label
    */
   createAiBetaBadge() {
-    try {
-      // Check if already exists
-      const existingBadge = document.querySelector('[data-component="ai-beta-badge"]');
-      if (existingBadge) {
-        console.log('  ℹ️ AI Beta badge already exists, showing it');
-        existingBadge.style.display = 'inline-block';
-        existingBadge.removeAttribute('data-disabled-by-settings');
-        return;
-      }
-      
-      console.log('  📍 Creating AI Beta badge dynamically...');
-      
-      // Create badge element
-      const badge = document.createElement('span');
-      badge.setAttribute('data-component', 'ai-beta-badge');
-      badge.style.cssText = `
-        display: inline-block;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 4px 10px;
-        border-radius: 12px;
-        font-size: 10px;
-        font-weight: 700;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        margin-left: 6px;
-        white-space: nowrap;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-        user-select: none;
-        font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      `;
-      badge.textContent = '✨ BETA';
-      
-      // Try multiple insertion strategies
-      let inserted = false;
-      
-      // Strategy 1: Add to nav menu
-      const navMenu = document.getElementById('nav-menu');
-      if (navMenu && !inserted) {
-        const badgeContainer = document.createElement('span');
-        badgeContainer.style.cssText = 'display: inline-block; margin: 0 10px; vertical-align: middle; line-height: 1;';
-        badgeContainer.appendChild(badge);
-        navMenu.appendChild(badgeContainer);
-        console.log('  ✓ AI Beta badge inserted in nav menu');
-        inserted = true;
-      }
-      
-      // Strategy 2: Add to nav-dropdown-container
-      if (!inserted) {
-        const dropdownContainer = document.getElementById('nav-dropdown-container');
-        if (dropdownContainer) {
-          const badgeContainer = document.createElement('span');
-          badgeContainer.style.cssText = 'display: inline-block; margin: 0 10px; vertical-align: middle; line-height: 1;';
-          badgeContainer.appendChild(badge);
-          dropdownContainer.appendChild(badgeContainer);
-          console.log('  ✓ AI Beta badge inserted in dropdown container');
-          inserted = true;
-        }
-      }
-      
-      // Strategy 3: Add to header (next to logo or at end of header)
-      if (!inserted) {
-        const header = document.querySelector('.site-header') || document.querySelector('header');
-        if (header) {
-          const badgeContainer = document.createElement('div');
-          badgeContainer.style.cssText = `
-            position: absolute;
-            right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
-            display: inline-block;
-            z-index: 100;
-          `;
-          badgeContainer.appendChild(badge.cloneNode(true));
-          header.style.position = 'relative';
-          header.appendChild(badgeContainer);
-          console.log('  ✓ AI Beta badge inserted in header');
-          inserted = true;
-        }
-      }
-      
-      // Strategy 4: Add to main content area if no nav available
-      if (!inserted) {
-        const main = document.querySelector('main');
-        if (main) {
-          const badgeContainer = document.createElement('div');
-          badgeContainer.style.cssText = `
-            padding: 10px;
-            text-align: center;
-            background: #f5f5f5;
-            border-bottom: 1px solid #ddd;
-            margin-bottom: 20px;
-          `;
-          badgeContainer.appendChild(badge.cloneNode(true));
-          main.insertBefore(badgeContainer, main.firstChild);
-          console.log('  ✓ AI Beta badge inserted in main content');
-          inserted = true;
-        }
-      }
-      
-      // ULTIMATE FALLBACK: Create a fixed badge in top-right corner if nothing else worked
-      if (!inserted) {
-        console.log('  📍 No suitable location found, creating floating badge in corner...');
-        const floatingBadgeContainer = document.createElement('div');
-        floatingBadgeContainer.style.cssText = `
-          position: fixed;
-          top: 20px;
-          right: 20px;
-          z-index: 10000;
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-          color: white;
-          padding: 8px 16px;
-          border-radius: 20px;
-          font-size: 11px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-          box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-          display: block;
-          white-space: nowrap;
-          font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          width: auto;
-          height: auto;
-          visibility: visible !important;
-          opacity: 1 !important;
-        `;
-        floatingBadgeContainer.setAttribute('data-component', 'ai-beta-badge');
-        floatingBadgeContainer.textContent = '✨ AI BETA';
-        document.body.appendChild(floatingBadgeContainer);
-        console.log('  ✓ AI Beta badge inserted as floating element in top-right corner');
-        console.log('  ✓ Badge size:', floatingBadgeContainer.offsetWidth, 'x', floatingBadgeContainer.offsetHeight);
-        console.log('  ✓ Badge visibility:', window.getComputedStyle(floatingBadgeContainer).visibility);
-        console.log('  ✓ Badge display:', window.getComputedStyle(floatingBadgeContainer).display);
-        inserted = true;
-      }
-      
-      if (inserted) {
-        console.log('  ✓✓ AI Beta badge successfully created!');
-      } else {
-        console.warn('  ⚠️ Could not find suitable location to insert AI beta badge');
-      }
-    } catch (err) {
-      console.warn('⚠️ Error creating AI beta badge:', err.message);
-    }
+    // This method is deprecated - beta notice is now shown as text next to "Premium"
+    console.log('  ℹ️ Badge creation skipped - using inline (Beta) text instead');
   }
 
   /**
@@ -1487,27 +1380,34 @@ class SettingsApplier {
   }
 
   /**
-   * Test helper: Manually trigger badge creation from browser console
-   * Usage: window.settingsApplier.testBadgeCreation()
+   * Test helper: Manually trigger beta notice from browser console
+   * Usage: window.settingsApplier.testBetaNotice()
    */
-  testBadgeCreation() {
-    console.log('🧪 TEST: Manually triggering badge creation...');
-    console.log('  Nav menu exists:', !!document.getElementById('nav-menu'));
-    console.log('  Header exists:', !!document.querySelector('.site-header'));
-    console.log('  Main exists:', !!document.querySelector('main'));
-    console.log('  Body exists:', !!document.body);
+  testBetaNotice() {
+    console.log('🧪 TEST: Manually triggering beta notice...');
+    console.log('  Looking for "Premium" text elements...');
     
-    // Call the badge creation directly
-    this.createAiBetaBadge();
+    const premiumElements = [];
+    document.querySelectorAll('*').forEach(el => {
+      if (el.textContent === 'Premium') {
+        premiumElements.push(el);
+      }
+    });
     
-    console.log('🧪 TEST: Check if badge was created with selector [data-component="ai-beta-badge"]');
-    const badge = document.querySelector('[data-component="ai-beta-badge"]');
-    console.log('  Badge found:', !!badge);
-    if (badge) {
-      console.log('  Badge text:', badge.textContent);
-      console.log('  Badge display:', window.getComputedStyle(badge).display);
-      console.log('  Badge visible in DOM:', badge.offsetHeight > 0 ? 'YES' : 'NO');
-    }
+    console.log('  Found ' + premiumElements.length + ' "Premium" text element(s)');
+    premiumElements.forEach((el, i) => {
+      console.log(`    [${i}] Tag: ${el.tagName}, Text: "${el.textContent}", Parent: ${el.parentNode?.tagName}`);
+    });
+    
+    // Call the beta notice application directly
+    this.applyAiBetaNoticeSetting(true);
+    
+    console.log('🧪 TEST: Check for (Beta) labels with selector [data-is-beta-note]');
+    const betaNotes = document.querySelectorAll('[data-is-beta-note]');
+    console.log('  Beta notes found:', betaNotes.length);
+    betaNotes.forEach((note, i) => {
+      console.log(`    [${i}] Text: "${note.textContent}", Parent: ${note.parentNode?.tagName}`);
+    });
   }
 
   /**
