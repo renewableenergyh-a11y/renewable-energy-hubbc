@@ -1252,7 +1252,9 @@
         this.localUserId = userId;
         this.sessionId = sessionId;
         this.localVideoElement = videoElement;
-        this.currentSessionUserRole = userRole;
+        // Normalize role to lowercase for consistent comparison
+        this.currentSessionUserRole = userRole ? userRole.toLowerCase() : userRole;
+        console.log(`🔐 [WebRTC-INIT] Role normalization: ${userRole} → ${this.currentSessionUserRole}`);
         this.allParticipants = participants || [];
         
         // STEP 1: Determine session mode (INSTRUCTOR_LED or PEER)
@@ -1322,6 +1324,7 @@
       async captureLocalMedia() {
         try {
           const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
+          console.log(`🎬 [WebRTC-MEDIA] Role check: currentSessionUserRole=${this.currentSessionUserRole}, isAdmin=${isAdmin}`);
           const mediaConstraints = {
             audio: true
           };
@@ -1329,6 +1332,9 @@
           // Admins/instructors/superadmins capture video + audio, students capture audio only
           if (isAdmin) {
             mediaConstraints.video = { width: { ideal: 1280 }, height: { ideal: 720 } };
+            console.log(`📹 [WebRTC-MEDIA] Instructor detected - requesting VIDEO`);
+          } else {
+            console.log(`🎤 [WebRTC-MEDIA] Student detected - requesting AUDIO ONLY`);
           }
           
           console.log(`📹 [WebRTC-lecture] Requesting media`, {
@@ -1338,10 +1344,17 @@
           });
           
           this.localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
+          const audioCount = this.localStream.getAudioTracks().length;
+          const videoCount = this.localStream.getVideoTracks().length;
           console.log('✅ [WebRTC-lecture] Local media stream obtained', {
-            audioTracks: this.localStream.getAudioTracks().length,
-            videoTracks: this.localStream.getVideoTracks().length
+            audioTracks: audioCount,
+            videoTracks: videoCount
           });
+          if (isAdmin && videoCount === 0) {
+            console.error(`❌ [WebRTC-CRITICAL] INSTRUCTOR HAS NO VIDEO TRACKS! Expected video but got ${videoCount} tracks`);
+          } else if (isAdmin && videoCount > 0) {
+            console.log(`✅ [WebRTC-CRITICAL] INSTRUCTOR HAS VIDEO - ${videoCount} video track(s) available`);
+          }
           
           // Only show video preview if admin
           if (isAdmin && this.localVideoElement) {
@@ -1578,25 +1591,32 @@
           
           // STEP 5: Verify tracks were added BEFORE offer
           const senders = pc.getSenders();
+          const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+          const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+          const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
+          
+          console.log(`✅ [WebRTC-DETERMINISTIC] Offer verification for ${remotePeerEmail}:`, {
+            totalSenders: senders.length,
+            hasAudio: !!audioSender,
+            hasVideo: !!videoSender,
+            audioTrackId: audioSender?.track?.id || 'NONE',
+            videoTrackId: videoSender?.track?.id || 'NONE',
+            isAdmin: isAdmin,
+            shouldHaveVideo: isAdmin,
+            localStreamVideoTracks: this.localStream?.getVideoTracks().length || 0
+          });
+          
+          // FIX: Warn if instructor can't send video
+          if (isAdmin && !videoSender) {
+            console.warn(`⚠️ [WebRTC-DETERMINISTIC] CRITICAL: Instructor offer WITHOUT VIDEO for ${remotePeerEmail}`);
+            console.warn(`   Local stream video tracks: ${this.localStream?.getVideoTracks().length || 0}`);
+            console.warn(`   This will prevent student from seeing instructor!`);
+          } else if (isAdmin && videoSender) {
+            console.log(`✅ [WebRTC-DETERMINISTIC] INSTRUCTOR VIDEO CONFIRMED in offer for ${remotePeerEmail}`);
+          }
+          
           if (senders.length === 0) {
             console.warn(`⚠️ [WebRTC-DETERMINISTIC] No tracks in peer connection for ${remotePeerEmail} - TRACKS MUST BE ADDED BEFORE OFFER`);
-          } else {
-            const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
-            const videoSender = senders.find(s => s.track && s.track.kind === 'video');
-            const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
-            
-            console.log(`✅ [WebRTC-DETERMINISTIC] Offer verification for ${remotePeerEmail}:`, {
-              totalSenders: senders.length,
-              hasAudio: !!audioSender,
-              hasVideo: !!videoSender,
-              isAdmin: isAdmin,
-              shouldHaveVideo: isAdmin
-            });
-            
-            // FIX: Warn if instructor can't send video
-            if (isAdmin && !videoSender) {
-              console.warn(`⚠️ [WebRTC-DETERMINISTIC] CRITICAL: Instructor offer without VIDEO for ${remotePeerEmail}`);
-            }
           }
           
           // STEP 6: ALWAYS SEND OFFER TO NEW PARTICIPANTS
@@ -1796,11 +1816,15 @@
 
       handleNewParticipant(participantEmail) {
         // STEP 4: CREATE PEER CONNECTION PER PARTICIPANT (DETERMINISTIC)
+        const participantRole = this.allParticipants.find(p => p.userId === participantEmail)?.role || 'UNKNOWN';
         console.log(`👤 [WebRTC-DETERMINISTIC] New participant: ${participantEmail}`, {
+          myRole: this.currentSessionUserRole,
           canCreateOffers: this.canCreateOffers,
           sessionMode: this.sessionMode,
           participantCount: this.allParticipants.length,
-          participantRole: this.allParticipants.find(p => p.userId === participantEmail)?.role || 'UNKNOWN'
+          participantRole: participantRole,
+          hasLocalStream: !!this.localStream,
+          videoTracksCount: this.localStream?.getVideoTracks().length || 0
         });
         
         if (participantEmail === this.localUserId) {
@@ -1815,7 +1839,11 @@
 
         // Create peer connection for this participant
         const pc = this.getPeerConnection(participantEmail);
-        console.log(`✅ [WebRTC-DETERMINISTIC] PeerConnection created for ${participantEmail}`);
+        console.log(`✅ [WebRTC-DETERMINISTIC] PeerConnection created for ${participantEmail}`, {
+          pcState: pc.connectionState,
+          localStreamReady: this.localStream ? 'yes' : 'NO',
+          willSendVideo: ['admin', 'superadmin', 'instructor'].includes(this.currentSessionUserRole)
+        });
         
         if (!this.socketService) {
           console.error(`❌ [WebRTC-DETERMINISTIC] No socket service available for ${participantEmail}`);
@@ -1829,7 +1857,7 @@
 
         // STEP 6: ALWAYS SEND OFFER TO NEW PARTICIPANTS (if authorized)
         if (this.canCreateOffers) {
-          console.log(`📤 [WebRTC-DETERMINISTIC] Creating and sending offer to ${participantEmail}`);
+          console.log(`📤 [WebRTC-DETERMINISTIC] ✅ AUTHORIZED to send offers - Creating and sending to ${participantEmail}`);
           this.createAndSendOffer(
             participantEmail,
             (data) => {
@@ -1843,7 +1871,9 @@
           );
         } else {
           // No offer authority - this client must wait to receive an offer
-          console.log(`ℹ️ [WebRTC-DETERMINISTIC] Waiting to receive offer from ${participantEmail} (no offer authority)`);
+          console.log(`ℹ️ [WebRTC-DETERMINISTIC] ❌ NO OFFER AUTHORITY - Waiting to receive offer from ${participantEmail}`);
+          console.log(`   Current role: ${this.currentSessionUserRole}, Is instructor: ${['admin', 'superadmin', 'instructor'].includes(this.currentSessionUserRole)}`);
+          console.log(`   Is peer initiator: ${this.localUserId === this.allParticipants[0]?.userId}`);
         }
       }
 
@@ -1897,25 +1927,41 @@
       }
 
       getDiagnostics() {
+        const isInstructor = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
         const diagnostics = {
-          localUserId: this.localUserId,
-          sessionId: this.sessionId,
-          localStream: this.localStream ? {
-            active: this.localStream.active,
-            trackCount: this.localStream.getTracks().length,
-            tracks: this.localStream.getTracks().map(t => ({
-              kind: t.kind,
-              state: t.readyState,
-              enabled: t.enabled
+          authorityModel: {
+            myRole: this.currentSessionUserRole,
+            isInstructor: isInstructor,
+            canCreateOffers: this.canCreateOffers,
+            isOfferInitiator: this.isOfferInitiator,
+            sessionMode: this.sessionMode,
+            instructorPresent: this.instructorPresent,
+            firstPeerInitiator: this.allParticipants[0]?.userId
+          },
+          media: {
+            localUserId: this.localUserId,
+            localStreamActive: this.localStream !== null,
+            audioTracks: this.localStream?.getAudioTracks().length || 0,
+            videoTracks: this.localStream?.getVideoTracks().length || 0,
+            audioTracksEnabled: this.localStream?.getAudioTracks().some(t => t.enabled) || false,
+            videoTracksEnabled: this.localStream?.getVideoTracks().some(t => t.enabled) || false
+          },
+          peers: {
+            allParticipants: this.allParticipants.map(p => ({ userId: p.userId, role: p.role, active: p.active })),
+            peerConnectionCount: this.peerConnections.size,
+            peerConnections: Array.from(this.peerConnections.entries()).map(([peerId, pc]) => ({
+              peerId,
+              connectionState: pc.connectionState,
+              signalingState: pc.signalingState,
+              senders: pc.getSenders().map(s => ({ 
+                kind: s.track?.kind || 'none',
+                trackId: s.track?.id || 'none',
+                active: s.track?.enabled || false
+              }))
             }))
-          } : null,
-          peerConnections: Array.from(this.peerConnections.entries()).map(([peerId, pc]) => ({
-            peerId,
-            connectionState: pc.connectionState,
-            signalingState: pc.signalingState
-          }))
+          }
         };
-        console.log('%c📊 WebRTC Diagnostics:', 'color: #0066ff; font-weight: bold;', diagnostics);
+        console.log('%c📊 WebRTC Full Diagnostics:', 'color: #0066ff; font-weight: bold;', diagnostics);
         return diagnostics;
       }
 
