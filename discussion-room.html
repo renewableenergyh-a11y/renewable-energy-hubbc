@@ -131,15 +131,15 @@
       }
     }
 
-    /* Local preview - small tile */
+    /* Local preview - larger for instructor self-view */
     #webrtcPreview {
       flex: 0 0 auto;
-      margin-bottom: 12px;
+      margin-bottom: 16px;
       background: var(--bg-primary);
       border: 1px solid var(--border-color);
       border-radius: 8px;
-      padding: 8px;
-      width: 150px;
+      padding: 10px;
+      width: 280px;
       display: none;
     }
     
@@ -149,15 +149,15 @@
     }
 
     .webrtc-preview-label {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 600;
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       color: var(--text-secondary);
     }
 
     .local-video-wrapper {
       width: 100%;
-      max-height: 120px;
+      height: 210px;
       border-radius: 6px;
       overflow: hidden;
       background: #000;
@@ -359,10 +359,11 @@
       color: var(--text-muted);
     }
 
-    /* Media controls section - below video on left side */
+    /* Media controls section - below video on left side, with more spacing */
     .room-controls {
       flex: 0 0 auto;
-      padding: 12px;
+      padding: 24px 12px 12px;
+      margin-top: 12px;
       background: var(--bg-primary);
       border-top: 1px solid var(--border-color);
       display: flex;
