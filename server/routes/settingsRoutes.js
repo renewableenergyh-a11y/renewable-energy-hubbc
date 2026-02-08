@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const { evaluatePromotion, autoDisablePromotion, validatePromotionStart, calculateEndTime } = require('../utils/promotionValidator');
 
 let db;
 let storage;
@@ -194,81 +195,61 @@ router.put('/auto-expire-promotion', async (req, res) => {
       return res.status(404).json({ error: 'Settings not found' });
     }
     
-    const now = new Date();
+    // 🧠 Use centralized promotion validator
+    const promotionStatus = evaluatePromotion(settings, promotionType);
     
-    if (promotionType === 'ai-assistant') {
-      // Check if AI promotion should be auto-expired
-      if (settings.aiAccessMode === 'Everyone' && settings.aiPromotionStartedAt && settings.aiPromotionDurationValue > 0) {
-        const startTime = new Date(settings.aiPromotionStartedAt);
-        let endTime = new Date(startTime);
-        const unit = settings.aiPromotionDurationUnit || 'days';
-        const value = parseInt(settings.aiPromotionDurationValue, 10) || 7;
-        
-        if (unit === 'minutes') {
-          endTime.setMinutes(endTime.getMinutes() + value);
-        } else if (unit === 'hours') {
-          endTime.setHours(endTime.getHours() + value);
-        } else if (unit === 'days') {
-          endTime.setDate(endTime.getDate() + value);
-        }
-        
-        // Check if time has passed
-        if (now >= endTime) {
-          console.log(`✅ [AUTO-EXPIRE] AI promotion has expired! Disabling...`);
-          settings.aiAccessMode = 'Premium Only';
-          settings.aiPromotionStartedAt = null;
-          settings.aiPromotionDurationValue = null;
-          settings.aiPromotionDurationUnit = null;
-          
-          await settings.save();
-          return res.json({ success: true, message: 'AI promotion auto-expired successfully' });
-        } else {
-          const timeLeft = endTime.getTime() - now.getTime();
-          console.log(`⏰ [AUTO-EXPIRE] AI promotion still active. Time left: ${timeLeft}ms`);
-          return res.json({ success: false, message: 'Promotion not yet expired', timeLeft });
-        }
-      }
-      
-      return res.json({ success: false, message: 'AI promotion not active' });
-    } 
+    console.log(`ℹ️ [AUTO-EXPIRE] Promotion status for ${promotionType}:`, {
+      active: promotionStatus.active,
+      hasExpired: promotionStatus.hasExpired,
+      timeLeft: promotionStatus.timeLeft
+    });
     
-    else if (promotionType === 'premium-trial') {
-      // Check if Premium promotion should be auto-expired
-      if (settings.enablePremiumForAll === true && settings.premiumPromotionStartAt && settings.premiumPromotionDurationValue > 0) {
-        const startTime = new Date(settings.premiumPromotionStartAt);
-        let endTime = new Date(startTime);
-        const unit = settings.premiumPromotionDurationUnit || 'days';
-        const value = parseInt(settings.premiumPromotionDurationValue, 10) || 7;
-        
-        if (unit === 'minutes') {
-          endTime.setMinutes(endTime.getMinutes() + value);
-        } else if (unit === 'hours') {
-          endTime.setHours(endTime.getHours() + value);
-        } else if (unit === 'days') {
-          endTime.setDate(endTime.getDate() + value);
-        }
-        
-        // Check if time has passed
-        if (now >= endTime) {
-          console.log(`✅ [AUTO-EXPIRE] Premium promotion has expired! Disabling...`);
-          settings.enablePremiumForAll = false;
-          settings.premiumPromotionStartAt = null;
-          settings.premiumPromotionDurationValue = null;
-          settings.premiumPromotionDurationUnit = null;
-          
-          await settings.save();
-          return res.json({ success: true, message: 'Premium promotion auto-expired successfully' });
-        } else {
-          const timeLeft = endTime.getTime() - now.getTime();
-          console.log(`⏰ [AUTO-EXPIRE] Premium promotion still active. Time left: ${timeLeft}ms`);
-          return res.json({ success: false, message: 'Promotion not yet expired', timeLeft });
-        }
-      }
-      
-      return res.json({ success: false, message: 'Premium promotion not active' });
+    if (!promotionStatus.active) {
+      return res.json({ success: false, message: `${promotionType} promotion not active` });
     }
     
-    return res.status(400).json({ error: 'Invalid promotionType' });
+    if (!promotionStatus.hasExpired) {
+      console.log(`⏰ [AUTO-EXPIRE] ${promotionType} promotion still active. Time left: ${promotionStatus.timeLeft}ms`);
+      return res.json({ success: false, message: 'Promotion not yet expired', timeLeft: promotionStatus.timeLeft });
+    }
+    
+    // 🔐 ATOMIC: Get all updates needed to disable promotion
+    const updates = autoDisablePromotion(settings, promotionType);
+    
+    // Apply atomic updates to database
+    console.log(`✅ [AUTO-EXPIRE] ${promotionType} promotion has expired! Applying atomic updates...`);
+    
+    const updatedSettings = await db.models.PlatformSettings.findByIdAndUpdate(
+      settings._id,
+      { $set: updates },
+      { new: true, runValidators: false }
+    );
+    
+    // 🔔 Create ONE-TIME notification for promotion end
+    const notificationMsg = promotionType === 'ai-assistant'
+      ? '🎉 AI Assistant promotion has ended. Access is now Premium only.'
+      : '🎉 Premium access promotion has ended. Standard pricing now applies.';
+    
+    await createPromotionEndNotification(notificationMsg, {
+      type: promotionType === 'ai-assistant' ? 'ai-promotion-ended' : 'premium-promotion-ended',
+      featureType: promotionType
+    });
+    
+    // Verify persistence
+    const doubleCheckSettings = await db.models.PlatformSettings.findOne({});
+    console.log(`🔍 [AUTO-EXPIRE] Verification - ${promotionType} state after update:`, {
+      aiAccessMode: doubleCheckSettings.aiAccessMode,
+      aiPromotionStartedAt: doubleCheckSettings.aiPromotionStartedAt,
+      enablePremiumForAll: doubleCheckSettings.enablePremiumForAll,
+      premiumPromotionStartAt: doubleCheckSettings.premiumPromotionStartAt
+    });
+    
+    const plainSettings = doubleCheckSettings.toObject ? doubleCheckSettings.toObject() : doubleCheckSettings;
+    return res.json({ 
+      success: true, 
+      message: `${promotionType} promotion auto-expired and disabled successfully`,
+      settings: plainSettings
+    });
   } catch (err) {
     console.error('❌ Error in auto-expire-promotion:', err);
     res.status(500).json({ error: 'Failed to check promotion expiration' });
@@ -302,66 +283,49 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
     
     // Handle AI Assistant promotion logic - EXACTLY LIKE PREMIUM
     if (section === 'ai-assistant' && updates.aiAccessMode === 'Everyone') {
-      if (!updates.aiPromotionDurationValue || updates.aiPromotionDurationValue <= 0) {
-        return res.status(400).json({ error: 'Promotion duration required when setting AI to Everyone' });
+      // 🧠 Validate promotion start using centralized validator
+      const validation = validatePromotionStart('ai-assistant', updates);
+      if (!validation.isValid) {
+        return res.status(400).json({ error: validation.error });
       }
       
-      // Calculate end time based on unit - EXACTLY LIKE PREMIUM
-      const now = new Date();
-      let endTime = new Date(now);
+      // Set promotion start time (NOW)
+      updates.aiPromotionStartedAt = new Date();
       
-      if (updates.aiPromotionDurationUnit === 'minutes') {
-        endTime.setMinutes(endTime.getMinutes() + updates.aiPromotionDurationValue);
-      } else if (updates.aiPromotionDurationUnit === 'hours') {
-        endTime.setHours(endTime.getHours() + updates.aiPromotionDurationValue);
-      } else if (updates.aiPromotionDurationUnit === 'days') {
-        endTime.setDate(endTime.getDate() + updates.aiPromotionDurationValue);
-      }
-      
-      // Record start time for expiration checking
-      updates.aiPromotionStartedAt = now;
-      
+      // Create ONE-TIME notification
       const notificationMsg = `🎉 AI Assistant is now available to all users for ${updates.aiPromotionDurationValue} ${updates.aiPromotionDurationUnit}! Try it out before the promotion ends.`;
       
       await createSystemNotification(notificationMsg, {
-        type: 'ai-promotion',
-        promotionEndsAt: endTime,
+        type: 'ai-promotion-started',
+        promotionEndsAt: calculateEndTime(updates.aiPromotionStartedAt, updates.aiPromotionDurationValue, updates.aiPromotionDurationUnit),
         duration: updates.aiPromotionDurationValue,
         durationUnit: updates.aiPromotionDurationUnit
       });
     } else if (section === 'ai-assistant' && updates.aiAccessMode === 'Premium Only') {
-      // Clear promotion start time when turning off
+      // 🔐 ATOMIC: Reset to default mode and clear all promotion fields
       updates.aiPromotionStartedAt = null;
+      updates.aiPromotionDurationValue = null;
+      updates.aiPromotionDurationUnit = null;
+      console.log('✅ [SETTINGS UPDATE] AI access mode reset to Premium Only');
     }
     
     // Handle Premium for Everyone promotion logic
-    if (section === 'premium-trial' && updates.enablePremiumForAll) {
-      if (!updates.premiumPromotionDurationValue || updates.premiumPromotionDurationValue <= 0) {
-        return res.status(400).json({ error: 'Promotion duration required when enabling Premium for All' });
+    if (section === 'premium-trial' && updates.enablePremiumForAll === true) {
+      // 🧠 Validate promotion start using centralized validator
+      const validation = validatePromotionStart('premium-trial', updates);
+      if (!validation.isValid) {
+        return res.status(400).json({ error: validation.error });
       }
       
-      // Calculate end time based on unit
-      const now = new Date();
-      let endTime = new Date(now);
-      
-      if (updates.premiumPromotionDurationUnit === 'minutes') {
-        endTime.setMinutes(endTime.getMinutes() + updates.premiumPromotionDurationValue);
-      } else if (updates.premiumPromotionDurationUnit === 'hours') {
-        endTime.setHours(endTime.getHours() + updates.premiumPromotionDurationValue);
-      } else if (updates.premiumPromotionDurationUnit === 'days') {
-        endTime.setDate(endTime.getDate() + updates.premiumPromotionDurationValue);
-      }
-      
-      // Update settings with promotion info
-      settings.premiumPromotionActive = true;
-      settings.premiumPromotionStartAt = now;
-      settings.premiumPromotionEndAt = endTime;
+      // Set promotion start time (NOW)
+      updates.premiumPromotionStartAt = new Date();
+      updates.premiumPromotionActive = true;
       
       const notificationMsg = `🎉 Premium access is now available to everyone for ${updates.premiumPromotionDurationValue} ${updates.premiumPromotionDurationUnit}! Enjoy all features before the promotion ends.`;
       
       await createSystemNotification(notificationMsg, {
-        type: 'premium-promotion',
-        promotionEndsAt: endTime,
+        type: 'premium-promotion-started',
+        promotionEndsAt: calculateEndTime(updates.premiumPromotionStartAt, updates.premiumPromotionDurationValue, updates.premiumPromotionDurationUnit),
         duration: updates.premiumPromotionDurationValue,
         durationUnit: updates.premiumPromotionDurationUnit
       });
@@ -369,9 +333,13 @@ router.put('/:section', authenticateSuperAdmin, async (req, res) => {
     
     // When disabling Premium for All, mark promotion as inactive and clear times
     if (section === 'premium-trial' && updates.enablePremiumForAll === false) {
+      // 🔐 ATOMIC: Reset to default mode and clear all promotion fields
       updates.premiumPromotionActive = false;
       updates.premiumPromotionStartAt = null;
       updates.premiumPromotionEndAt = null;
+      updates.premiumPromotionDurationValue = null;
+      updates.premiumPromotionDurationUnit = null;
+      console.log('✅ [SETTINGS UPDATE] Premium for all disabled, promotion fields cleared');
     }
     
     // Apply updates to settings using findByIdAndUpdate for proper persistence
@@ -420,6 +388,48 @@ async function createSystemNotification(message, metadata = {}) {
     return notification;
   } catch (err) {
     console.error('Error creating notification:', err);
+    return null;
+  }
+}
+
+/**
+ * Create ONE-TIME promotion end notification
+ * Ensures only one notification per promotion end event
+ */
+async function createPromotionEndNotification(message, metadata = {}) {
+  try {
+    if (!db.models.Notification) {
+      console.warn('Notification model not available');
+      return null;
+    }
+    
+    // Check if we already have a notification for this promotion end
+    // Use featureType to prevent duplicates
+    const existingNotification = await db.models.Notification.findOne({
+      type: metadata.type,
+      'metadata.featureType': metadata.featureType,
+      createdAt: { $gte: new Date(Date.now() - 5000) } // Within last 5 seconds
+    });
+    
+    if (existingNotification) {
+      console.log(`🔔 [ONE-TIME] Notification already created for ${metadata.featureType}. Skipping duplicate.`);
+      return existingNotification;
+    }
+    
+    console.log(`🔔 [ONE-TIME] Creating promotion end notification for ${metadata.featureType}`);
+    
+    const notification = await db.models.Notification.create({
+      message,
+      type: metadata.type || 'system',
+      forAllUsers: true,
+      createdAt: new Date(),
+      metadata: metadata,
+      _onceFlag: `promotion-ended-${metadata.featureType}-${Date.now()}` // Unique one-time marker
+    });
+    
+    return notification;
+  } catch (err) {
+    console.error('Error creating promotion-end notification:', err);
     return null;
   }
 }

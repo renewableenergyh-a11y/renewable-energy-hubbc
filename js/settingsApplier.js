@@ -9,11 +9,6 @@ class SettingsApplier {
     this.checkInterval = null;
     this.lastAppliedSettings = null;
     
-    // ⚡ Cooldown to prevent repeated auto-disable calls
-    // Maps promotion type to last time we called auto-disable
-    this.lastAutoDisableTriggerTime = {};
-    this.AUTO_DISABLE_COOLDOWN_MS = 30000; // 30 second cooldown between auto-disable attempts
-    
     // Initialize default window variables immediately
     window.aiEnabled = true; // Default: AI is enabled
     window.aiAccessMode = 'Premium Only'; // Default: Premium only
@@ -49,11 +44,17 @@ class SettingsApplier {
       }
 
       const newSettings = await response.json();
-      console.log('📥 ✅ Public Settings LOADED - aiAccessMode:', newSettings.aiAccessMode, 'aiPromotionStartedAt:', newSettings.aiPromotionStartedAt, 'aiPromotionDurationValue:', newSettings.aiPromotionDurationValue);
+      console.log('📥 ✅ Public Settings LOADED - aiAccessMode:', newSettings.aiAccessMode, 'enablePremiumForAll:', newSettings.enablePremiumForAll);
       
-      // ⚡ CRITICAL: Always check expiration regardless of whether settings changed
-      // This ensures promotions expire every 5 seconds, not just on first load
-      await this.checkAndHandlePromotionExpiration(newSettings);
+      // 🔍 Check if promotion state has changed (not time-based, but state-based)
+      // This is called when backend signals a state change
+      if (this.lastAppliedSettings) {
+        const promotionStateChanged = await this.handlePromotionStateChange(this.lastAppliedSettings, newSettings);
+        if (promotionStateChanged) {
+          // State change was handled, don't continue with normal flow
+          return;
+        }
+      }
       
       // Check if settings have changed (including removals and disables)
       if (this.lastAppliedSettings && this.hasSettingsChanged(this.lastAppliedSettings, newSettings)) {
@@ -64,7 +65,6 @@ class SettingsApplier {
         await this.applySettings();
         
         // Auto-refresh page to apply changes (but skip admin dashboard)
-        // Refresh on ANY change: enabled, disabled, or removed
         if (!window.location.pathname.includes('/admin')) {
           console.log('🌀 Auto-refreshing page to apply setting changes...');
           setTimeout(() => {
@@ -83,100 +83,66 @@ class SettingsApplier {
   }
 
   /**
-   * Check for promotion expiration independently of change detection
-   * This runs EVERY 5 seconds on the health check, not just when settings change
+   * Handle promotion state changes detected from settings
+   * This replaces the continuous time-based expiry check
+   * Only triggers actions when backend signals a promotion state change
    */
-  async checkAndHandlePromotionExpiration(newSettings) {
-    const s = newSettings;
-    const now = Date.now();
+  async handlePromotionStateChange(oldSettings, newSettings) {
+    console.log('[PROMOTION STATE] Comparing old vs new promotion states...');
     
-    // Check AI promotion expiration
-    if (s.aiAccessMode === 'Everyone' && s.aiPromotionDurationValue && s.aiPromotionDurationValue > 0 && s.aiPromotionStartedAt) {
-      console.log('[EXPIRATION CHECK] Checking AI promotion expiration...');
-      const startTime = new Date(s.aiPromotionStartedAt).getTime();
-      const duration = parseInt(s.aiPromotionDurationValue, 10) || 7;
-      const unit = s.aiPromotionDurationUnit || 'days';
-      let durationMs = 0;
+    // Check AI promotion state change
+    if (oldSettings && oldSettings.aiAccessMode === 'Everyone' && newSettings.aiAccessMode === 'Premium Only') {
+      console.log('🔴 [PROMOTION STATE] AI promotion ended! (accessMode: Everyone → Premium Only)');
       
-      if (unit === 'minutes') durationMs = duration * 60 * 1000;
-      else if (unit === 'hours') durationMs = duration * 60 * 60 * 1000;
-      else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
+      // Mark that we've handled this promotion end
+      sessionStorage.setItem('ai_promotion_ended_handled', 'true');
       
-      const expectedEndTime = startTime + durationMs;
-      const timeUntilEnd = expectedEndTime - now;
-      
-      console.log('[EXPIRATION CHECK] AI - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd);
-      
-      // If time has passed, auto-disable the promotion
-      if (now >= expectedEndTime) {
-        // 🛑 CRITICAL: Check if expiry has already been handled to prevent infinite reload
-        const expiryHandled = localStorage.getItem('ai_promo_expiry_handled') === 'true';
+      // Trigger ONE reload to reflect the state change
+      if (!window.location.pathname.includes('/admin')) {
+        console.log('🌀 [PROMOTION STATE] Triggering soft refresh...');
+        // Update UI immediately without reload
+        await this.applySettings();
         
-        if (expiryHandled) {
-          console.log('ℹ️ [EXPIRATION CHECK] AI promotion expiry already handled. Skipping reload.');
-          return; // Don't reload again - expiry was already processed
-        }
-        
-        // ⚡ COOLDOWN CHECK: Only allow auto-disable once per promotion
-        // This prevents infinite reload loops if the health check runs multiple times before the page reloads
-        const lastTriggerTime = this.lastAutoDisableTriggerTime['ai-assistant'] || 0;
-        const timeSinceLastTrigger = now - lastTriggerTime;
-        
-        if (timeSinceLastTrigger < this.AUTO_DISABLE_COOLDOWN_MS) {
-          console.log(`⏳ [EXPIRATION CHECK] AI auto-disable on cooldown (${Math.round(timeSinceLastTrigger)}ms of ${this.AUTO_DISABLE_COOLDOWN_MS}ms). Skipping.`);
-          return; // Skip this call, it's still on cooldown
-        }
-        
-        console.log('🔴 [EXPIRATION CHECK] ⏰ AI PROMOTION HAS EXPIRED! Disabling immediately...');
-        this.lastAutoDisableTriggerTime['ai-assistant'] = now; // Record the trigger time
-        await this.autoDisableAiPromotion();
-        return; // Exit early to avoid further processing
+        // Then reload once to ensure everything is in sync
+        setTimeout(() => {
+          console.log('[PROMOTION STATE] Reloading page to sync UI state');
+          window.location.reload();
+        }, 1000);
+      } else {
+        // On admin dashboard, just refresh UI without reload
+        console.log('[PROMOTION STATE] On admin page, refreshing UI only');
+        await this.applySettings();
       }
+      return true;
     }
     
-    // Check Premium promotion expiration
-    if (s.enablePremiumForAll === true && s.premiumPromotionDurationValue && s.premiumPromotionDurationValue > 0 && s.premiumPromotionStartAt) {
-      console.log('[EXPIRATION CHECK] Checking Premium promotion expiration...');
-      const startTime = new Date(s.premiumPromotionStartAt).getTime();
-      const duration = parseInt(s.premiumPromotionDurationValue, 10) || 7;
-      const unit = s.premiumPromotionDurationUnit || 'days';
-      let durationMs = 0;
+    // Check Premium promotion state change
+    if (oldSettings && oldSettings.enablePremiumForAll === true && newSettings.enablePremiumForAll === false) {
+      console.log('🔴 [PROMOTION STATE] Premium promotion ended! (enablePremiumForAll: true → false)');
       
-      if (unit === 'minutes') durationMs = duration * 60 * 1000;
-      else if (unit === 'hours') durationMs = duration * 60 * 60 * 1000;
-      else if (unit === 'days') durationMs = duration * 24 * 60 * 60 * 1000;
+      // Mark that we've handled this promotion end
+      sessionStorage.setItem('premium_promotion_ended_handled', 'true');
       
-      const expectedEndTime = startTime + durationMs;
-      const timeUntilEnd = expectedEndTime - now;
-      
-      console.log('[EXPIRATION CHECK] Premium - Started:', new Date(startTime).toLocaleString(), 'Ends:', new Date(expectedEndTime).toLocaleString(), 'Time left (ms):', timeUntilEnd);
-      
-      // If time has passed, auto-disable the promotion
-      if (now >= expectedEndTime) {
-        // 🛑 CRITICAL: Check if expiry has already been handled to prevent infinite reload
-        const expiryHandled = localStorage.getItem('premium_promo_expiry_handled') === 'true';
+      // Trigger ONE reload to reflect the state change
+      if (!window.location.pathname.includes('/admin')) {
+        console.log('🌀 [PROMOTION STATE] Triggering soft refresh...');
+        // Update UI immediately without reload
+        await this.applySettings();
         
-        if (expiryHandled) {
-          console.log('ℹ️ [EXPIRATION CHECK] Premium promotion expiry already handled. Skipping reload.');
-          return; // Don't reload again - expiry was already processed
-        }
-        
-        // ⚡ COOLDOWN CHECK: Only allow auto-disable once per promotion
-        // This prevents infinite reload loops if the health check runs multiple times before the page reloads
-        const lastTriggerTime = this.lastAutoDisableTriggerTime['premium-trial'] || 0;
-        const timeSinceLastTrigger = now - lastTriggerTime;
-        
-        if (timeSinceLastTrigger < this.AUTO_DISABLE_COOLDOWN_MS) {
-          console.log(`⏳ [EXPIRATION CHECK] Premium auto-disable on cooldown (${Math.round(timeSinceLastTrigger)}ms of ${this.AUTO_DISABLE_COOLDOWN_MS}ms). Skipping.`);
-          return; // Skip this call, it's still on cooldown
-        }
-        
-        console.log('🔴 [EXPIRATION CHECK] ⏰ PREMIUM PROMOTION HAS EXPIRED! Disabling immediately...');
-        this.lastAutoDisableTriggerTime['premium-trial'] = now; // Record the trigger time
-        await this.autoDisablePremiumPromotion();
-        return; // Exit early to avoid further processing
+        // Then reload once to ensure everything is in sync
+        setTimeout(() => {
+          console.log('[PROMOTION STATE] Reloading page to sync UI state');
+          window.location.reload();
+        }, 1000);
+      } else {
+        // On admin dashboard, just refresh UI without reload
+        console.log('[PROMOTION STATE] On admin page, refreshing UI only');
+        await this.applySettings();
       }
+      return true;
     }
+    
+    return false;
   }
 
   /**
