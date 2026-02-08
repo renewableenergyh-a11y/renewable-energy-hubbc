@@ -937,14 +937,21 @@ class SettingsApplier {
           text-transform: uppercase;
           letter-spacing: 0.5px;
           box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-          display: inline-block;
+          display: block;
           white-space: nowrap;
           font-family: Poppins, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          width: auto;
+          height: auto;
+          visibility: visible !important;
+          opacity: 1 !important;
         `;
         floatingBadgeContainer.setAttribute('data-component', 'ai-beta-badge');
         floatingBadgeContainer.textContent = '✨ AI BETA';
         document.body.appendChild(floatingBadgeContainer);
         console.log('  ✓ AI Beta badge inserted as floating element in top-right corner');
+        console.log('  ✓ Badge size:', floatingBadgeContainer.offsetWidth, 'x', floatingBadgeContainer.offsetHeight);
+        console.log('  ✓ Badge visibility:', window.getComputedStyle(floatingBadgeContainer).visibility);
+        console.log('  ✓ Badge display:', window.getComputedStyle(floatingBadgeContainer).display);
         inserted = true;
       }
       
