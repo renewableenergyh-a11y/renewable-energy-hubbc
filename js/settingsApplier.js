@@ -756,81 +756,80 @@ class SettingsApplier {
 
   /**
    * Manage AI beta notice - Show/hide "(Beta)" label in AubieRET AI header
-   * Appears after "AubieRET AI" text, before "Premium" badge
+   * Appears after "AubieRET AI" text, before "Premium" badge in the chat widget
    */
   applyAiBetaNoticeSetting(shouldShow) {
     console.log('🏷️ Applying AI Beta Notice setting - show:', shouldShow);
     
     if (shouldShow === true) {
-      console.log('📍 Adding (Beta) label to AubieRET AI header...');
+      console.log('📍 Adding (Beta) label to AubieRET AI chat widget header...');
       
-      // Find the AubieRET AI header/title element
+      // First, find all spans/divs with "AubieRET AI" text
       const allElements = document.querySelectorAll('*');
-      let targetElement = null;
+      let foundAndAdded = false;
       
       for (let el of allElements) {
-        // Look for element containing "AubieRET AI"
-        if (el.textContent.includes('AubieRET AI') && 
-            el.querySelectorAll('[data-is-beta-note]').length === 0) {
-          console.log('  Found AubieRET AI element:', el.tagName, el.className);
-          targetElement = el;
-          break;
-        }
-      }
-      
-      if (!targetElement) {
-        // If exact match not found, look for variations
-        for (let el of allElements) {
-          if ((el.textContent.includes('Aubie') || el.textContent.includes('AI')) && 
-              el.textContent.includes('Premium') &&
-              el.querySelectorAll('[data-is-beta-note]').length === 0) {
-            console.log('  Found AI + Premium element:', el.tagName, el.className);
-            targetElement = el;
-            break;
-          }
-        }
-      }
-      
-      if (targetElement) {
-        // Check if beta note already exists
-        if (!targetElement.querySelector('[data-is-beta-note]')) {
-          // Find the Premium text within this element
-          const premiumElement = Array.from(targetElement.querySelectorAll('*')).find(
-            el => el.textContent.trim() === 'Premium' || el.textContent.trim().includes('Premium')
-          );
+        // Look for element that contains EXACTLY "AubieRET AI" (not the whole page)
+        const textContent = el.textContent?.trim();
+        
+        // Check if this element or its children have "AubieRET AI" and "Premium"
+        if (el.textContent?.includes('AubieRET AI') && 
+            el.textContent?.includes('Premium') &&
+            el.textContent?.length < 100) { // Chat header is short text
           
-          if (premiumElement) {
-            // Insert (Beta) before the Premium element
+          console.log('  Found AubieRET AI + Premium container:', el.tagName, el.className);
+          
+          // Check if beta note already exists
+          if (!el.querySelector('[data-is-beta-note]')) {
+            // Look for the Premium text/element specifically
+            const children = Array.from(el.childNodes);
+            let premiumIndex = -1;
+            let premiumNode = null;
+            
+            // Find Premium element among direct children
+            for (let i = 0; i < children.length; i++) {
+              const child = children[i];
+              if (child.nodeType === Node.TEXT_NODE && child.textContent.includes('Premium')) {
+                premiumNode = child;
+                premiumIndex = i;
+                break;
+              } else if (child.nodeType !== Node.TEXT_NODE && 
+                        (child.textContent === 'Premium' || child.textContent.trim() === 'Premium')) {
+                premiumNode = child;
+                premiumIndex = i;
+                break;
+              }
+            }
+            
+            // Create and insert the beta note
             const betaNote = document.createElement('span');
             betaNote.setAttribute('data-is-beta-note', 'true');
             betaNote.textContent = '(Beta) ';
             betaNote.style.cssText = `
-              font-size: 0.85em;
-              color: #667eea;
+              font-size: 0.9em;
+              color: inherit;
               font-weight: 600;
-              margin-right: 4px;
+              margin-right: 6px;
               display: inline;
             `;
-            premiumElement.parentNode.insertBefore(betaNote, premiumElement);
-            console.log('  ✓ Added (Beta) label before Premium badge');
-          } else {
-            // Alternative: just add to the end of the element
-            const betaNote = document.createElement('span');
-            betaNote.setAttribute('data-is-beta-note', 'true');
-            betaNote.textContent = ' (Beta)';
-            betaNote.style.cssText = `
-              font-size: 0.85em;
-              color: #667eea;
-              font-weight: 600;
-              margin-left: 4px;
-              display: inline;
-            `;
-            targetElement.appendChild(betaNote);
-            console.log('  ✓ Added (Beta) label to AubieRET AI header');
+            
+            if (premiumNode) {
+              // Insert before Premium
+              premiumNode.parentNode.insertBefore(betaNote, premiumNode);
+              console.log('  ✓ Added (Beta) before Premium in chat header');
+              foundAndAdded = true;
+            } else {
+              // If Premium not found, just add before the last child
+              el.insertBefore(betaNote, el.lastChild);
+              console.log('  ✓ Added (Beta) to chat header');
+              foundAndAdded = true;
+            }
           }
         }
-      } else {
-        console.warn('⚠️ Could not find AubieRET AI element to add (Beta) label');
+      }
+      
+      if (!foundAndAdded) {
+        console.warn('⚠️ Could not find AubieRET AI chat widget header');
       }
       
     } else {
