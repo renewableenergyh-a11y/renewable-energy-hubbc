@@ -960,11 +960,8 @@ class SettingsApplier {
     window.premiumEnabled = true;
     this.showElement('#nav-premium-btn, .nav-premium-link, [data-action="upgrade-premium"], [data-section="premium"], #premium-section, a[href*="billing.html"]');
 
-    // Free trial duration
-    if (s.freeTrialDurationDays) {
-      window.freeTrialDays = s.freeTrialDurationDays;
-      console.log('  ✓ Free trial duration set to:', s.freeTrialDurationDays, 'days');
-    }
+    // Free trial duration - REMOVED (no longer used)
+    // Users must have paid subscription or active "Premium for Everyone" promotion
 
     // Premium for all (promotion)
     if (s.enablePremiumForAll === true) {

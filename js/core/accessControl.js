@@ -22,9 +22,7 @@ export function hasPremiumAccess(user = null) {
     nowTime: Date.now(),
     promotionActive,
     promotionNotExpired,
-    userHasPremium: user.hasPremium,
-    userTrialActive: user.trialActive,
-    userTrialEndAt: user.trialEndAt
+    userHasPremium: user.hasPremium
   });
   
   // Check for global promotion override (loaded from settings applier) - HIGHEST PRIORITY
@@ -36,12 +34,6 @@ export function hasPremiumAccess(user = null) {
   // Check user premium subscription
   if (user.hasPremium === true && user.subscriptionActive !== false) {
     console.log('✅ Premium access granted via subscription');
-    return true;
-  }
-  
-  // Check free trial
-  if (user.trialActive === true && user.trialEndAt && Date.now() < user.trialEndAt) {
-    console.log('✅ Premium access granted via trial');
     return true;
   }
   

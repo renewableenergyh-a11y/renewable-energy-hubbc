@@ -103,7 +103,6 @@ router.get('/public/settings', async (req, res) => {
         
         // Premium & Trial
         enablePremiumSystem: true,
-        freeTrialDurationDays: 7,
         enablePremiumForAll: false,
         premiumPromotionActive: false,
         premiumPromotionStartAt: null,
@@ -162,7 +161,6 @@ router.get('/', authenticateSuperAdmin, async (req, res) => {
         
         // Premium & Trial
         enablePremiumSystem: true,
-        freeTrialDurationDays: 7,
         enablePremiumForAll: false,
         premiumPromotionActive: false,
         premiumPromotionStartAt: null,

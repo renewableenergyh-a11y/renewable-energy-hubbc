@@ -355,14 +355,7 @@ class SettingsPanelManager {
             <small style="color: var(--text-muted); display: block; margin-top: 6px;">Turn off to disable all premium features site-wide</small>
           </div>
 
-          <div class="form-group">
-            <label style="display: block; font-size: 13px; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">
-              Free Trial Duration (days)
-            </label>
-            <input type="number" id="freeTrialDurationDays" min="0" value="${s.freeTrialDurationDays || 7}" 
-              style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-main); color: var(--text-main); box-sizing: border-box;" />
-            <small style="color: var(--text-muted); display: block; margin-top: 6px;">New users automatically get premium for X days</small>
-          </div>
+          <!-- Free Trial Duration Removed - No longer used -->
 
           <div style="border-top: 2px solid var(--border-color); padding-top: 12px; margin-bottom: 8px; margin-top: 8px;">
             <h4 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 14px;">🎉 Premium for Everyone (Promotion)</h4>
@@ -590,7 +583,7 @@ class SettingsPanelManager {
       updates.showAiBetaNotice = document.getElementById('showAiBetaNotice').checked;
     } else if (section === 'premium-trial') {
       updates.enablePremiumSystem = document.getElementById('enablePremiumSystem').checked;
-      updates.freeTrialDurationDays = parseInt(document.getElementById('freeTrialDurationDays').value) || 7;
+      // freeTrialDurationDays removed - no longer used
       updates.enablePremiumForAll = document.getElementById('enablePremiumForAll').checked;
       updates.premiumPromotionDurationValue = parseInt(document.getElementById('premiumPromotionDurationValue').value) || 7;
       updates.premiumPromotionDurationUnit = document.getElementById('premiumPromotionDurationUnit').value;
