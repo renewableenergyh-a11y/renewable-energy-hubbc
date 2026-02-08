@@ -1279,12 +1279,17 @@ function showModal(options) {
     if (onCancel) onCancel();
   };
   
-  if (onCancel) {
-    document.getElementById('modal-cancel').addEventListener('click', handleCancelClick);
-  }
-  if (onConfirm) {
-    document.getElementById('modal-confirm').addEventListener('click', handleConfirmClick);
-  } else if (!onCancel) {
+  const confirmBtn = content.querySelector('#modal-confirm');
+  const cancelBtn = content.querySelector('#modal-cancel');
+  
+  if (confirmBtn) confirmBtn.addEventListener('click', handleConfirmClick);
+  if (cancelBtn) cancelBtn.addEventListener('click', handleCancelClick);
+  
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) handleCancelClick();
+  });
+  
+  if (!confirmBtn && !cancelBtn) {
     // If no buttons, auto-remove after 3 seconds
     setTimeout(() => overlay.remove(), 3000);
   }
@@ -1293,10 +1298,10 @@ function showModal(options) {
   document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
-      if (onConfirm) handleConfirmClick();
+      if (confirmBtn) handleConfirmClick();
     } else if (e.key === 'Escape') {
       e.preventDefault();
-      if (onCancel) handleCancelClick(); else if (onConfirm) handleConfirmClick(); else overlay.remove();
+      handleCancelClick();
     }
   }, { once: true });
 }
