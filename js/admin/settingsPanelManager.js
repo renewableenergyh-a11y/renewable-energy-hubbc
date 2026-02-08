@@ -68,15 +68,452 @@ class SettingsPanelManager {
     const container = document.getElementById('settings-panel');
     if (!container) return;
 
+    // Set active section (default to 'general')
+    this.activeSection = this.activeSection || 'general';
+
     container.innerHTML = `
-      <div style="max-width: 1200px; margin: 0 auto; padding: 24px;">
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 24px;">
-          ${this.renderPlatformSection()}
-          ${this.renderCertificatesSection()}
-          ${this.renderNewsSection()}
-          ${this.renderAiSection()}
-          ${this.renderPremiumSection()}
-          ${this.renderUtilitiesSection()}
+      <div style="display: flex; height: 100%; min-height: calc(100vh - 100px);">
+        <!-- SIDEBAR -->
+        <div style="width: 260px; background: var(--bg-secondary); border-right: 1px solid var(--border-color); padding: 20px 0; overflow-y: auto;">
+          <div style="padding: 0 12px;">
+            <h4 style="margin: 0 0 16px 16px; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Settings</h4>
+            
+            ${this.renderSidebarItem('general', '⚙️ General', 'cog')}
+            ${this.renderSidebarItem('features', '✨ Features', 'star')}
+            ${this.renderSidebarItem('certificates', '🎓 Certificates', 'certificate')}
+            ${this.renderSidebarItem('ai-assistant', '🤖 AI Assistant', 'robot')}
+            ${this.renderSidebarItem('premium', '💎 Premium & Promotions', 'gem')}
+            ${this.renderSidebarItem('system', '🛠 System', 'tools')}
+          </div>
+        </div>
+
+        <!-- MAIN CONTENT -->
+        <div style="flex: 1; overflow-y: auto; background: var(--bg-main);">
+          <div style="max-width: 900px; margin: 0 auto; padding: 32px;">
+            ${this.renderContentSection()}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  renderSidebarItem(sectionId, label, icon) {
+    const isActive = this.activeSection === sectionId;
+    return `
+      <div onclick="settingsManager.switchSection('${sectionId}')" 
+        style="padding: 12px 16px; margin: 4px 0; border-radius: 6px; cursor: pointer; user-select: none; transition: all 0.2s ease; background: ${isActive ? 'var(--green-main)' : 'transparent'}; color: ${isActive ? 'white' : 'var(--text-main)'}; font-weight: ${isActive ? '600' : '500'}; display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-${icon}" style="width: 20px; text-align: center;"></i>
+        <span>${label}</span>
+      </div>
+    `;
+  }
+
+  switchSection(sectionId) {
+    this.activeSection = sectionId;
+    this.renderUI();
+    this.setupEventListeners();
+  }
+
+  renderContentSection() {
+    const s = this.currentSettings;
+    
+    switch(this.activeSection) {
+      case 'general':
+        return this.renderGeneralSettings(s);
+      case 'features':
+        return this.renderFeaturesSettings(s);
+      case 'certificates':
+        return this.renderCertificatesSettings(s);
+      case 'ai-assistant':
+        return this.renderAiSettings(s);
+      case 'premium':
+        return this.renderPremiumSettings(s);
+      case 'system':
+        return this.renderSystemSettings();
+      default:
+        return this.renderGeneralSettings(s);
+    }
+  }
+
+  renderGeneralSettings(s) {
+    return `
+      <div>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">⚙️ General Settings</h1>
+        <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Configure basic platform settings and system behavior</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          <!-- Platform Name -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Site Name</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Displayed in browser tab and system ui</p>
+            </div>
+            <input type="text" id="siteName" value="${s.siteName || ''}" 
+              style="width: 300px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); box-sizing: border-box;" />
+          </div>
+
+          <!-- Default Timezone -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Default Timezone</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Used for timestamps throughout the platform</p>
+            </div>
+            <select id="defaultTimezone" 
+              style="width: 300px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); box-sizing: border-box;">
+              <option value="UTC" ${s.defaultTimezone === 'UTC' ? 'selected' : ''}>UTC</option>
+              <option value="America/New_York" ${s.defaultTimezone === 'America/New_York' ? 'selected' : ''}>Eastern Time</option>
+              <option value="America/Chicago" ${s.defaultTimezone === 'America/Chicago' ? 'selected' : ''}>Central Time</option>
+              <option value="America/Denver" ${s.defaultTimezone === 'America/Denver' ? 'selected' : ''}>Mountain Time</option>
+              <option value="America/Los_Angeles" ${s.defaultTimezone === 'America/Los_Angeles' ? 'selected' : ''}>Pacific Time</option>
+            </select>
+          </div>
+
+          <!-- Allow New User Registration -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Allow New Registrations</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">When disabled, users cannot create new accounts</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="allowNewUserRegistration" ${s.allowNewUserRegistration ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="registrationBadge" style="display: ${s.allowNewUserRegistration ? 'inline-block' : 'none'}; padding: 4px 8px; background: #4caf50; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ENABLED</span>
+            </label>
+          </div>
+
+          <!-- Maintenance Mode Section -->
+          <div style="margin-top: 24px; margin-bottom: 16px;">
+            <h3 style="margin: 0 0 16px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">🔧 Maintenance Mode</h3>
+          </div>
+
+          <!-- Enable Maintenance -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Enable Maintenance Mode</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Only SuperAdmins can access when enabled</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="maintenanceMode" ${s.maintenanceMode ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="maintenanceBadge" style="display: ${s.maintenanceMode ? 'inline-block' : 'none'}; padding: 4px 8px; background: #ff9800; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ACTIVE</span>
+            </label>
+          </div>
+
+          <!-- Maintenance Message -->
+          <div id="maintenanceMessageGroup" style="display: ${s.maintenanceMode ? 'block' : 'none'}; padding: 16px; border-bottom: 1px solid var(--border-color);">
+            <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 8px;">Maintenance Message</label>
+            <p style="margin: 0 0 8px 0; color: var(--text-muted); font-size: 13px;">Message displayed when maintenance mode is active</p>
+            <textarea id="maintenanceMessage" placeholder="e.g., We're performing scheduled maintenance..."
+              style="width: 100%; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); box-sizing: border-box; font-family: inherit; resize: vertical;"
+              rows="3">${s.maintenanceMessage || ''}</textarea>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="settingsManager.saveSetting('platform')" 
+          style="width: 100%; padding: 12px 16px; font-weight: 600; border-radius: 6px; margin-top: 24px;">
+          <i class="fas fa-save" style="margin-right: 8px;"></i>Save General Settings
+        </button>
+      </div>
+    `;
+  }
+
+  renderFeaturesSettings(s) {
+    return `
+      <div>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">✨ Feature Control</h1>
+        <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Enable or disable platform features</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          <!-- News Section Header -->
+          <div style="margin-bottom: 16px;">
+            <h3 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">📰 News System</h3>
+          </div>
+
+          <!-- Enable News System -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Enable News System</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Users can create and view news articles</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="enableNewsSystem" ${s.enableNewsSystem ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="newsBadge" style="display: ${s.enableNewsSystem ? 'inline-block' : 'none'}; padding: 4px 8px; background: #4caf50; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ENABLED</span>
+            </label>
+          </div>
+
+          <!-- Enable Likes & Reactions -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Enable Likes & Reactions</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Users can like and react to content</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="enableLikesReactions" ${s.enableLikesReactions ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="reactionsBadge" style="display: ${s.enableLikesReactions ? 'inline-block' : 'none'}; padding: 4px 8px; background: #4caf50; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ENABLED</span>
+            </label>
+          </div>
+
+          <!-- Careers Section Header -->
+          <div style="margin-top: 24px; margin-bottom: 16px;">
+            <h3 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">💼 Careers Page</h3>
+          </div>
+
+          <!-- Enable Careers Page -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Enable Careers Page</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Careers section is visible to users</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="enableCareersPage" ${s.enableCareersPage ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="careersBadge" style="display: ${s.enableCareersPage ? 'inline-block' : 'none'}; padding: 4px 8px; background: #4caf50; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ENABLED</span>
+            </label>
+          </div>
+
+          <!-- Allow Careers PDF Download -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Allow PDF Downloads</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Users can download careers content as PDF</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="allowCareersPdfDownload" ${s.allowCareersPdfDownload ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="pdfBadge" style="display: ${s.allowCareersPdfDownload ? 'inline-block' : 'none'}; padding: 4px 8px; background: #4caf50; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ALLOWED</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="settingsManager.saveSetting('news-careers')" 
+          style="width: 100%; padding: 12px 16px; font-weight: 600; border-radius: 6px; margin-top: 24px;">
+          <i class="fas fa-save" style="margin-right: 8px;"></i>Save Feature Settings
+        </button>
+      </div>
+    `;
+  }
+
+  renderCertificatesSettings(s) {
+    return `
+      <div>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">🎓 Certificate Settings</h1>
+        <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Control how certificates are issued and managed</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          <!-- Enable Certificate Generation -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Enable Certificates</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Generate certificates for course completion</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="enableCertificateGeneration" ${s.enableCertificateGeneration ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="certBadge" style="display: ${s.enableCertificateGeneration ? 'inline-block' : 'none'}; padding: 4px 8px; background: #4caf50; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ENABLED</span>
+            </label>
+          </div>
+
+          <!-- Minimum Quiz Pass Percentage -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Minimum Pass Percentage</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Minimum score required to earn a certificate</p>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <input type="number" id="minimumQuizPassPercentage" min="50" max="100" value="${s.minimumQuizPassPercentage || 70}" 
+                style="width: 80px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); box-sizing: border-box; text-align: center;" />
+              <span style="color: var(--text-muted); font-weight: 500;">%</span>
+            </div>
+          </div>
+
+          <!-- Allow Certificate Re-download -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Allow Re-download</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Users can download certificates multiple times</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="allowCertificateRedownload" ${s.allowCertificateRedownload ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="redownloadBadge" style="display: ${s.allowCertificateRedownload ? 'inline-block' : 'none'}; padding: 4px 8px; background: #4caf50; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ALLOWED</span>
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="settingsManager.saveSetting('certificates')" 
+          style="width: 100%; padding: 12px 16px; font-weight: 600; border-radius: 6px; margin-top: 24px;">
+          <i class="fas fa-save" style="margin-right: 8px;"></i>Save Certificate Settings
+        </button>
+      </div>
+    `;
+  }
+
+  renderAiSettings(s) {
+    return `
+      <div>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">🤖 AI Assistant Settings</h1>
+        <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Configure the Aubie RET AI Assistant</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          <!-- Enable AI Assistant -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Enable AI Assistant</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">AI assistant is available to users</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="enableAiAssistant" ${s.enableAiAssistant ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="aiBadge" style="display: ${s.enableAiAssistant ? 'inline-block' : 'none'}; padding: 4px 8px; background: #4caf50; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ENABLED</span>
+            </label>
+          </div>
+
+          <!-- Access Mode -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Access Mode</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Who can use the AI assistant</p>
+            </div>
+            <select id="aiAccessMode" 
+              style="width: 300px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); box-sizing: border-box;">
+              <option value="Premium Only" ${s.aiAccessMode === 'Premium Only' ? 'selected' : ''}>Premium Users Only</option>
+              <option value="Everyone" ${s.aiAccessMode === 'Everyone' ? 'selected' : ''}>Everyone (Promotion)</option>
+            </select>
+          </div>
+
+          <!-- AI Promotion Duration -->
+          <div id="aiPromotionGroup" style="display: ${s.aiAccessMode === 'Everyone' ? 'block' : 'none'}; padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Promotion Duration</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">How long "Everyone" access lasts</p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="number" id="aiPromotionDurationValue" min="1" value="${s.aiPromotionDurationValue || 7}" 
+                style="width: 80px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); box-sizing: border-box; text-align: center;" />
+              <select id="aiPromotionDurationUnit" style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); min-width: 100px;">
+                <option value="minutes" ${s.aiPromotionDurationUnit === 'minutes' ? 'selected' : ''}>Minutes</option>
+                <option value="hours" ${s.aiPromotionDurationUnit === 'hours' ? 'selected' : ''}>Hours</option>
+                <option value="days" ${s.aiPromotionDurationUnit === 'days' ? 'selected' : ''}>Days</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Daily Question Limit -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Daily Question Limit</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Max questions per user per day (0 = unlimited)</p>
+            </div>
+            <input type="number" id="aiDailyQuestionLimit" min="0" value="${s.aiDailyQuestionLimit || 50}" 
+              style="width: 120px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); box-sizing: border-box; text-align: center;" />
+          </div>
+
+          <!-- Show Beta Notice -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Show Beta Notice</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Display "(Beta)" label on AI widget</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="showAiBetaNotice" ${s.showAiBetaNotice ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="settingsManager.saveSetting('ai-assistant')" 
+          style="width: 100%; padding: 12px 16px; font-weight: 600; border-radius: 6px; margin-top: 24px;">
+          <i class="fas fa-save" style="margin-right: 8px;"></i>Save AI Settings
+        </button>
+      </div>
+    `;
+  }
+
+  renderPremiumSettings(s) {
+    return `
+      <div>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">💎 Premium & Promotions</h1>
+        <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">Manage premium access and promotional campaigns</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          <!-- Enable Premium System -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Enable Premium Subscriptions</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Premium features and subscriptions are available</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="enablePremiumSystem" ${s.enablePremiumSystem ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="premiumBadge" style="display: ${s.enablePremiumSystem ? 'inline-block' : 'none'}; padding: 4px 8px; background: #4caf50; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ENABLED</span>
+            </label>
+          </div>
+
+          <!-- Promotions Section Header -->
+          <div style="margin-top: 24px; margin-bottom: 16px;">
+            <h3 style="margin: 0 0 12px 0; color: var(--text-main); font-size: 16px; font-weight: 600;">🎉 Premium for Everyone (Promotion)</h3>
+          </div>
+
+          <!-- Enable Premium for All -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Enable for All Users</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">All users temporarily get premium access</p>
+            </div>
+            <label style="display: flex; align-items: center; gap: 12px; cursor: pointer;">
+              <input type="checkbox" id="enablePremiumForAll" ${s.enablePremiumForAll ? 'checked' : ''} style="width: 20px; height: 20px; cursor: pointer; accent-color: var(--green-main);" />
+              <span id="promotionBadge" style="display: ${s.enablePremiumForAll ? 'inline-block' : 'none'}; padding: 4px 8px; background: #ff9800; color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">ACTIVE</span>
+            </label>
+          </div>
+
+          <!-- Promotion Duration -->
+          <div id="promotionDurationGroup" style="display: ${s.enablePremiumForAll ? 'block' : 'none'}; padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Promotion Duration</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">How long the promotion will remain active</p>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <input type="number" id="premiumPromotionDurationValue" min="1" value="${s.premiumPromotionDurationValue || 7}" 
+                style="width: 80px; padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); box-sizing: border-box; text-align: center;" />
+              <select id="premiumPromotionDurationUnit" 
+                style="padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main); min-width: 100px;">
+                <option value="minutes" ${s.premiumPromotionDurationUnit === 'minutes' ? 'selected' : ''}>Minutes</option>
+                <option value="hours" ${s.premiumPromotionDurationUnit === 'hours' ? 'selected' : ''}>Hours</option>
+                <option value="days" ${s.premiumPromotionDurationUnit === 'days' ? 'selected' : ''}>Days</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="settingsManager.saveSetting('premium-trial')" 
+          style="width: 100%; padding: 12px 16px; font-weight: 600; border-radius: 6px; margin-top: 24px;">
+          <i class="fas fa-save" style="margin-right: 8px;"></i>Save Premium Settings
+        </button>
+      </div>
+    `;
+  }
+
+  renderSystemSettings() {
+    return `
+      <div>
+        <h1 style="margin: 0 0 8px 0; color: var(--text-main); font-size: 28px;">🛠 System Utilities</h1>
+        <p style="margin: 0 0 24px 0; color: var(--text-muted); font-size: 14px;">System maintenance and diagnostic tools</p>
+        
+        <div style="display: flex; flex-direction: column; gap: 0;">
+          <!-- Clear Cache -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Clear Application Cache</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">Clear cached data. Use if experiencing issues.</p>
+            </div>
+            <button class="btn" onclick="settingsManager.clearCache()" 
+              style="padding: 8px 16px; border-radius: 6px; white-space: nowrap;">
+              <i class="fas fa-trash" style="margin-right: 6px;"></i>Clear
+            </button>
+          </div>
+
+          <!-- View Error Logs -->
+          <div style="padding: 16px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px;">
+            <div style="flex: 1;">
+              <label style="display: block; font-weight: 600; color: var(--text-main); margin-bottom: 4px;">Error Logs</label>
+              <p style="margin: 0; color: var(--text-muted); font-size: 13px;">View system error logs for debugging</p>
+            </div>
+            <button class="btn" onclick="settingsManager.viewErrorLogs()" 
+              style="padding: 8px 16px; border-radius: 6px; white-space: nowrap;">
+              <i class="fas fa-file-alt" style="margin-right: 6px;"></i>View Logs
+            </button>
+          </div>
         </div>
       </div>
     `;
