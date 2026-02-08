@@ -1108,12 +1108,12 @@
       console.log(`✅ [lecture-mode] Instructor video attached from ${peerId}`);
     }
 
-    function attachRemoteAudio(peerId, stream) {
+    function attachRemoteAudio(peerId, stream, manager) {
       // Create or reuse audio element for remote audio
       const remoteAudioContainer = document.getElementById('remoteAudioContainer');
       if (!remoteAudioContainer) {
         console.warn('❌ [WebRTC] remoteAudioContainer not found');
-        return;
+        return null;
       }
 
       // Check if audio element already exists for this peer
@@ -1127,6 +1127,12 @@
         audioEl.controls = false;
         remoteAudioContainer.appendChild(audioEl);
         console.log(`🔊 [WebRTC] Created audio element for ${peerId}`);
+      }
+
+      // FIX: Register audio element with manager for cleanup tracking
+      if (manager && manager.audioElements) {
+        manager.audioElements.set(peerId, audioEl);
+        console.log(`📋 [WebRTC-TRACKING] Audio element registered for ${peerId}`);
       }
 
       // Set the stream
@@ -1174,6 +1180,7 @@
           });
       }
       console.log(`✅ [WebRTC] Remote audio attached for ${peerId}`);
+      return audioEl;
     }
 
     function detachRemoteStream(peerId) {
@@ -1226,6 +1233,7 @@
         this.peerConnections = new Map();
         this.signalingState = new Map();
         this.iceQueues = new Map(); // ICE queue per peer (CRITICAL)
+        this.audioElements = new Map(); // Track audio elements by peerId (CRITICAL for cleanup)
         this.localUserId = null;
         this.sessionId = null;
         this.currentSessionUserRole = null;
@@ -1287,16 +1295,27 @@
         const wasInstructorPresent = this.instructorPresent;
         this.instructorPresent = this.allParticipants.some(p => ['instructor', 'admin', 'superadmin'].includes(p.role));
         const wasOfferInitiator = this.isOfferInitiator;
+        const wasCanCreateOffers = this.canCreateOffers;
+        
         if (!this.instructorPresent && this.allParticipants.length > 0) {
           const firstParticipant = this.allParticipants[0];
           this.isOfferInitiator = (this.localUserId === firstParticipant.userId);
+          // FIX: Update canCreateOffers consistently with isOfferInitiator
+          this.canCreateOffers = this.isOfferInitiator;
         } else {
-          this.isOfferInitiator = (this.currentSessionUserRole === 'instructor' || 
-                                   this.currentSessionUserRole === 'admin' || 
-                                   this.currentSessionUserRole === 'superadmin');
+          const isInstructor = (this.currentSessionUserRole === 'instructor' || 
+                                this.currentSessionUserRole === 'admin' || 
+                                this.currentSessionUserRole === 'superadmin');
+          this.isOfferInitiator = isInstructor;
+          this.canCreateOffers = isInstructor;
         }
+        
         if (wasOfferInitiator !== this.isOfferInitiator) {
           console.log(`🔄 [WebRTC] Offer initiator status changed: ${wasOfferInitiator} → ${this.isOfferInitiator}`);
+        }
+        
+        if (wasCanCreateOffers !== this.canCreateOffers) {
+          console.log(`🔄 [WebRTC] Offer authority changed: ${wasCanCreateOffers} → ${this.canCreateOffers}`);
         }
       }
 
@@ -1428,8 +1447,8 @@
               // All roles receive audio
               peerConnection.__remoteStream.addTrack(event.track);
               console.log(`✅ [WebRTC-lecture] Audio track added from ${peerId}`);
-              // Attach audio to playback element
-              attachRemoteAudio(peerId, peerConnection.__remoteStream);
+              // Attach audio to playback element and register with manager
+              attachRemoteAudio(peerId, peerConnection.__remoteStream, this);
             }
           };
           
@@ -1509,11 +1528,17 @@
           const { from, candidate } = candidateData;
           console.log(`📥 [WebRTC-DETERMINISTIC] Received ICE candidate from ${from}`);
           
-          const pc = this.getPeerConnection(from);
-          if (!pc) {
-            console.warn(`⚠️ [WebRTC-DETERMINISTIC] No peer connection for incoming ICE candidate from ${from}`);
+          // FIX: Check if connection already exists instead of creating new one
+          if (!this.peerConnections.has(from)) {
+            console.warn(`⚠️ [WebRTC-DETERMINISTIC] No peer connection established for ${from} yet - queueing for later`);
+            // Queue the candidate for when connection is created
+            const queue = this.iceQueues.get(from) || [];
+            queue.push(new RTCIceCandidate(candidate));
+            this.iceQueues.set(from, queue);
             return;
           }
+          
+          const pc = this.peerConnections.get(from);
           
           // STEP 8: ICE QUEUE SAFETY - queue until remoteDescription exists
           if (pc.remoteDescription) {
@@ -1556,7 +1581,22 @@
           if (senders.length === 0) {
             console.warn(`⚠️ [WebRTC-DETERMINISTIC] No tracks in peer connection for ${remotePeerEmail} - TRACKS MUST BE ADDED BEFORE OFFER`);
           } else {
-            console.log(`✅ [WebRTC-DETERMINISTIC] Tracks verified before offer for ${remotePeerEmail}: ${senders.length} senders`);
+            const audioSender = senders.find(s => s.track && s.track.kind === 'audio');
+            const videoSender = senders.find(s => s.track && s.track.kind === 'video');
+            const isAdmin = ['admin', 'instructor', 'superadmin'].includes(this.currentSessionUserRole);
+            
+            console.log(`✅ [WebRTC-DETERMINISTIC] Offer verification for ${remotePeerEmail}:`, {
+              totalSenders: senders.length,
+              hasAudio: !!audioSender,
+              hasVideo: !!videoSender,
+              isAdmin: isAdmin,
+              shouldHaveVideo: isAdmin
+            });
+            
+            // FIX: Warn if instructor can't send video
+            if (isAdmin && !videoSender) {
+              console.warn(`⚠️ [WebRTC-DETERMINISTIC] CRITICAL: Instructor offer without VIDEO for ${remotePeerEmail}`);
+            }
           }
           
           // STEP 6: ALWAYS SEND OFFER TO NEW PARTICIPANTS
@@ -1675,6 +1715,22 @@
             });
             this.localStream = null;
           }
+          
+          // FIX: Clean up all audio elements
+          this.audioElements.forEach((audioEl, peerId) => {
+            try {
+              if (audioEl) {
+                audioEl.pause();
+                audioEl.srcObject = null;
+                audioEl.remove();
+                console.log(`🔊 [WebRTC] Removed audio element for ${peerId}`);
+              }
+            } catch (err) {
+              console.warn(`⚠️ [WebRTC] Error removing audio element for ${peerId}:`, err);
+            }
+          });
+          this.audioElements.clear();
+          
           this.peerConnections.forEach((pc, peerId) => {
             try {
               pc.close();
@@ -1685,6 +1741,7 @@
           });
           this.peerConnections.clear();
           this.signalingState.clear();
+          this.iceQueues.clear();
           console.log('✅ [WebRTC] Cleanup complete');
         } catch (error) {
           console.error('❌ [WebRTC] Error during cleanup:', error);
@@ -1797,21 +1854,36 @@
             const participant = this.allParticipants.find(p => p.userId === participantEmail);
             const wasInstructor = participant && ['admin', 'instructor', 'superadmin'].includes(participant.role);
             
-            // Only detach video if the leaving participant was an instructor
+            // Detach video if the leaving participant was an instructor
             if (wasInstructor) {
               detachRemoteStream(participantEmail);
               console.log(`🎥 [WebRTC] Instructor left, detaching video for ${participantEmail}`);
+            }
+            
+            // FIX: Always clean up audio element regardless of participant role
+            const audioEl = this.audioElements.get(participantEmail);
+            if (audioEl) {
+              try {
+                audioEl.pause();
+                audioEl.srcObject = null;
+                audioEl.remove();
+                this.audioElements.delete(participantEmail);
+                console.log(`🔊 [WebRTC-CLEANUP] Removed audio element for leaving participant: ${participantEmail}`);
+              } catch (err) {
+                console.warn(`⚠️ [WebRTC-CLEANUP] Error removing audio element:`, err);
+              }
             } else {
-              console.log(`🔇 [WebRTC] Student left (no video to detach) - ${participantEmail}`);
+              console.log(`ℹ️ [WebRTC-CLEANUP] No audio element to remove for ${participantEmail}`);
             }
             
             const pc = this.peerConnections.get(participantEmail);
             pc.close();
             this.peerConnections.delete(participantEmail);
             this.signalingState.delete(participantEmail);
-            console.log(`🔌 [WebRTC] Closed peer connection for leaving participant: ${participantEmail}`);
+            this.iceQueues.delete(participantEmail);
+            console.log(`🔌 [WebRTC] Closed peer connection and cleaned up state for: ${participantEmail}`);
           } catch (error) {
-            console.error(`Error closing peer connection for ${participantEmail}:`, error);
+            console.error(`Error handling participant left for ${participantEmail}:`, error);
           }
         }
       }
@@ -2439,22 +2511,30 @@
         if (webrtcManager.localUserId && data.userId !== webrtcManager.localUserId) {
           webrtcManager.handleNewParticipant(data.userId);
 
-          // ISSUE 1 FIX: If current user is instructor/admin AND has active video stream,
-          // create and send a NEW offer to this late-joining participant
+          // FIX: Enhanced late-joiner offer creation for instructor video reliability
           const isCurrentUserAdmin = ['admin', 'instructor', 'superadmin'].includes(currentSessionUserRole);
-          const hasActiveVideoStream = webrtcManager.localStream && webrtcManager.localStream.getVideoTracks().length > 0 && webrtcManager.localStream.getVideoTracks()[0].enabled;
+          const newParticipantIsStudent = !['admin', 'instructor', 'superadmin'].includes(data.role);
           
-          if (isCurrentUserAdmin && hasActiveVideoStream) {
-            console.log(`📹 [ISSUE-1-FIX] Instructor has active video, creating new offer for late-joining student: ${data.userId}`);
-            webrtcManager.createAndSendOffer(
-              data.userId,
-              (offerData) => {
-                console.log(`📤 [ISSUE-1-FIX] Sending offer to late-joined participant: ${data.userId}`);
-                if (webrtcManager.socketService && typeof webrtcManager.socketService.emitWebRTCOffer === 'function') {
-                  webrtcManager.socketService.emitWebRTCOffer(offerData);
+          // Send fresh offer if current user is instructor and late joiner is student
+          // This ensures every student gets instructor video in their connection
+          if (isCurrentUserAdmin && newParticipantIsStudent) {
+            console.log(`📹 [LATE-JOINER-FIX] Instructor creating fresh offer for late-joining student: ${data.userId}`);
+            // Use setTimeout to ensure peer connection is fully initialized
+            setTimeout(() => {
+              webrtcManager.createAndSendOffer(
+                data.userId,
+                (offerData) => {
+                  console.log(`📤 [LATE-JOINER-FIX] Sending fresh offer to late-joined student: ${data.userId}`);
+                  if (webrtcManager.socketService && typeof webrtcManager.socketService.emitWebRTCOffer === 'function') {
+                    webrtcManager.socketService.emitWebRTCOffer(offerData);
+                  } else {
+                    console.error(`❌ [LATE-JOINER-FIX] socketService.emitWebRTCOffer not available`);
+                  }
                 }
-              }
-            );
+              );
+            }, 100);
+          } else if (isCurrentUserAdmin && !newParticipantIsStudent) {
+            console.log(`📹 [LATE-JOINER-FIX] New instructor joining, exchanging peer offers: ${data.userId}`);
           }
         }
       });
