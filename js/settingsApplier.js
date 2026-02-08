@@ -1480,6 +1480,45 @@ class SettingsApplier {
   }
 
   /**
+   * Test helper: Manually trigger badge creation from browser console
+   * Usage: window.settingsApplier.testBadgeCreation()
+   */
+  testBadgeCreation() {
+    console.log('🧪 TEST: Manually triggering badge creation...');
+    console.log('  Nav menu exists:', !!document.getElementById('nav-menu'));
+    console.log('  Header exists:', !!document.querySelector('.site-header'));
+    console.log('  Main exists:', !!document.querySelector('main'));
+    console.log('  Body exists:', !!document.body);
+    
+    // Call the badge creation directly
+    this.createAiBetaBadge();
+    
+    console.log('🧪 TEST: Check if badge was created with selector [data-component="ai-beta-badge"]');
+    const badge = document.querySelector('[data-component="ai-beta-badge"]');
+    console.log('  Badge found:', !!badge);
+    if (badge) {
+      console.log('  Badge text:', badge.textContent);
+      console.log('  Badge display:', window.getComputedStyle(badge).display);
+      console.log('  Badge visible in DOM:', badge.offsetHeight > 0 ? 'YES' : 'NO');
+    }
+  }
+
+  /**
+   * Test helper: Check current settings state
+   * Usage: window.settingsApplier.testSettingsState()
+   */
+  testSettingsState() {
+    console.log('🧪 TEST: Current settings state');
+    console.log('  this.settings:', this.settings);
+    if (this.settings) {
+      console.log('  showAiBetaNotice:', this.settings.showAiBetaNotice);
+      console.log('  aiAccessMode:', this.settings.aiAccessMode);
+      console.log('  enableAiAssistant:', this.settings.enableAiAssistant);
+    }
+    console.log('  window.showAiBetaNotice:', window.showAiBetaNotice);
+  }
+
+  /**
    * Stop auto-refresh
    */
   destroy() {
