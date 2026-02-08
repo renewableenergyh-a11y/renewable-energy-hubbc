@@ -768,60 +768,67 @@ class SettingsApplier {
       // First, REMOVE any existing beta notes to ensure we don't have duplicates
       document.querySelectorAll('[data-is-beta-note]').forEach(el => el.remove());
       
-      // Now find all spans/divs with "AubieRET AI" text
+      // Find the FIRST/PRIMARY header that contains "AubieRET AI" and "Premium"
+      // This should be the title bar of the chat widget
       const allElements = document.querySelectorAll('*');
       let foundAndAdded = false;
       
       for (let el of allElements) {
-        // Look for element that contains EXACTLY "AubieRET AI" (not the whole page)
-        const textContent = el.textContent?.trim();
+        // Only process if not already processed
+        if (foundAndAdded) break;
         
-        // Check if this element or its children have "AubieRET AI" and "Premium"
+        // Skip if it's a huge container (page/body)
+        if (el.textContent?.length > 500) continue;
+        
+        // Check if this element has BOTH "AubieRET AI" and "Premium" text
+        // AND it's relatively small (chat header is compact)
         if (el.textContent?.includes('AubieRET AI') && 
             el.textContent?.includes('Premium') &&
-            el.textContent?.length < 100) { // Chat header is short text
+            el.textContent?.length < 150) { // Chat header is short text
           
           console.log('  Found AubieRET AI + Premium container:', el.tagName, el.className);
           
-          // Look for the Premium text/element specifically
+          // Don't add if beta note already exists in this element
+          if (el.querySelector('[data-is-beta-note]')) {
+            console.log('  ℹ️ Beta note already in this element, skipping');
+            continue;
+          }
+          
+          // Look for the Premium text/element specifically ONLY in direct children
           const children = Array.from(el.childNodes);
           let premiumNode = null;
           
-          // Find Premium element among direct children
+          // Find FIRST Premium element among direct children only
           for (let i = 0; i < children.length; i++) {
             const child = children[i];
-            if (child.nodeType === Node.TEXT_NODE && child.textContent.includes('Premium')) {
+            if (child.nodeType === Node.TEXT_NODE && child.textContent.trim() === 'Premium') {
               premiumNode = child;
               break;
             } else if (child.nodeType !== Node.TEXT_NODE && 
-                      (child.textContent === 'Premium' || child.textContent.trim() === 'Premium')) {
+                      (child.textContent?.trim() === 'Premium')) {
               premiumNode = child;
               break;
             }
           }
           
           // Create and insert the beta note
-          const betaNote = document.createElement('span');
-          betaNote.setAttribute('data-is-beta-note', 'true');
-          betaNote.textContent = '(Beta) ';
-          betaNote.style.cssText = `
-            font-size: 0.9em;
-            color: inherit;
-            font-weight: 600;
-            margin-right: 6px;
-            display: inline;
-          `;
-          
           if (premiumNode) {
+            const betaNote = document.createElement('span');
+            betaNote.setAttribute('data-is-beta-note', 'true');
+            betaNote.textContent = '(Beta) ';
+            betaNote.style.cssText = `
+              font-size: 0.9em;
+              color: inherit;
+              font-weight: 600;
+              margin-right: 6px;
+              display: inline;
+            `;
+            
             // Insert before Premium
             premiumNode.parentNode.insertBefore(betaNote, premiumNode);
             console.log('  ✓ Added (Beta) before Premium in chat header');
             foundAndAdded = true;
-          } else {
-            // If Premium not found, just add before the last child
-            el.insertBefore(betaNote, el.lastChild);
-            console.log('  ✓ Added (Beta) to chat header');
-            foundAndAdded = true;
+            break; // Stop after first successful addition
           }
         }
       }
@@ -835,9 +842,19 @@ class SettingsApplier {
         console.log('  📡 Setting up MutationObserver to maintain (Beta) label...');
         this.betaNoteObserver = new MutationObserver(() => {
           // Check if beta note still exists
-          if (!document.querySelector('[data-is-beta-note]')) {
+          if (window.showAiBetaNotice && !document.querySelector('[data-is-beta-note]')) {
             console.log('  🔄 Beta label removed, re-adding...');
+            // Re-apply but only if still enabled
             this.applyAiBetaNoticeSetting(true);
+          } else if (window.showAiBetaNotice) {
+            // Check for multiple beta notes and remove extras
+            const betaNotes = document.querySelectorAll('[data-is-beta-note]');
+            if (betaNotes.length > 1) {
+              console.log('  🔄 Found multiple (Beta) labels, removing extras...');
+              for (let i = 1; i < betaNotes.length; i++) {
+                betaNotes[i].remove();
+              }
+            }
           }
         });
         
