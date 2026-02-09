@@ -94,7 +94,7 @@ async function loadCertificates() {
         <div style="font-size: 24px; margin-bottom: 8px;">🎓</div>
         <h4 style="font-size: 14px; font-weight: 600; color: #1f2937; margin-bottom: 4px;">${escapeHtml(cert.courseName)}</h4>
         <p style="font-size: 12px; color: #6b7280; margin-bottom: 12px;">
-          Completed on ${new Date(cert.completedDate).toLocaleDateString()}
+          Completed on ${(() => { const d = new Date(cert.completedDate); d.setDate(d.getDate() - 1); return d.toLocaleDateString(); })()}
         </p>
         <div style="display: flex; gap: 8px; margin-top: 12px;">
           <button class="btn-secondary" style="font-size: 12px; padding: 6px 12px; flex: 1;" onclick="viewCertificate('${cert.id}')">
