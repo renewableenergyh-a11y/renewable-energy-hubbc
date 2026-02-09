@@ -393,8 +393,9 @@
       flex-direction: column;
     }
     #cm-editor-area.editor-fullscreen .card { height: 100%; box-shadow: none; border-radius: 0; }
-    #cm-editor-area.editor-fullscreen textarea#cm-content-editor { height: calc(100vh - 180px) !important; width: 100%; resize: none; }
-    #cm-editor-area.editor-fullscreen #cm-preview { height: calc(100vh - 180px) !important; overflow: auto; }
+    #cm-editor-area.editor-fullscreen #cm-editor-toolbar { display: none !important; }
+    #cm-editor-area.editor-fullscreen textarea#cm-content-editor { height: calc(100vh - 100px) !important; width: 100%; resize: none; }
+    #cm-editor-area.editor-fullscreen #cm-preview { height: calc(100vh - 100px) !important; overflow: auto; }
 
     /* ====== EDITOR PREVIEW IMAGE CARD ====== */
     #cm-preview img {
@@ -2134,7 +2135,7 @@
                 </div>
 
                 <!-- Toolbar - Split into rows for better organization -->
-                <div style="padding:12px 16px;border-bottom:1px solid #e5e7eb;background:#fff">
+                <div id="cm-editor-toolbar" style="padding:12px 16px;border-bottom:1px solid #e5e7eb;background:#fff">
                   <!-- Row 1: Mode selector -->
                   <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
                     <label style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.5px">Mode:</label>
