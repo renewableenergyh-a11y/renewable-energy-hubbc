@@ -2074,6 +2074,10 @@ p a:hover {
   margin: 0;
 }
 
+.featured-lessons h2 {
+  text-align: center;
+}
+
 /* =====================
    GRID & CARDS
 ===================== */
