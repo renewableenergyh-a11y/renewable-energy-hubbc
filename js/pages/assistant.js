@@ -49,11 +49,17 @@ export async function initAssistant() {
   root.setAttribute('aria-hidden', 'true');
   root.tabIndex = -1;
 
+  // Helper function to update aria-hidden based on widget state
+  const updateAriaHidden = () => {
+    root.setAttribute('aria-hidden', root.classList.contains('closed') ? 'true' : 'false');
+  };
+
   // Toggle open/close
   const btn = document.getElementById('aubie-assistant-btn');
   if (btn) {
     btn.addEventListener('click', () => {
       root.classList.toggle('closed');
+      updateAriaHidden();
       const input = document.getElementById('assistant-input');
       if (!root.classList.contains('closed')) setTimeout(() => input && input.focus(), 250);
     });
@@ -61,20 +67,30 @@ export async function initAssistant() {
 
   // Close / minimize
   document.getElementById('assistant-close').addEventListener('click', () => root.remove());
-  document.getElementById('assistant-minimize').addEventListener('click', () => root.classList.add('closed'));
+  document.getElementById('assistant-minimize').addEventListener('click', () => {
+    root.classList.add('closed');
+    updateAriaHidden();
+  });
 
   // keyboard: Esc to close/minimize, Ctrl+K to focus input
   document.addEventListener('keydown', (e) => {
     if (!document.body.contains(root)) return;
     if (e.key === 'Escape') {
       // if open, minimize; if already closed, remove
-      if (!root.classList.contains('closed')) root.classList.add('closed');
+      if (!root.classList.contains('closed')) {
+        root.classList.add('closed');
+        updateAriaHidden();
+      }
       else root.remove();
     }
     if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
       e.preventDefault();
       const input = document.getElementById('assistant-input');
-      if (input) { root.classList.remove('closed'); setTimeout(() => input.focus(), 100); }
+      if (input) {
+        root.classList.remove('closed');
+        updateAriaHidden();
+        setTimeout(() => input.focus(), 100);
+      }
     }
   });
 
