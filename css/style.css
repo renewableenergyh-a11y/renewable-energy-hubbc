@@ -5510,8 +5510,8 @@ body.dark .payment-form input::placeholder {
 
 .detail-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  gap: 20px;
+  align-items: flex-start;
   padding: 16px 0;
   border-bottom: 1px solid #e5e7eb;
   transition: background-color 0.2s ease;
@@ -5537,12 +5537,17 @@ body.dark .payment-form input::placeholder {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   font-size: 0.85rem;
+  flex: 0 0 auto;
+  min-width: fit-content;
+  padding-top: 2px;
 }
 
 .detail-item span {
   color: #1f2937;
   font-size: 1rem;
   font-weight: 500;
+  flex: 1;
+  word-break: break-word;
 }
 
 .account-actions {
