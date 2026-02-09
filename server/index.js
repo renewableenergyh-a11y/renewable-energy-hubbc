@@ -19,6 +19,7 @@ const createHighlightRoutes = require('./routes/highlightRoutes');
 const { router: careerRoutes, setDatabase: setCareerDatabase, setStorage: setCareerStorage } = require('./routes/careerRoutes');
 const { router: mediaRoutes, setDatabase: setMediaDatabase, setStorage: setMediaStorage } = require('./routes/mediaRoutes');
 const { router: settingsRoutes, setDatabase: setSettingsDatabase, setStorage: setSettingsStorage } = require('./routes/settingsRoutes');
+const { router: aiRoutes, setDatabase: setAiDatabase, setStorage: setAiStorage } = require('./routes/aiRoutes');
 const { initializeDiscussionSocket } = require('./sockets/discussionSocket');
 
 const app = express();
@@ -7564,6 +7565,14 @@ async function startServer() {
   }
   app.use('/api/settings', settingsRoutes);
   console.log('✅ Settings routes registered');
+
+  // Register AI routes (access controlled by checkAiAccess)
+  setAiDatabase(db);
+  if (typeof setAiStorage === 'function') {
+    setAiStorage(storage);
+  }
+  app.use('/api/ai', aiRoutes);
+  console.log('✅ AI assistant routes registered');
   
   // Initialize discussion socket handlers
   if (discussionSessionService && participantService) {

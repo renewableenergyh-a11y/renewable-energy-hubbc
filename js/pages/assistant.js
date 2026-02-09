@@ -116,30 +116,64 @@ export async function initAssistant() {
 
     addMessage('assistant', '<em>Searching course modules...</em>');
 
-    // If user is premium, try server-side LLM proxy for better answers
+    // Try server-side AI proxy (Premium or Promotion access)
+    let serverSuccess = false;
     try {
-      const isPremium = localStorage.getItem('hasPremium') === 'true';
-      if (isPremium) {
+      const token = localStorage.getItem('authToken') || localStorage.getItem('isLoggedIn');
+      if (token) {
         const respWrap = document.createElement('div');
         respWrap.className = 'message assistant';
         respWrap.innerHTML = `<div class="message-body"><em>Contacting AubieRET AI server...</em></div>`;
         messagesEl.appendChild(respWrap);
         messagesEl.scrollTop = messagesEl.scrollHeight;
 
-        const serverRes = await fetch('/api/assistant', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: q, userEmail: localStorage.getItem('userEmail') || null, token: localStorage.getItem('authToken') || localStorage.getItem('isLoggedIn') })
+        // Build conversation history from recent messages
+        const conversation = [];
+        const messageEls = messagesEl.querySelectorAll('.message');
+        for (const el of messageEls) {
+          const from = el.classList.contains('user') ? 'user' : 'assistant';
+          const content = el.textContent?.trim() || '';
+          if (content && !content.includes('Contacting') && !content.includes('Searching')) {
+            conversation.push({ role: from, content });
+          }
+        }
+
+        const serverRes = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            message: q,
+            conversation: conversation
+          })
         });
+        
         const jr = await serverRes.json();
         // remove placeholder
         if (respWrap && respWrap.parentNode) respWrap.remove();
-        if (jr && jr.reply) {
+        
+        if (serverRes.ok && jr && jr.reply) {
           addMessage('assistant', jr.reply.replace(/\n/g, '<br>'));
+          serverSuccess = true;
           return;
+        } else if (jr && jr.error) {
+          console.warn('Server AI error:', jr.error);
+          // Fall through to local search if access denied, etc
         }
       }
     } catch (err) {
-      console.warn('Server assistant failed, falling back to local search', err);
+      console.warn('Server AI failed, falling back to local search', err);
+    }
+
+    // Remove placeholder if server failed
+    const messages = messagesEl.querySelectorAll('.message.assistant');
+    if (messages.length > 0) {
+      const last = messages[messages.length - 1];
+      if (last && (last.textContent?.includes('Contacting') || last.textContent?.includes('Searching'))) {
+        last.remove();
+      }
     }
 
     // Simple keyword search over docs
