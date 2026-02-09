@@ -2126,47 +2126,48 @@
                 <div id="cm-modules-list" style="max-height:420px;overflow:auto"></div>
               </div></div>
 
-              <div style="flex:1;min-width:320px"><div class="card" style="padding:0;display:flex;flex-direction:column;height:100%;overflow:hidden">
+              <div style="flex:1;min-width:320px"><div class="card" style="padding:0;display:flex;flex-direction:column;height:100%;overflow:hidden;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 4px 6px rgba(0,0,0,0.07)">
                 <!-- Header -->
-                <div style="padding:16px;border-bottom:1px solid #e5e7eb;background:#fafbfc">
-                  <h4 id="cm-editor-title" style="margin:0;font-size:16px;font-weight:600;color:#1f2937">Module Editor</h4>
-                  <p id="cm-editor-subtitle" style="margin:4px 0 0 0;font-size:12px;color:#6b7280">Select a module from the list to edit its content</p>
+                <div style="padding:20px;border-bottom:1px solid #e5e7eb;background:linear-gradient(135deg, #fafbfc 0%, #f3f4f6 100%)">
+                  <h4 id="cm-editor-title" style="margin:0;font-size:18px;font-weight:700;color:#1f2937">📝 Module Editor</h4>
+                  <p id="cm-editor-subtitle" style="margin:6px 0 0 0;font-size:13px;color:#9ca3af">Select a module from the list to edit its content</p>
                 </div>
 
-                <!-- Toolbar -->
-                <div style="padding:12px 16px;border-bottom:1px solid #e5e7eb;background:#fff;display:flex;gap:12px;align-items:center;flex-wrap:wrap">
-                  <div style="display:flex;align-items:center;gap:8px">
-                    <label style="font-size:12px;font-weight:600;color:#374151">Editor:</label>
-                    <select id="cm-editor-mode" style="padding:6px 10px;border-radius:6px;border:1px solid #d1d5db;font-size:12px;background:#fff;color:#1f2937;cursor:pointer">
-                      <option value="markdown">Markdown</option>
-                      <option value="wysiwyg">WYSIWYG</option>
+                <!-- Toolbar - Split into rows for better organization -->
+                <div style="padding:12px 16px;border-bottom:1px solid #e5e7eb;background:#fff">
+                  <!-- Row 1: Mode selector -->
+                  <div style="display:flex;gap:12px;align-items:center;margin-bottom:10px">
+                    <label style="font-size:12px;font-weight:700;color:#374151;text-transform:uppercase;letter-spacing:0.5px">Mode:</label>
+                    <select id="cm-editor-mode" style="padding:7px 12px;border-radius:6px;border:1px solid #e5e7eb;font-size:13px;font-weight:500;background:#f9fafb;color:#1f2937;cursor:pointer;transition:all 0.2s ease">
+                      <option value="markdown">📄 Markdown</option>
+                      <option value="wysiwyg">✨ WYSIWYG</option>
                     </select>
                   </div>
 
-                  <div style="display:flex;align-items:center;gap:8px;flex:1;justify-content:center">
-                    <button id="cm-insert-image-btn" class="btn" style="padding:6px 12px;font-size:12px;border:1px solid #d1d5db;background:#fff;color:#374151" title="Insert image">🖼️ Image</button>
-                    <button id="cm-edit-objectives-btn" class="btn" style="padding:6px 12px;font-size:12px;border:1px solid #d1d5db;background:#fff;color:#374151">📋 Objectives</button>
-                    <button id="cm-edit-quiz-btn" class="btn" style="padding:6px 12px;font-size:12px;border:1px solid #d1d5db;background:#fff;color:#374151">❓ Quiz</button>
-                    <button id="cm-edit-projects-btn" class="btn" style="padding:6px 12px;font-size:12px;border:1px solid #d1d5db;background:#fff;color:#374151">🚀 Projects</button>
-                    <button id="cm-edit-resources-btn" class="btn" style="padding:6px 12px;font-size:12px;border:1px solid #d1d5db;background:#fff;color:#374151"><i class="fas fa-link"></i> Resources</button>
-                  </div>
-
-                  <div style="display:flex;align-items:center;gap:8px;margin-left:auto">
-                    <button id="cm-preview-btn" class="btn" style="padding:6px 12px;font-size:12px;border:1px solid #d1d5db;background:#fff;color:#374151">👁️ Preview</button>
-                    <button id="cm-fullscreen-btn" class="btn" style="padding:6px 12px;font-size:12px;border:1px solid #d1d5db;background:#fff;color:#374151">⛶ Full screen</button>
+                  <!-- Row 2: Action buttons -->
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center">
+                    <button id="cm-insert-image-btn" class="btn" style="padding:8px 14px;font-size:12px;font-weight:600;border:1px solid #e5e7eb;background:#fff;color:#374151;border-radius:6px;cursor:pointer;transition:all 0.2s ease;white-space:nowrap" title="Insert image">🖼️ Image</button>
+                    <button id="cm-edit-objectives-btn" class="btn" style="padding:8px 14px;font-size:12px;font-weight:600;border:1px solid #e5e7eb;background:#fff;color:#374151;border-radius:6px;cursor:pointer;transition:all 0.2s ease;white-space:nowrap">📋 Objectives</button>
+                    <button id="cm-edit-quiz-btn" class="btn" style="padding:8px 14px;font-size:12px;font-weight:600;border:1px solid #e5e7eb;background:#fff;color:#374151;border-radius:6px;cursor:pointer;transition:all 0.2s ease;white-space:nowrap">❓ Quiz</button>
+                    <button id="cm-edit-projects-btn" class="btn" style="padding:8px 14px;font-size:12px;font-weight:600;border:1px solid #e5e7eb;background:#fff;color:#374151;border-radius:6px;cursor:pointer;transition:all 0.2s ease;white-space:nowrap">🚀 Projects</button>
+                    <button id="cm-edit-resources-btn" class="btn" style="padding:8px 14px;font-size:12px;font-weight:600;border:1px solid #e5e7eb;background:#fff;color:#374151;border-radius:6px;cursor:pointer;transition:all 0.2s ease;white-space:nowrap"><i class="fas fa-link"></i> Resources</button>
+                    <div style="flex:1"></div>
+                    <button id="cm-preview-btn" class="btn" style="padding:8px 14px;font-size:12px;font-weight:600;border:1px solid #e5e7eb;background:#fff;color:#374151;border-radius:6px;cursor:pointer;transition:all 0.2s ease;white-space:nowrap">👁️ Preview</button>
+                    <button id="cm-fullscreen-btn" class="btn" style="padding:8px 14px;font-size:12px;font-weight:600;border:1px solid #e5e7eb;background:#fff;color:#374151;border-radius:6px;cursor:pointer;transition:all 0.2s ease;white-space:nowrap">⛶ Full</button>
                   </div>
                 </div>
 
                 <!-- Editor -->
-                <div id="cm-editor-area" style="display:flex;flex-direction:column;gap:0;flex:1;overflow:hidden;padding:16px">
-                  <textarea id="cm-content-editor" rows="20" style="width:100%;padding:12px;border-radius:8px;border:1px solid #e5e7eb;font-family:'Monaco','Courier New',monospace;font-size:13px;resize:none;flex:1;background:#fff"></textarea>
-                  <div id="cm-quill-container" style="display:none;flex:1;overflow:auto"><div id="cm-quill-editor" style="height:100%;background:#fff"></div></div>
-                  <div id="cm-preview" style="display:none;border:1px solid #e5e7eb;padding:12px;border-radius:8px;background:#fff;overflow:auto;flex:1"></div>
+                <div id="cm-editor-area" style="display:flex;flex-direction:column;gap:0;flex:1;overflow:hidden;padding:16px;background:#f9fafb">
+                  <textarea id="cm-content-editor" rows="20" style="width:100%;padding:16px;border-radius:8px;border:1px solid #e5e7eb;font-family:'Fira Code','Monaco','Courier New',monospace;font-size:13px;line-height:1.6;resize:none;flex:1;background:#fff;color:#1f2937;box-shadow:inset 0 2px 4px rgba(0,0,0,0.02);transition:all 0.2s ease" placeholder="Start typing markdown..."></textarea>
+                  <div id="cm-quill-container" style="display:none;flex:1;overflow:auto;border:1px solid #e5e7eb;border-radius:8px;background:#fff"><div id="cm-quill-editor" style="height:100%;background:#fff"></div></div>
+                  <div id="cm-preview" style="display:none;border:1px solid #e5e7eb;padding:16px;border-radius:8px;background:#fff;overflow:auto;flex:1;font-size:14px;line-height:1.7;color:#374151"></div>
                 </div>
 
                 <!-- Footer -->
-                <div style="padding:12px 16px;border-top:1px solid #e5e7eb;background:#fafbfc;display:flex;gap:8px;justify-content:flex-end">
-                  <button id="cm-save-btn" class="btn-primary" style="padding:10px 20px;font-size:13px;font-weight:600">💾 Save Changes</button>
+                <div style="padding:16px;border-top:1px solid #e5e7eb;background:#fff;display:flex;gap:10px;justify-content:flex-end;align-items:center">
+                  <span id="cm-status" style="font-size:12px;color:#9ca3af;margin-right:auto">Ready</span>
+                  <button id="cm-save-btn" class="btn-primary" style="padding:10px 24px;font-size:13px;font-weight:700;background:linear-gradient(135deg, #00c9b7 0%, #00a89a 100%);color:#fff;border:none;border-radius:6px;cursor:pointer;transition:all 0.2s ease;box-shadow:0 2px 4px rgba(0,201,183,0.3);white-space:nowrap">💾 Save Changes</button>
                 </div>
               </div></div>
             </div>
