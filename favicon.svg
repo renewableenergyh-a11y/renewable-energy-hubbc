@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background -->
+  <rect width="100" height="100" fill="#00c9b7" rx="20"/>
+  
+  <!-- Sun (top) for Solar Energy -->
+  <circle cx="30" cy="25" r="12" fill="#FFD700"/>
+  <line x1="30" y1="8" x2="30" y2="2" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+  <line x1="30" y1="42" x2="30" y2="48" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+  <line x1="47" y1="25" x2="53" y2="25" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+  <line x1="13" y1="25" x2="7" y2="25" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+  <line x1="43" y1="12" x2="48" y2="7" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+  <line x1="12" y1="38" x2="7" y2="43" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+  <line x1="43" y1="38" x2="48" y2="43" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+  <line x1="17" y1="12" x2="12" y2="7" stroke="#FFD700" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Wind Turbine (bottom) -->
+  <g transform="translate(70, 70)">
+    <!-- Tower -->
+    <line x1="0" y1="0" x2="0" y2="18" stroke="#666" stroke-width="2"/>
+    <!-- Hub -->
+    <circle cx="0" cy="0" r="3" fill="#666"/>
+    <!-- Blades -->
+    <line x1="0" y1="0" x2="0" y2="-12" stroke="#00a898" stroke-width="2" stroke-linecap="round" transform="rotate(0)"/>
+    <line x1="0" y1="0" x2="0" y2="-12" stroke="#00a898" stroke-width="2" stroke-linecap="round" transform="rotate(120)"/>
+    <line x1="0" y1="0" x2="0" y2="-12" stroke="#00a898" stroke-width="2" stroke-linecap="round" transform="rotate(240)"/>
+  </g>
+  
+  <!-- Water drop (bottom left) for Hydro Energy -->
+  <path d="M 15 70 Q 10 75 10 80 Q 10 85 15 85 Q 20 85 20 80 Q 20 75 15 70" fill="#0099cc" opacity="0.8"/>
+</svg>
