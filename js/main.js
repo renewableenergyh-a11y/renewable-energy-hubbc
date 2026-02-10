@@ -487,6 +487,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const nav = document.querySelector('header nav') || document.getElementById('nav-menu');
       console.log('🔍 Found nav element:', nav ? (nav.id || 'header nav') : 'NOT FOUND');
       if (!nav) {
+        // Skip nav update on admin pages (they don't have nav menus)
+        if (document.body.classList.contains('admin-page')) {
+          console.log('  ✓ Admin page - skipping nav update');
+          return;
+        }
         console.error('❌ Could not find nav element');
         return;
       }
