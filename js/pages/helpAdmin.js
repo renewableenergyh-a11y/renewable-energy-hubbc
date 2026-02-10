@@ -249,11 +249,11 @@ function renderSessions(list) {
       if (!confirmed) return;
       try {
         const r = await fetch('/api/help/session-delete', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: s.sessionId }) });
-        if (!r.ok) { const e = await r.json().catch(()=>({error:'Failed'})); await showAlert('Delete Failed', e.error || 'Failed to delete', 'error'); return; }
+        if (!r.ok) { const e = await r.json().catch(()=>({error:'Failed'})); await showAlert('Delete Failed', e.error || 'We couldn\'t delete the request. Please try again.', 'error'); return; }
         // if we were viewing this session, hide the conversation
         if (currentSession === s.sessionId) setConversationVisible(false);
         await refresh();
-      } catch (err) { console.error('delete session error', err); await showAlert('Delete Error', 'Failed to delete session', 'error'); }
+      } catch (err) { console.error('delete session error', err); await showAlert('Delete Error', 'We couldn\'t delete the request. Please try again.', 'error'); }
     });
 
     if (s.active) {
@@ -263,7 +263,7 @@ function renderSessions(list) {
         if (!confirmed) return;
         try {
           const r = await fetch('/api/help/session-set-active', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: s.sessionId, active: false }) });
-          if (!r.ok) { const e = await r.json().catch(()=>({error:'Failed'})); await showAlert('Close Failed', e.error || 'Failed to close', 'error'); return; }
+          if (!r.ok) { const e = await r.json().catch(()=>({error:'Failed'})); await showAlert('Close Failed', e.error || 'We couldn\'t close the chat. Please try again.', 'error'); return; }
           // if we were viewing this session, hide the conversation
           if (currentSession === s.sessionId) setConversationVisible(false);
           await refresh();
@@ -273,7 +273,7 @@ function renderSessions(list) {
       btn.addEventListener('click', async () => {
         try {
           const r = await fetch('/api/help/accept', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ sessionId: s.sessionId, admin: localStorage.getItem('adminEmail') || 'Admin' }) });
-          if (!r.ok) { const e = await r.json().catch(()=>({error:'Failed'})); await showAlert('Accept Failed', e.error || 'Failed to accept', 'error'); return; }
+          if (!r.ok) { const e = await r.json().catch(()=>({error:'Failed'})); await showAlert('Accept Failed', e.error || 'We couldn\'t accept the chat. Please try again.', 'error'); return; }
           const data = await r.json();
           currentSession = s.sessionId;
           // show conversation area when a session is accepted
@@ -361,7 +361,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       try {
         const r = await fetch(`${API_BASE}/terminate`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text: 'Chat closed by admin' }) });
         if (!r.ok) {
-          let err = 'Failed to terminate chat';
+          let err = 'We couldn\'t complete this action. Please try again.';
           try { err = (await r.json()).error || err; } catch(e){}
           showNotice(noticeId, 'error', err); return;
         }
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       try {
         const r = await fetch(`${API_BASE}/clear`, { method: 'POST' });
         if (!r.ok) {
-          let err = 'Failed to clear chat';
+          let err = 'We couldn\'t clear the chat. Please try again.';
           try { err = (await r.json()).error || err; } catch(e){}
           showNotice(noticeId, 'error', err); return;
         }
@@ -399,7 +399,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       if (currentSession) payload.sessionId = currentSession;
       const r = await fetch(`${API_BASE}/reply`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
       if (!r.ok) {
-        let err = 'Failed to send reply';
+        let err = 'We couldn\'t send your reply. Please try again.';
         try { err = (await r.json()).error || err; } catch(e){}
         showNotice(noticeId, 'error', err);
         return;
@@ -409,7 +409,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       await refresh();
     } catch (err) {
       console.error('reply error', err);
-      showNotice(noticeId, 'error', err.message || 'Failed to send reply');
+      showNotice(noticeId, 'error', err.message || 'We couldn\'t send your reply. Please try again.');
     }
   });
 });

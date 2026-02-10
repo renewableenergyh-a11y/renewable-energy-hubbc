@@ -81,11 +81,12 @@ export async function registerUser(name, email, password) {
     });
     const data = await resp.json();
     console.log('registerUser response:', { ok: resp.ok, data });
-    if (!resp.ok) throw new Error(data.error || 'Registration request failed');
+    if (!resp.ok) throw new Error(data.error || 'We couldn\'t create your account. Please check that your email is valid and try again.');
     return { success: true, message: data.message };
   } catch (err) {
-    console.error('Registration request error:', err);
-    return { success: false, error: err.message };
+    console.error('registerUser error:', err);
+    const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')) ? 'We\'re having trouble reaching the server. Please check your connection and try again.' : err.message;
+    return { success: false, error: errMsg };
   }
 }
 
@@ -97,14 +98,15 @@ export async function verifyRegistration(email, code) {
       body: JSON.stringify({ email, code })
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Verification failed');
+    if (!resp.ok) throw new Error(data.error || 'The code you entered is incorrect or has expired. Please request a new verification code.');
     // Don't automatically log the user in - let them log in manually after registration
     // setToken(data.token);
     // setCurrentUser(data.user);
     return { success: true, user: data.user };
   } catch (err) {
     console.error('verifyRegistration error:', err);
-    return { success: false, error: err.message };
+    const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')) ? 'We\'re having trouble reaching the server. Please check your connection and try again.' : err.message;
+    return { success: false, error: errMsg };
   }
 }
 
@@ -114,11 +116,12 @@ export async function requestPasswordReset(email) {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email })
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Request failed');
+    if (!resp.ok) throw new Error(data.error || 'We couldn\'t send a reset code. Please check that your email address is valid and try again.');
     return { success: true };
   } catch (err) {
     console.error('requestPasswordReset error:', err);
-    return { success: false, error: err.message };
+    const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')) ? 'We\'re having trouble reaching the server. Please check your connection and try again.' : err.message;
+    return { success: false, error: errMsg };
   }
 }
 
@@ -128,11 +131,12 @@ export async function resetPassword(email, code, newPassword) {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, code, newPassword })
     });
     const data = await resp.json();
-    if (!resp.ok) throw new Error(data.error || 'Reset failed');
+    if (!resp.ok) throw new Error(data.error || 'We couldn\'t reset your password. Please check your verification code and try again.');
     return { success: true };
   } catch (err) {
     console.error('resetPassword error:', err);
-    return { success: false, error: err.message };
+    const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')) ? 'We\'re having trouble reaching the server. Please check your connection and try again.' : err.message;
+    return { success: false, error: errMsg };
   }
 }
 
@@ -148,7 +152,7 @@ export async function loginUser(email, password) {
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'Login failed');
+      throw new Error(data.error || 'We couldn\'t log you in. Please verify your email address and password are correct.');
     }
 
     // Store token and user
@@ -158,7 +162,8 @@ export async function loginUser(email, password) {
     return { success: true, user: data.user };
   } catch (err) {
     console.error('Login error:', err);
-    return { success: false, error: err.message };
+    const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')) ? 'We\'re having trouble reaching the server. Please check your connection and try again.' : err.message;
+    return { success: false, error: errMsg };
   }
 }
 
@@ -167,7 +172,7 @@ export async function verifyToken() {
   try {
     const token = getToken();
     if (!token) {
-      return { success: false, error: 'No token found' };
+      return { success: false, error: 'You\'re not currently logged in. Please sign in to continue.' };
     }
 
     const response = await fetch(`${API_URL}/auth/me`, {
@@ -186,7 +191,7 @@ export async function verifyToken() {
       if (response.status === 401 || response.status === 403) {
         logoutUser();
       }
-      return { success: false, error: data.error || 'Token verification failed', status: response.status };
+      return { success: false, error: data.error || 'Your session has expired. Please log in again.', status: response.status };
     }
 
     // Update current user
@@ -194,8 +199,8 @@ export async function verifyToken() {
     return { success: true, user: data.user };
   } catch (err) {
     console.error('Token verification error:', err);
-    // Don't logout on network errors - could be temporary connectivity issues
-    return { success: false, error: err.message };
+    const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')) ? 'We\'re having trouble reaching the server. Please check your connection and try again.' : err.message;
+    return { success: false, error: errMsg };
   }
 }
 

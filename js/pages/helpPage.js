@@ -142,7 +142,7 @@ async function sendMessage(text, file) {
     // Validate email (allow guest fallback)
     if (!userEmail.includes('@')) {
       showNotice('error', 'Please enter a valid email address');
-      return { success: false, error: 'Valid email required' };
+      return { success: false, error: 'Please provide a valid email address.' };
     }
 
     // include or create a session id so conversations can be grouped
@@ -158,7 +158,7 @@ async function sendMessage(text, file) {
     if (!file) {
       const r = await fetch(`${API_BASE}/message`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ text, sessionId, userName, userEmail }) });
       if (!r.ok) {
-        let errBody = 'Server error';
+        let errBody = 'We couldn\'t send your message. Please check your connection and try again.';
         try { errBody = (await r.json()).error || errBody; } catch (e) { errBody = await r.text(); }
         return { success: false, error: errBody };
       }
@@ -174,7 +174,7 @@ async function sendMessage(text, file) {
     const payload = { text, fileName: file.name, fileData: dataUrl, sessionId, userName, userEmail };
     const r = await fetch(`${API_BASE}/message`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
     if (!r.ok) {
-      let errBody = 'Server error';
+      let errBody = 'We couldn\'t send your message. Please check your connection and try again.';
       try { errBody = (await r.json()).error || errBody; } catch (e) { errBody = await r.text(); }
       return { success: false, error: errBody };
     }
@@ -238,7 +238,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Add a 10s timeout so UI doesn't hang when server is unreachable
     const timedSend = Promise.race([
       sendMessage(text, file),
-      new Promise(resolve => setTimeout(() => resolve({ success: false, error: 'Request timed out' }), 10000))
+      new Promise(resolve => setTimeout(() => resolve({ success: false, error: 'We\'re having trouble reaching the server. Please check your connection and try again.' }), 10000))
     ]);
     const res = await timedSend;
     if (res && res.success) {
@@ -250,7 +250,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       setTimeout(() => { const n = document.getElementById('help-notice'); if (n) n.style.display = 'none'; }, 2000);
       await refresh();
     } else {
-      const errMsg = res?.error || 'Failed to send message';
+      const errMsg = res?.error || 'We couldn\'t send your message. Please try again or contact support if the problem persists.';
       showNotice('error', errMsg);
       // If chat was terminated or deleted, disable the form
       if (errMsg.includes('terminated') || errMsg.includes('no longer available')) {

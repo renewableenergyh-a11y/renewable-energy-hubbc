@@ -172,11 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
       } catch (parseErr) {
         // Response is not JSON (likely HTML error page)
         const text = await response.text();
-        throw new Error(`Server error (${response.status}): ${text.substring(0, 100)}`);
+        throw new Error('We encountered a server issue. Please try again or contact support.');
       }
 
       if (!response.ok) {
-        throw new Error(result.error || `Payment initiation failed (${response.status})`);
+        throw new Error(result.error || 'We couldn\'t process your payment. Please try again or contact support.');
       }
 
       console.log('Payment initiated:', result);
@@ -195,11 +195,11 @@ document.addEventListener("DOMContentLoaded", () => {
         window.location.href = checkoutUrl;
       } else {
         console.error('No checkout URL found in response:', result);
-        await showAlert("Payment Error", "Payment initiation returned no redirect URL. Response: " + JSON.stringify(result).substring(0, 100), "error");
+        await showAlert("Payment Error", "We couldn't complete your payment setup. Please try again or contact support.", "error");
       }
     } catch (err) {
       console.error('Payment initiation error:', err);
-      await showAlert("Payment Error", err.message || "Failed to initiate payment", "error");
+      await showAlert("Payment Error", err.message || "We couldn't process your payment. Please try again.", "error");
       if (paymentStatus) {
         paymentStatus.innerHTML = '';
       }

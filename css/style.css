@@ -2318,51 +2318,125 @@ body.dark .lesson-card-wrapper {
   margin-bottom: 30px;
 }
 
+.form-field-wrapper {
+  margin-bottom: 20px;
+  position: relative;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.form-field-wrapper label {
+  position: absolute;
+  left: 15px;
+  top: 15px;
+  font-weight: 400;
+  font-size: 1rem;
+  color: #999;
+  pointer-events: none;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+
+.form-field-wrapper input {
+  width: 100%;
+  padding: 16px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #ddd;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background: white;
+  transition: all 0.2s ease;
+}
+
+.form-field-wrapper input:-webkit-autofill,
+.form-field-wrapper input:-webkit-autofill:hover,
+.form-field-wrapper input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1001px white inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
+}
+
+.form-field-wrapper input::placeholder {
+  color: transparent;
+}
+
+.form-field-wrapper input:focus,
+.form-field-wrapper input:not(:placeholder-shown) {
+  border-color: var(--green-main);
+  padding-top: 22px;
+  padding-bottom: 10px;
+}
+
+.form-field-wrapper input:focus {
+  border-color: var(--green-main);
+  box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.1);
+}
+
+.form-field-wrapper input:focus + label,
+.form-field-wrapper input:not(:placeholder-shown) + label {
+  top: 2px;
+  font-size: 0.75rem;
+  color: var(--green-main);
+  font-weight: 500;
+}
+
 .form-section label {
   font-weight: 500;
   margin-bottom: 6px;
   display: block;
 }
-
-.form-section input {
-  width: 100%;
-  padding: 12px 15px;
-  margin-bottom: 20px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  outline-color: #0e5f56;
 }
 
 .form-section button {
   width: 100%;
-  padding: 12px;
+  padding: 10px 16px;
   background: var(--green-main);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: 25px;
   font-weight: 600;
+  font-size: 1rem;
   cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .form-section button:hover {
   background: var(--green-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-/* Form notice messages */
+.form-section .btn-primary {
+  background: var(--green-main) !important;
+  border-radius: 25px !important;
+  width: 100%;
+  display: block;
+  padding: 10px 16px !important;
+}
+
+.form-section .btn-primary:hover {
+  background: var(--green-dark) !important;
+}
+}
+
 .form-notice {
-  padding: 10px 12px;
-  border-radius: 6px;
-  margin: 10px 0;
+  padding: 14px 16px;
+  border-radius: 8px;
+  margin: 24px 0 10px 0;
   font-size: 0.9rem;
-  display: inline-block;
+  display: block;
   width: 100%;
   box-sizing: border-box;
+  text-align: center;
 }
 
 .form-notice.error {
-  background: #ffebee;
-  color: #c62828;
-  border-left: 4px solid #c62828;
+  background: #d32f2f;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  margin-top: 30px;
+  border-radius: 4px;
 }
 
 .form-notice.success {
@@ -2378,8 +2452,9 @@ body.dark .lesson-card-wrapper {
 }
 
 body.dark .form-notice.error {
-  background: #3e2723;
-  color: #ff6e6e;
+  background: #d32f2f;
+  color: white;
+  border: none;
 }
 
 body.dark .form-notice.success {
@@ -2438,6 +2513,76 @@ body.dark .lesson-content,
 body.dark .form-section {
   background: #1e1e1e;
   color: #f0f0f0;
+}
+
+body.dark .form-field-wrapper input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #e8e8e8;
+}
+
+body.dark .form-field-wrapper input:-webkit-autofill,
+body.dark .form-field-wrapper input:-webkit-autofill:hover,
+body.dark .form-field-wrapper input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1001px rgba(255, 255, 255, 0.05) inset !important;
+  -webkit-text-fill-color: #e8e8e8 !important;
+}
+
+body.dark .form-field-wrapper input:focus,
+body.dark .form-field-wrapper input:not(:placeholder-shown) {
+  border-color: #00b38a;
+}
+
+body.dark .form-field-wrapper input:focus {
+  box-shadow: 0 0 0 3px rgba(0, 179, 138, 0.15);
+}
+
+body.dark .form-field-wrapper label {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+body.dark .form-field-wrapper input:focus + label,
+body.dark .form-field-wrapper input:not(:placeholder-shown) + label {
+  color: #00b38a;
+}
+
+body.dark .password-wrapper input {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: #e8e8e8;
+}
+
+body.dark .password-wrapper input:-webkit-autofill,
+body.dark .password-wrapper input:-webkit-autofill:hover,
+body.dark .password-wrapper input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1001px rgba(255, 255, 255, 0.05) inset !important;
+  -webkit-text-fill-color: #e8e8e8 !important;
+}
+
+body.dark .password-wrapper input:focus,
+body.dark .password-wrapper input:not(:placeholder-shown) {
+  border-color: #00b38a;
+}
+
+body.dark .password-wrapper input:focus {
+  box-shadow: 0 0 0 3px rgba(0, 179, 138, 0.15);
+}
+
+body.dark .form-section button {
+  background: var(--green-main);
+  color: white;
+}
+
+body.dark .form-section button:hover {
+  background: var(--green-dark);
+}
+
+body.dark .form-section .btn-primary {
+  background: var(--green-main) !important;
+}
+
+body.dark .form-section .btn-primary:hover {
+  background: var(--green-dark) !important;
 }
 
 body.dark .lesson-content p,
@@ -3453,14 +3598,38 @@ body.dark #card-element.StripeElement--focus {
 
 .password-wrapper input {
   width: 100%;
-  height: 44px;                 /* FORCE consistent height */
-  padding: 12px 30px 12px 12px;
-  font-size: 15px;
+  padding: 16px 14px;
+  border-radius: 8px;
+  border: 1.5px solid #ddd;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background: white;
+  transition: all 0.2s ease;
   box-sizing: border-box;
 }
 
+.password-wrapper input:-webkit-autofill,
+.password-wrapper input:-webkit-autofill:hover,
+.password-wrapper input:-webkit-autofill:focus {
+  -webkit-box-shadow: 0 0 0 1001px white inset !important;
+  -webkit-text-fill-color: var(--text-main) !important;
+}
+
 .password-wrapper input::placeholder {
-  font-size: 13px;
+  color: transparent;
+}
+
+.password-wrapper input:focus,
+.password-wrapper input:not(:placeholder-shown) {
+  border-color: var(--green-main);
+  padding-top: 22px;
+  padding-bottom: 10px;
+}
+
+.password-wrapper input:focus {
+  border-color: var(--green-main);
+  box-shadow: 0 0 0 3px rgba(0, 121, 107, 0.1);
 }
 
 .toggle-password {

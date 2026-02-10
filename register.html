@@ -42,17 +42,24 @@
   <section class="form-section">
     <div class="container">
       <h2>Register</h2>
+      <p style="text-align: center; color: var(--text-muted); margin-bottom: 30px; font-size: 0.95rem;">Let's get your account set up</p>
 
       <form id="register-form" data-redirect="">
-        <label for="name">Full Name</label>
-        <input type="text" id="name" placeholder="Enter your full name" required>
+        <div class="form-field-wrapper">
+          <input type="text" id="name" placeholder=" " required>
+          <label for="name">Full Name</label>
+        </div>
 
-        <label for="email">Email</label>
-        <input type="email" id="email" placeholder="Enter your email address" required>
+        <div class="form-field-wrapper">
+          <input type="email" id="email" placeholder=" " required>
+          <label for="email">Email</label>
+        </div>
 
-        <label for="password">Password</label>
-        <div class="password-wrapper">
-          <input type="password" id="password" placeholder="Create a password (min 8 characters)" required>
+        <div class="form-field-wrapper">
+          <div class="password-wrapper">
+            <input type="password" id="password" placeholder=" " required>
+            <label for="password">Password</label>
+          </div>
         </div>
         <!-- Password Strength Indicator -->
         <div id="password-strength-indicator" class="password-strength" style="display: none;">
@@ -68,9 +75,11 @@
           </ul>
         </div>
 
-        <label for="password-confirm">Confirm Password</label>
-        <div class="password-wrapper">
-          <input type="password" id="password-confirm" placeholder="Re-enter your password" required>
+        <div class="form-field-wrapper">
+          <div class="password-wrapper">
+            <input type="password" id="password-confirm" placeholder=" " required>
+            <label for="password-confirm">Confirm Password</label>
+          </div>
         </div>
 
         <div class="show-password-wrapper">
@@ -80,17 +89,18 @@
 
         <div class="checkbox-wrapper">
           <input type="checkbox" id="agree-terms" required>
-          <label for="agree-terms">I agree to the <a href="terms-of-service.html" target="_blank">Terms of Service</a></label>
+          <label for="agree-terms">I agree to the <a href="terms-of-service.html" target="_blank"> Terms of Service</a></label>
         </div>
 
         <button type="submit" class="btn-primary">Register</button>
-        <div class="form-notice"></div>
       </form>
 
       <p style="margin-top: 10px;">
         Already have an account?
         <a href="login.html" class="form-helper-link">Login here</a>
       </p>
+
+      <div class="form-notice"></div>
     </div>
   </section>
 </main>

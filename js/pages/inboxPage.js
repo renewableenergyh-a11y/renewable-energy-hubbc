@@ -524,7 +524,7 @@ async function deleteMessage(messageId) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to delete message');
+      throw new Error('We couldn\'t delete the message. Please try again.');
     }
 
     // Update badges
@@ -546,7 +546,7 @@ async function clearAllMessages(token) {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to clear messages');
+      throw new Error('We couldn\'t clear the messages. Please try again.');
     }
 
     // Update badges

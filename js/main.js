@@ -1225,8 +1225,8 @@ document.addEventListener('DOMContentLoaded', () => {
               window.location.href = 'index.html';
             }
           }
-        } else { showNotice('error', 'Login failed: ' + (result.error || 'Unknown error')); submitBtn.disabled = false; submitBtn.textContent = 'Login'; }
-      } catch (err) { console.error('Login error:', err); showNotice('error', 'Login failed'); submitBtn.disabled = false; submitBtn.textContent = 'Login'; }
+        } else { showNotice('error', result.error || 'We couldn\'t log you in. Please verify your email and password, then try again.'); submitBtn.disabled = false; submitBtn.textContent = 'Login'; }
+      } catch (err) { console.error('Login error:', err); const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')) ? 'We\'re having trouble reaching the server. Please check your connection and try again.' : (err.message || 'We couldn\'t complete your login. Please try again.'); showNotice('error', errMsg); submitBtn.disabled = false; submitBtn.textContent = 'Login'; }
     });
   }
 
@@ -1486,16 +1486,16 @@ document.addEventListener('DOMContentLoaded', () => {
               if (noticeEl) noticeEl.style.display = '';
               if (resp && resp.success) {
                 const n = registerForm.querySelector('.form-notice');
-                if (n) { n.className = 'form-notice info'; n.textContent = 'Code resent — check your email.'; }
+                if (n) { n.className = 'form-notice info'; n.textContent = 'Code resent — check your email inbox or spam folder.'; }
                 startRegisterResendCountdown(REGISTER_RESEND_SECONDS);
               } else {
-                const n = registerForm.querySelector('.form-notice'); if (n) { n.className = 'form-notice error'; n.textContent = resp.error || 'Failed to resend code'; }
+                const n = registerForm.querySelector('.form-notice'); if (n) { n.className = 'form-notice error'; n.textContent = resp.error || 'We couldn\'t resend the code. Please check your email and try again.'; }
                 resendRegisterBtn.disabled = false; resendRegisterBtn.textContent = 'Resend';
               }
             } catch (err) {
               console.error('Resend register error', err);
               if (noticeEl) noticeEl.style.display = '';
-              const n = registerForm.querySelector('.form-notice'); if (n) { n.className = 'form-notice error'; n.textContent = err.message || 'Error resending code'; }
+              const n = registerForm.querySelector('.form-notice'); if (n) { n.className = 'form-notice error'; n.textContent = err.message || 'An error occurred while resending. Please try again.'; }
               resendRegisterBtn.disabled = false; resendRegisterBtn.textContent = 'Resend';
             }
           });
@@ -1521,7 +1521,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const d = document.createElement('div'); d.className = 'form-notice'; registerForm.appendChild(d); return d;
               })();
               noticeEl.className = 'form-notice error';
-              noticeEl.textContent = 'Verification failed: ' + (ok.error || 'Invalid code');
+              noticeEl.textContent = ok.error || 'The code you entered is incorrect or has expired. Please request a new code.';
               verifyBtn.disabled = false; verifyBtn.textContent = 'Verify & Complete Registration';
             }
           } catch (err) {
@@ -1530,13 +1530,14 @@ document.addEventListener('DOMContentLoaded', () => {
               const d = document.createElement('div'); d.className = 'form-notice'; registerForm.appendChild(d); return d;
             })();
             noticeEl.className = 'form-notice error';
-            noticeEl.textContent = 'Verification failed: ' + (err.message || 'Unknown error');
+            noticeEl.textContent = err.message || 'We couldn\'t verify your code. Please check it and try again.';
             verifyBtn.disabled = false; verifyBtn.textContent = 'Verify & Complete Registration';
           }
         });
       } catch (err) {
         console.error('Register request failed', err);
-        showNotice('error', err.message || 'Registration request failed');
+        const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')) ? 'We\'re having trouble reaching the server. Please check your connection and try again.' : (err.message || 'We couldn\'t create your account. Please check your information and try again.');
+        showNotice('error', errMsg);
         submitBtn.disabled = false; submitBtn.textContent = 'Register';
       }
     });

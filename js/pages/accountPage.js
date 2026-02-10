@@ -52,7 +52,7 @@ async function loadUserData() {
     console.log('Response status:', response.status);
     if (!response.ok) {
       console.error('Response not ok:', response.status, response.statusText);
-      throw new Error('Failed to load user data');
+      throw new Error('We couldn\'t load your account information. Please try again.');
     }
 
     const data = await response.json();
@@ -78,7 +78,7 @@ async function loadCertificates() {
       }
     });
 
-    if (!response.ok) throw new Error('Failed to load certificates');
+    if (!response.ok) throw new Error('We couldn\'t load your certificates. Please try again.');
 
     const data = await response.json();
     const certificates = data.certificates || [];
@@ -136,7 +136,7 @@ window.downloadCertificate = async function(certId, courseId) {
       }
     });
 
-    if (!response.ok) throw new Error('Failed to download certificate');
+    if (!response.ok) throw new Error('We couldn\'t download your certificate. Please try again.');
 
     const blob = await response.blob();
     const url = window.URL.createObjectURL(blob);
@@ -149,7 +149,7 @@ window.downloadCertificate = async function(certId, courseId) {
     a.remove();
   } catch (error) {
     console.error('Error downloading certificate:', error);
-    showModal({ type: 'error', title: 'Error', message: 'Failed to download certificate' });
+    showModal({ type: 'error', title: 'Error', message: 'We couldn\'t download your certificate. Please try again.' });
   }
 };
 
@@ -189,7 +189,7 @@ window.downloadCertificateAs = async function(certId, courseId, format) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const errorMsg = errorData.error || `Failed to download certificate as ${format}`;
+      const errorMsg = errorData.error || `We couldn't download your certificate as ${format}. Please try again.`;
       console.error('Certificate download error:', errorMsg);
       throw new Error(errorMsg);
     }
@@ -248,7 +248,7 @@ window.downloadCertificateAs = async function(certId, courseId, format) {
     }
   } catch (error) {
     console.error('Error downloading certificate:', error);
-    showModal({ type: 'error', title: 'Download Failed', message: error.message || `Failed to download certificate as ${format}` });
+    showModal({ type: 'error', title: 'Download Failed', message: error.message || `We couldn\'t download your certificate as ${format}. Please try again.` });
   }
 };
 
@@ -262,7 +262,7 @@ window.viewCertificate = async function(certId) {
       }
     });
 
-    if (!response.ok) throw new Error('Failed to load certificate');
+    if (!response.ok) throw new Error('We couldn\'t load your certificate. Please try again.');
 
     const html = await response.text();
     
@@ -355,7 +355,7 @@ window.viewCertificate = async function(certId) {
     });
   } catch (error) {
     console.error('Error viewing certificate:', error);
-    showModal({ type: 'error', title: 'Error', message: 'Failed to view certificate' });
+    showModal({ type: 'error', title: 'Error', message: 'We couldn\'t view your certificate. Please try again.' });
   }
 };
 
@@ -379,7 +379,7 @@ window.downloadCertificateFromModal = async function(certId, format) {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      const errorMsg = errorData.error || `Failed to download certificate`;
+      const errorMsg = errorData.error || `We couldn't download your certificate. Please try again.`;
       console.error('Certificate download error:', errorMsg);
       throw new Error(errorMsg);
     }
@@ -438,7 +438,7 @@ window.downloadCertificateFromModal = async function(certId, format) {
     }
   } catch (error) {
     console.error('Error downloading certificate:', error);
-    showModal({ type: 'error', title: 'Download Failed', message: error.message || `Failed to download certificate` });
+    showModal({ type: 'error', title: 'Download Failed', message: error.message || 'We couldn\'t download your certificate. Please try again.' });
   }
 };
 
@@ -642,7 +642,7 @@ function showEmailVerificationModal(newEmail) {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      if (!response.ok) throw new Error(data.error || 'We couldn\'t resend the verification code. Please try again.');
 
       errorDiv.style.display = 'none';
       errorDiv.textContent = '';
@@ -698,7 +698,7 @@ function showEmailVerificationModal(newEmail) {
       });
 
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error);
+      if (!response.ok) throw new Error(data.error || 'We couldn\'t verify your email. Please check your code and try again.');
 
       overlay.remove();
       showModal({
@@ -964,7 +964,7 @@ function showEditProfileModal(user) {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to update profile');
+        throw new Error(data.error || 'We couldn\'t update your profile. Please try again.');
       }
       
       overlay.remove();
@@ -1036,7 +1036,7 @@ function setupEventListeners() {
           });
 
           if (!response.ok) {
-            throw new Error('Failed to cancel premium');
+            throw new Error('We couldn\'t cancel your premium subscription. Please try again.');
           }
 
           showModal({ type: 'success', title: 'Premium Canceled', message: 'Your premium subscription has been successfully canceled. You will retain premium access until the end of your current billing period, after which your account will become free.' });
@@ -1113,7 +1113,7 @@ function setupEventListeners() {
               });
               
               if (!response.ok) {
-                throw new Error('Failed to delete account');
+                throw new Error('We couldn\'t delete your account. Please try again.');
               }
               
               overlay.remove();

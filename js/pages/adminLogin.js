@@ -117,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       const data = await response.json();
       if (!response.ok) {
-        showNotice(noticeId, 'error', data.error || 'Invalid credentials');
+        showNotice(noticeId, 'error', data.error || 'We couldn\'t verify your credentials. Please check and try again.');
         return;
       }
 
@@ -138,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => { window.location.href = 'admin-dashboard.html'; }, 500);
     } catch (err) {
       console.error('admin login error', err);
-      showNotice(noticeId, 'error', err.message || 'Error signing in');
+      showNotice(noticeId, 'error', err.message || 'We couldn\'t sign you in. Please verify your information and try again.');
     }
   });
 });

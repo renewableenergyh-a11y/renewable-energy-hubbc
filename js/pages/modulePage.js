@@ -1172,7 +1172,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         } catch (e) {
           console.error('Admin verify error', e);
-          await showAlert('Error', 'Failed to verify admin ID.', 'error');
+          await showAlert('Error', 'We couldn\'t verify your admin ID. Please try again.', 'error');
           cleanup();
         }
       });

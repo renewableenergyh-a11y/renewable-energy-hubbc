@@ -46,9 +46,14 @@ if (!window._resetPasswordPageLoaded) {
       currentState = 'send';
       resetFlow.innerHTML = `
         <div id="stage-send">
-          <label for="reset-email">Email</label>
-          <input type="text" id="reset-email" placeholder="your@email.com" required>
+          <div class="form-field-wrapper">
+            <input type="text" id="reset-email" placeholder=" " required>
+            <label for="reset-email">Email</label>
+          </div>
           <button id="send-reset-code" type="button" class="btn-primary">Send reset code</button>
+          <p style="margin-top: 10px;">
+            Remember password? <a href="login.html" class="form-helper-link">Login here</a>
+          </p>
           <div class="form-notice" id="reset-notice"></div>
         </div>
       `;
@@ -77,12 +82,17 @@ if (!window._resetPasswordPageLoaded) {
       resetFlow.innerHTML = `
         <div id="stage-verify">
           <p style="color: #666; margin-bottom: 15px;">Enter the 6-digit code sent to <strong>${email}</strong></p>
-          <label for="reset-code">Reset Code</label>
-          <input type="text" id="reset-code" maxlength="6" placeholder="6-digit code" required>
+          
+          <div class="form-field-wrapper">
+            <input type="text" id="reset-code" maxlength="6" placeholder=" " required>
+            <label for="reset-code">Reset Code</label>
+          </div>
 
-          <label for="reset-new-pass">New Password</label>
-          <div class="password-wrapper">
-            <input type="password" id="reset-new-pass" placeholder="Create a password (min 8 characters)" required>
+          <div class="form-field-wrapper">
+            <div class="password-wrapper">
+              <input type="password" id="reset-new-pass" placeholder=" " required>
+              <label for="reset-new-pass">New Password</label>
+            </div>
           </div>
           
           <!-- Password Strength Indicator -->
@@ -99,9 +109,11 @@ if (!window._resetPasswordPageLoaded) {
             </ul>
           </div>
 
-          <label for="reset-new-pass-confirm">Confirm New Password</label>
-          <div class="password-wrapper">
-            <input type="password" id="reset-new-pass-confirm" placeholder="Repeat password" required>
+          <div class="form-field-wrapper">
+            <div class="password-wrapper">
+              <input type="password" id="reset-new-pass-confirm" placeholder=" " required>
+              <label for="reset-new-pass-confirm">Confirm New Password</label>
+            </div>
           </div>
 
           <div class="show-password-wrapper">
@@ -109,10 +121,12 @@ if (!window._resetPasswordPageLoaded) {
             <label for="show-password-reset">Show password</label>
           </div>
 
-          <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
-            <button id="do-reset" type="button" class="btn-primary">Reset Password</button>
-            <button id="resend-reset-code" type="button" class="module-search-btn" title="Resend code">Resend</button>
-          </div>
+          <button id="do-reset" type="button" class="btn-primary">Reset Password</button>
+          
+          <p style="margin-top: 10px;">
+            <button id="resend-reset-code" type="button" class="module-search-btn" title="Resend code">Resend code</button>
+          </p>
+          
           <div class="form-notice" id="reset-stage-notice"></div>
         </div>
       `;
@@ -279,17 +293,17 @@ if (!window._resetPasswordPageLoaded) {
             // restore and show new message
             if (noticeEl) { noticeEl.style.display = ''; }
             if (result && result.success) {
-              showNotice('success', 'Code resent — check your inbox or spam.');
+              showNotice('success', 'Code resent — check your inbox or spam folder.');
               startResendCountdown(RESEND_SECONDS);
             } else {
-              showNotice('error', result.error || 'Failed to resend code');
+              showNotice('error', result.error || 'We couldn\'t resend the code. Please try again.');
               resendBtn.disabled = false;
               resendBtn.textContent = 'Resend';
             }
           } catch (err) {
             console.error('Resend error', err);
             if (noticeEl) { noticeEl.style.display = ''; }
-            showNotice('error', 'Error resending code');
+            showNotice('error', 'An error occurred while resending. Please try again.');
             resendBtn.disabled = false;
             resendBtn.textContent = 'Resend';
           }
@@ -329,13 +343,14 @@ if (!window._resetPasswordPageLoaded) {
           renderVerifyStage(email);
           showNotice('success', 'Reset code sent. Check your email inbox or spam folder.');
         } else {
-          showNotice('error', result.error || 'Failed to send reset code');
+          showNotice('error', result.error || 'We couldn\'t send a reset code. Please check your email address and try again.');
           sendBtn.disabled = false;
           sendBtn.textContent = 'Send reset code';
         }
       } catch (err) {
         console.error('❌ Error requesting reset:', err);
-        showNotice('error', 'Error: ' + err.message);
+        const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')?  'We\'re having trouble reaching the server. Please check your connection and try again.' : err.message) || 'We had trouble processing your request. Please try again.';
+        showNotice('error', errMsg);
         sendBtn.disabled = false;
         sendBtn.textContent = 'Send reset code';
       }
@@ -442,13 +457,14 @@ if (!window._resetPasswordPageLoaded) {
 
           setTimeout(() => { window.location.href = '/login.html'; }, 5000);
         } else {
-          showNotice('error', result.error || 'Failed to reset password');
+          showNotice('error', result.error || 'We couldn\'t reset your password. Please check your verification code and try again.');
           doResetBtn.disabled = false;
           doResetBtn.textContent = 'Reset Password';
         }
       } catch (err) {
         console.error('❌ Error resetting password:', err);
-        showNotice('error', 'Error: ' + err.message);
+        const errMsg = (err.message === 'Failed to fetch' || err.message?.includes('network')) ? 'We\'re having trouble reaching the server. Please check your connection and try again.' : (err.message || 'We had trouble resetting your password. Please try again.');
+        showNotice('error', errMsg);
         doResetBtn.disabled = false;
         doResetBtn.textContent = 'Reset Password';
       }
