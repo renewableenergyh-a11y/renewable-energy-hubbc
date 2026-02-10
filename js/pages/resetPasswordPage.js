@@ -123,8 +123,8 @@ if (!window._resetPasswordPageLoaded) {
 
           <button id="do-reset" type="button" class="btn-primary">Reset Password</button>
           
-          <p style="margin-top: 10px;">
-            <button id="resend-reset-code" type="button" class="module-search-btn" title="Resend code">Resend code</button>
+          <p style="margin-top: 10px; text-align: center;">
+            <button id="resend-reset-code" type="button" style="background: none; border: none; color: #16a34a; cursor: pointer; font-size: 14px; text-decoration: underline; font-weight: 500; padding: 5px; transition: color 0.2s;" title="Resend code">Resend code</button>
           </p>
           
           <div class="form-notice" id="reset-stage-notice"></div>
@@ -262,18 +262,40 @@ if (!window._resetPasswordPageLoaded) {
 
       function startResendCountdown(seconds) {
         let remaining = seconds;
-        if (resendBtn) { resendBtn.disabled = true; resendBtn.textContent = `Resend (${remaining}s)`; }
+        if (resendBtn) { 
+          resendBtn.disabled = true; 
+          resendBtn.textContent = `Resend (${remaining}s)`;
+          resendBtn.style.color = '#9ca3af';
+          resendBtn.style.cursor = 'not-allowed';
+        }
         resendInterval = setInterval(() => {
           remaining -= 1;
           if (resendBtn) resendBtn.textContent = remaining > 0 ? `Resend (${remaining}s)` : 'Resend';
           if (remaining <= 0) {
             clearInterval(resendInterval);
-            if (resendBtn) { resendBtn.disabled = false; resendBtn.textContent = 'Resend'; }
+            if (resendBtn) { 
+              resendBtn.disabled = false; 
+              resendBtn.textContent = 'Resend code';
+              resendBtn.style.color = '#16a34a';
+              resendBtn.style.cursor = 'pointer';
+            }
           }
         }, 1000);
       }
 
       if (resendBtn) {
+        // Add hover effects
+        resendBtn.addEventListener('mouseover', () => {
+          if (!resendBtn.disabled) {
+            resendBtn.style.color = '#059669';
+          }
+        });
+        resendBtn.addEventListener('mouseout', () => {
+          if (!resendBtn.disabled) {
+            resendBtn.style.color = '#16a34a';
+          }
+        });
+
         resendBtn.addEventListener('click', async (ev) => {
           ev.preventDefault();
           if (!resetEmail) return;
