@@ -213,11 +213,23 @@ class SettingsApplier {
     
     console.log('🔧 Applying platform settings...');
 
-    // Maintenance Mode - Block access entirely
+    // Maintenance Mode - Check user role and handle accordingly
     if (s.maintenanceMode === true) {
-      console.log('🚧 MAINTENANCE MODE ENABLED - Blocking all access');
-      this.showMaintenanceMode(s.maintenanceMessage);
-      return; // Stop all other processing
+      // Get user role from localStorage
+      const userRole = localStorage.getItem('adminRole') || null;
+      const isAdmin = userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor';
+      
+      if (isAdmin) {
+        // Admin user - show banner instead of blocking
+        console.log(`✅ [Maintenance] ${userRole} user allowed access - showing banner`);
+        this.showMaintenanceModeBanner(s.maintenanceMessage, userRole);
+        // Continue with normal processing
+      } else {
+        // Non-admin user or guest - block access
+        console.log('🚧 MAINTENANCE MODE ENABLED - Blocking non-admin access');
+        this.showMaintenanceMode(s.maintenanceMessage);
+        return; // Stop all other processing
+      }
     }
 
     // Site name
@@ -1180,6 +1192,140 @@ class SettingsApplier {
     `;
     
     document.body.appendChild(container);
+  }
+
+  /**
+   * Show maintenance mode banner for admins
+   */
+  showMaintenanceModeBanner(message = '', role = 'admin') {
+    // Create banner element
+    const banner = document.createElement('div');
+    banner.id = 'maintenance-mode-banner';
+    banner.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(90deg, #fff3cd 0%, #ffeaa7 100%);
+      border-bottom: 2px solid #ffc107;
+      padding: 12px 20px;
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    `;
+    
+    // Banner HTML with message, info icon, and close button
+    banner.innerHTML = `
+      <div style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 1200px;
+        margin: 0 auto;
+        gap: 16px;
+      ">
+        <div style="
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          flex: 1;
+        ">
+          <span style="
+            font-size: 18px;
+            line-height: 1;
+          ">🛠</span>
+          <div style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          ">
+            <span style="
+              color: #333;
+              font-weight: 600;
+              font-size: 14px;
+            ">Maintenance Mode Active</span>
+            <div style="
+              position: relative;
+              display: inline-block;
+              cursor: help;
+            " title="Maintenance mode is active for regular users. You can access the live site as ${role}.">
+              <span style="
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                width: 18px;
+                height: 18px;
+                background: rgba(51, 51, 51, 0.15);
+                border-radius: 50%;
+                font-size: 12px;
+                color: #333;
+                font-weight: bold;
+              ">ℹ</span>
+            </div>
+          </div>
+          ${message ? `<span style="
+            color: #555;
+            font-size: 13px;
+            margin-left: 8px;
+          ">– ${message}</span>` : ''}
+        </div>
+        <button id="close-maintenance-banner" style="
+          background: transparent;
+          border: none;
+          color: #333;
+          font-size: 20px;
+          cursor: pointer;
+          padding: 0;
+          width: 24px;
+          height: 24px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          opacity: 0.6;
+          transition: opacity 0.2s;
+        " title="Close banner">×</button>
+      </div>
+    `;
+    
+    // Insert banner at the beginning of body
+    if (document.body) {
+      document.body.insertBefore(banner, document.body.firstChild);
+    } else {
+      // Fallback: wait for body to load
+      document.addEventListener('DOMContentLoaded', () => {
+        document.body.insertBefore(banner, document.body.firstChild);
+      });
+    }
+    
+    // Add click handler to close button
+    setTimeout(() => {
+      const closeBtn = document.getElementById('close-maintenance-banner');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+          const bannerEl = document.getElementById('maintenance-mode-banner');
+          if (bannerEl) {
+            bannerEl.style.opacity = '0';
+            bannerEl.style.transition = 'opacity 0.3s';
+            setTimeout(() => bannerEl.remove(), 300);
+          }
+        });
+        
+        // Add hover effect
+        closeBtn.addEventListener('mouseover', () => {
+          closeBtn.style.opacity = '1';
+        });
+        closeBtn.addEventListener('mouseout', () => {
+          closeBtn.style.opacity = '0.6';
+        });
+      }
+    }, 100);
+    
+    // Adjust body padding to accommodate fixed banner
+    if (document.body) {
+      document.body.style.paddingTop = '58px';
+    }
+    
+    console.log(`✅ Maintenance mode banner shown for ${role} user`);
   }
 
   /**

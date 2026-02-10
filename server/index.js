@@ -216,6 +216,41 @@ setInterval(() => {
   }
 }, SESSION_CHECK_INTERVAL_MS);
 
+// Maintenance Mode Middleware - Check if maintenance is ON and handle role-based access
+function checkMaintenanceMode(req, res, next) {
+  try {
+    const settings = loadSettings() || {};
+    
+    if (settings.maintenanceMode === true) {
+      // Get user from token
+      const authHeader = req.headers.authorization || '';
+      const token = authHeader.replace('Bearer ', '');
+      const user = token ? authenticateToken(token) : null;
+      const userRole = user?.role || 'guest';
+      
+      // Allow admins, superadmins, and instructors to access
+      if (userRole === 'admin' || userRole === 'superadmin' || userRole === 'instructor') {
+        console.log(`✅ [Maintenance] ${userRole} user allowed access: ${user.email}`);
+        // Attach user to request for later use
+        req.user = user;
+        req.maintenanceMode = true;
+        return next();
+      }
+      
+      // Block normal users and guests
+      console.log(`🚧 [Maintenance] ${userRole} user blocked from accessing: ${req.method} ${req.path}`);
+      return res.status(503).json({ error: 'The site is in maintenance mode. Please check back soon.' });
+    }
+    
+    // Maintenance is OFF, allow all access
+    next();
+  } catch (err) {
+    console.error('[Maintenance] Error checking maintenance mode:', err);
+    // On error, allow access to not break the site
+    next();
+  }
+}
+
 function escapeHtml(text) {
   if (!text) return '';
   const map = {
@@ -645,6 +680,30 @@ const corsOptions = {
 app.use(cors(corsOptions));         // ✅ Allow cross-origin requests with enhanced config
 // Only parse JSON for normal API endpoints (allow larger payloads for file uploads)
 app.use('/api', express.json({ limit: '10mb' }));
+
+// Apply maintenance mode middleware to all API endpoints (except public settings and auth)
+// Admins can still login during maintenance, but other endpoints will check their role
+app.use('/api', (req, res, next) => {
+  // Exclude public endpoints and auth endpoints that should be accessible during maintenance
+  const publicPaths = [
+    '/api/settings/public',
+    '/api/config',
+    '/api/health',
+    '/api/auth/login',
+    '/api/auth/superadmin-login'
+  ];
+  
+  // Check if this is a public path (exact match or starts with)
+  const isPublicPath = publicPaths.some(path => req.path === path || req.path.startsWith(path));
+  
+  if (isPublicPath) {
+    // Allow public/auth paths without checking maintenance
+    return next();
+  }
+  
+  // For all other API paths, check maintenance mode
+  checkMaintenanceMode(req, res, next);
+});
 
 // Disable caching for HTML and JS files so updates are always fetched
 app.use((req, res, next) => {
@@ -3835,7 +3894,6 @@ app.post('/api/send-test-email', async (req, res) => {
 app.post('/api/auth/register', (req, res) => {
   try {
     const settings = loadSettings() || {};
-    if (settings.maintenanceMode) return res.status(503).json({ error: 'The site is in maintenance mode' });
     if (settings.allowNewUserRegistration === false) return res.status(403).json({ error: 'Registrations are currently disabled' });
     const { name, email, password } = req.body;
 
@@ -3923,7 +3981,6 @@ app.post('/api/auth/register', (req, res) => {
 app.post('/api/auth/register-request', async (req, res) => {
   try {
     const settings = loadSettings() || {};
-    if (settings.maintenanceMode) return res.status(503).json({ error: 'The site is in maintenance mode' });
     if (settings.allowNewUserRegistration === false) return res.status(403).json({ error: 'Registrations are currently disabled' });
     const { name, email, password } = req.body;
     if (!name || !email || !password) return res.status(400).json({ error: 'Missing fields' });
@@ -3969,7 +4026,6 @@ app.post('/api/auth/register-request', async (req, res) => {
 app.post('/api/auth/register-verify', (req, res) => {
   try {
     const settings = loadSettings() || {};
-    if (settings.maintenanceMode) return res.status(403).json({ error: 'The site is in maintenance mode' });
     if (settings.allowNewUserRegistration === false) return res.status(403).json({ error: 'Registrations are currently disabled' });
     const { email, code } = req.body;
     if (!email || !code) return res.status(400).json({ error: 'Missing fields' });
